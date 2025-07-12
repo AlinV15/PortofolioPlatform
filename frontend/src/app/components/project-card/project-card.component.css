@@ -1,0 +1,173 @@
+/* Project Card Styles */
+
+/* Line clamp utilities for text truncation */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    line-clamp: 4;
+    line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-6 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Enhanced hover effects */
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+}
+
+.group:hover .group-hover\:text-blue-600 {
+    color: rgb(37 99 235);
+}
+
+.dark .group:hover .group-hover\:text-blue-400 {
+    color: rgb(96 165 250);
+}
+
+/* Smooth transitions for all interactive elements */
+.group {
+    will-change: transform;
+}
+
+.group * {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* Custom scrollbar for overflow content (if needed) */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+}
+
+/* Featured card special effects */
+.group.border-2.border-blue-500::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.group.border-2.border-blue-500:hover::before {
+    opacity: 0.1;
+}
+
+/* Button hover effects */
+button {
+    transform-origin: center;
+    will-change: transform;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Status indicator pulse animation for production */
+@keyframes pulse-green {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.bg-green-500 {
+    animation: pulse-green 2s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .line-clamp-4 {
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+    }
+
+    .line-clamp-6 {
+        -webkit-line-clamp: 4;
+    }
+}
+
+/* Focus styles for accessibility */
+.group:focus-visible {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: 2px;
+    border-radius: 0.75rem;
+}
+
+button:focus-visible {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    .group:focus-visible {
+        outline-color: rgb(96 165 250);
+    }
+
+    button:focus-visible {
+        outline-color: rgb(96 165 250);
+    }
+}
+
+/* Print styles */
+@media print {
+    .group {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .group:hover .group-hover\:scale-110 {
+        transform: none;
+    }
+
+    button {
+        display: none;
+    }
+}

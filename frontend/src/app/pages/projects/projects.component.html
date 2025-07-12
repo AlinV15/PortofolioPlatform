@@ -1,0 +1,20 @@
+<div>
+    <app-projects-hero (filterChange)="onFilterChange($event)" (viewModeChange)="onViewModeChange($event)">
+    </app-projects-hero>
+
+    <app-project-grid [activeFilter]="activeFilter" [viewMode]="viewMode" (projectSelect)="onProjectSelect($event)">
+    </app-project-grid>
+    <!-- Modal pentru detalii -->
+    <app-project-details [project]="selectedProject" [isOpen]="!!selectedProject" [allProjects]="allProjects"
+        (close)="selectedProject = null" (previousProject)="onPreviousProject()" (nextProject)="onNextProject()">
+    </app-project-details>
+    <!-- Project Stats Section -->
+    <app-project-stats [projects]="allProjects" [filteredProjects]="filteredProjects">
+    </app-project-stats>
+
+    <!-- Project Showcase Section -->
+    <app-project-showcase [projects]="allProjects" [autoSlide]="true" [slideInterval]="5000"
+        (projectSelect)="onProjectSelect($event)" (demoClick)="onDemoClick($event)"
+        (githubClick)="onGithubClick($event)">
+    </app-project-showcase>
+</div>

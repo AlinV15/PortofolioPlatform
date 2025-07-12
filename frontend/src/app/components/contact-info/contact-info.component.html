@@ -1,0 +1,150 @@
+<div class="max-w-4xl mx-auto p-6">
+    <div class="text-center mb-8 mt-10">
+        <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 ">
+            Contact Information
+        </h3>
+        <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto rounded-full"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Email -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <lucide-icon [name]="mailIcon" class="w-6 h-6 text-white"></lucide-icon>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Email</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 break-words">{{ contactInfo.email }}</p>
+                    <div class="flex space-x-2">
+                        <button (click)="sendEmail()"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-blue-500 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Send email">
+                            <lucide-icon [name]="sendIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                        <button (click)="copyToClipboard(contactInfo.email, 'Email')"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-blue-500 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Copy email">
+                            <lucide-icon [name]="copyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+                        <lucide-icon [name]="phoneIcon" class="w-6 h-6 text-white"></lucide-icon>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Phone</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3">{{ contactInfo.phone }}</p>
+                    <div class="flex space-x-2">
+                        <button (click)="callPhone()"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-green-500 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Call now">
+                            <lucide-icon [name]="phoneCallIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                        <button (click)="copyToClipboard(contactInfo.phone, 'Phone')"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-green-500 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Copy number">
+                            <lucide-icon [name]="copyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                        <lucide-icon [name]="mapPinIcon" class="w-6 h-6 text-white"></lucide-icon>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Location</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3">{{ contactInfo.location }}</p>
+                    <div class="flex space-x-2">
+                        <button (click)="copyToClipboard(contactInfo.location, 'Location')"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-red-500 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Copy location">
+                            <lucide-icon [name]="copyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GitHub -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center">
+                        <lucide-icon [name]="githubIcon" class="w-6 h-6 text-white"></lucide-icon>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">GitHub</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3">AlinV15</p>
+                    <div class="flex space-x-2">
+                        <button (click)="openLink(contactInfo.github)"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-800 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Open GitHub">
+                            <lucide-icon [name]="externalLinkIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                        <button (click)="copyToClipboard(contactInfo.github, 'GitHub')"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-800 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Copy link">
+                            <lucide-icon [name]="copyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+                        <lucide-icon [name]="linkedinIcon" class="w-6 h-6 text-white"></lucide-icon>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">LinkedIn</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3">Alin V. Ciobanu</p>
+                    <div class="flex space-x-2">
+                        <button (click)="openLink(contactInfo.linkedin)"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Open LinkedIn">
+                            <lucide-icon [name]="externalLinkIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                        <button (click)="copyToClipboard(contactInfo.linkedin, 'LinkedIn')"
+                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-lg transition-colors duration-200"
+                            title="Copy link">
+                            <lucide-icon [name]="copyIcon" class="w-4 h-4"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,457 @@
+<!-- Project Details Modal -->
+<div *ngIf="isOpen && project" class="project-details-modal fixed inset-0 z-50 overflow-y-auto"
+    (click)="onBackdropClick($event)" [attr.aria-labelledby]="'project-title-' + project.id" role="dialog"
+    aria-modal="true" tabindex="-1">
+
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm transition-opacity duration-300"></div>
+
+    <!-- Modal Content -->
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden"
+            (click)="$event.stopPropagation()">
+
+            <!-- Header -->
+            <div
+                class="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+
+                    <!-- Project Title & Basic Info -->
+                    <div class="flex items-center space-x-4 flex-1 min-w-0">
+                        <div class="flex-1 min-w-0">
+                            <h2 [id]="'project-title-' + project.id"
+                                class="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                                {{ project.title }}
+                            </h2>
+                            <div class="flex items-center mt-2 space-x-3">
+                                <!-- Status -->
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                    [ngClass]="{
+                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': project.status === 'production',
+                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': project.status === 'development',
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300': project.status === 'concept'
+                                      }">
+                                    <lucide-icon [img]="getStatusIcon(project.status)"
+                                        class="w-4 h-4 mr-1"></lucide-icon>
+                                    {{ project.status.charAt(0).toUpperCase() + project.status.slice(1) }}
+                                </span>
+
+                                <!-- Year -->
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ project.year }}</span>
+
+                                <!-- Featured Badge -->
+                                <span *ngIf="project.featured"
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                    <lucide-icon [img]="starIcon" class="w-4 h-4 mr-1"></lucide-icon>
+                                    Featured
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center space-x-3">
+
+                        <!-- Navigation Buttons -->
+                        <button *ngIf="!isFirstProject" (click)="onPreviousProject()"
+                            class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                            title="Previous Project" aria-label="Previous Project">
+                            <lucide-icon class="w-5 h-5"></lucide-icon>
+                        </button>
+
+                        <button *ngIf="!isLastProject" (click)="onNextProject()"
+                            class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                            title="Next Project" aria-label="Next Project">
+                            <lucide-icon [img]="chevronRightIcon" class="w-5 h-5"></lucide-icon>
+                        </button>
+
+                        <!-- External Links -->
+                        <div class="flex space-x-2">
+                            <button *ngIf="project.demoUrl" (click)="onDemoClick()"
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                <lucide-icon [img]="externalLinkIcon" class="w-4 h-4 mr-2"></lucide-icon>
+                                Live Demo
+                            </button>
+
+                            <button (click)="onGithubClick()"
+                                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                <lucide-icon [img]="githubIcon" class="w-4 h-4 mr-2"></lucide-icon>
+                                View Code
+                            </button>.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339
+                            4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0
+                            .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                            clip-rule="evenodd" />
+
+                        </div>
+
+                        <!-- Close Button -->
+                        <button (click)="onClose()"
+                            class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                            title="Close" aria-label="Close Project Details">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="flex space-x-1 mt-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    <button (click)="setActiveTab('overview')"
+                        class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200"
+                        [ngClass]="{
+                              'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow': activeTab === 'overview',
+                              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'overview'
+                            }">
+                        Overview
+                    </button>
+                    <button (click)="setActiveTab('technical')"
+                        class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200"
+                        [ngClass]="{
+                              'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow': activeTab === 'technical',
+                              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'technical'
+                            }">
+                        Technical Details
+                    </button>
+                    <button *ngIf="hasImages" (click)="setActiveTab('gallery')"
+                        class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200"
+                        [ngClass]="{
+                              'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow': activeTab === 'gallery',
+                              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'gallery'
+                            }">
+                        Gallery
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="overflow-y-auto max-h-[calc(90vh-200px)]">
+
+                <!-- Overview Tab -->
+                <div *ngIf="activeTab === 'overview'" class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                        <!-- Project Description -->
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                                    About This Project
+                                </h3>
+                                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    {{ project.longDescription || project.description }}
+                                </p>
+                            </div>
+
+                            <!-- Key Features -->
+                            <div *ngIf="project.features">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                                    Key Features
+                                </h3>
+                                <ul class="space-y-2">
+                                    <li *ngFor="let feature of project.features; trackBy: trackByFeature"
+                                        class="flex items-start text-gray-600 dark:text-gray-300">
+                                        <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        {{ feature }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Project Stats -->
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Project Information
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Development Time
+                                        </div>
+                                        <div class="text-lg font-semibold text-gray-900 dark:text-white">{{
+                                            projectStats.developmentTime }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Year</div>
+                                        <div class="text-lg font-semibold text-gray-900 dark:text-white">{{
+                                            projectStats.year }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Category</div>
+                                        <div class="text-lg font-semibold text-gray-900 dark:text-white">{{
+                                            projectStats.category.charAt(0).toUpperCase() +
+                                            projectStats.category.slice(1) }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Complexity</div>
+                                        <div class="text-lg font-semibold text-gray-900 dark:text-white">{{
+                                            projectStats.complexity.charAt(0).toUpperCase() +
+                                            projectStats.complexity.slice(1) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview Image -->
+                            <div *ngIf="hasImages" class="space-y-4">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Preview</h3>
+                                <div class="relative group cursor-pointer" (click)="openImageGallery(0)">
+                                    <img [src]="project.images[0]" [alt]="project.title"
+                                        class="w-full h-48 object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                                        loading="lazy">
+                                    <div
+                                        class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
+                                    Click to view {{ project.images.length }} {{ project.images.length === 1 ? 'image' :
+                                    'images' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Tab -->
+                <div *ngIf="activeTab === 'technical'" class="p-6">
+                    <div class="space-y-8">
+
+                        <!-- Technology Stack -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Technology Stack
+                            </h3>
+                            <div class="flex flex-wrap gap-3 mb-6">
+                                <span *ngFor="let tech of project.technologies; let i = index; trackBy: trackByTech"
+                                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border transition-transform duration-200 hover:scale-105"
+                                    [ngClass]="getTechBadgeColor(i)">
+                                    {{ tech }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Technical Architecture -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Frontend -->
+                            <div
+                                class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+                                <h4
+                                    class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    Frontend Technologies
+                                </h4>
+                                <ul class="space-y-2">
+                                    <li *ngFor="let tech of technicalDetails.frontend"
+                                        class="flex items-center text-blue-800 dark:text-blue-200">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                        {{ tech }}
+                                    </li>
+                                    <li *ngIf="technicalDetails.frontend.length === 0"
+                                        class="text-blue-600 dark:text-blue-300 italic">
+                                        No specific frontend technologies listed
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Backend -->
+                            <div
+                                class="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+                                <h4
+                                    class="text-lg font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                                    </svg>
+                                    Backend & Database
+                                </h4>
+                                <ul class="space-y-2">
+                                    <li *ngFor="let tech of technicalDetails.backend"
+                                        class="flex items-center text-green-800 dark:text-green-200">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                        {{ tech }}
+                                    </li>
+                                    <li *ngIf="technicalDetails.backend.length === 0"
+                                        class="text-green-600 dark:text-green-300 italic">
+                                        No specific backend technologies listed
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Development Approach -->
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Development Approach
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="text-center">
+                                    <div
+                                        class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h5 class="font-semibold text-gray-900 dark:text-white">Best Practices</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Clean code & architecture
+                                    </p>
+                                </div>
+                                <div class="text-center">
+                                    <div
+                                        class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <h5 class="font-semibold text-gray-900 dark:text-white">Performance</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Optimized & responsive</p>
+                                </div>
+                                <div class="text-center">
+                                    <div
+                                        class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                                        </svg>
+                                    </div>
+                                    <h5 class="font-semibold text-gray-900 dark:text-white">Scalable</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Modular & maintainable</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Challenges & Solutions -->
+                        <div *ngIf="project.challenges && project.challenges.length > 0">
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Key Challenges & Solutions
+                            </h4>
+                            <div class="space-y-4">
+                                <div *ngFor="let challenge of project.challenges.slice(0, 3); let i = index"
+                                    class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border-l-4 border-orange-500">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div
+                                                class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                                {{ i + 1 }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-gray-700 dark:text-gray-300">{{ challenge }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Tab -->
+                <div *ngIf="activeTab === 'gallery' && hasImages" class="p-6">
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Project Gallery
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Explore {{ project.images.length }} screenshots showcasing different aspects of the
+                                project.
+                            </p>
+                        </div>
+
+                        <!-- Image Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div *ngFor="let image of project.images; let i = index; trackBy: trackByImage"
+                                class="relative group cursor-pointer" (click)="openImageGallery(i)">
+                                <img [src]="image" [alt]="project.title + ' screenshot ' + (i + 1)"
+                                    class="w-full h-48 object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                                    loading="lazy">
+                                <div
+                                    class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                    <div
+                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white text-center">
+                                        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                        </svg>
+                                        <span class="text-sm font-medium">View Fullscreen</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                                    {{ i + 1 }} / {{ project.images.length }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Gallery Modal -->
+<div *ngIf="showImageGallery && hasImages && isInBrowser"
+    class="fixed inset-0 z-60 bg-black bg-opacity-95 flex items-center justify-center" (click)="closeImageGallery()"
+    (keydown.escape)="closeImageGallery()">
+
+    <div class="relative max-w-6xl max-h-6xl w-full h-full flex items-center justify-center p-4"
+        (click)="$event.stopPropagation()">
+
+        <!-- Main Image -->
+        <img [src]="currentImage" [alt]="project!.title + ' screenshot'"
+            class="max-w-full max-h-full object-contain rounded-lg shadow-2xl">
+
+        <!-- Navigation Arrows -->
+        <button *ngIf="!isFirstImage" (click)="previousImage()"
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-all duration-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+
+        <button *ngIf="!isLastImage" (click)="nextImage()"
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-all duration-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+
+        <!-- Close Button -->
+        <button (click)="closeImageGallery()"
+            class="absolute top-4 right-4 p-3 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-all duration-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Image Counter & Info -->
+        <div
+            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-black bg-opacity-50 text-white rounded-full text-sm flex items-center space-x-4">
+            <span>{{ currentImageIndex + 1 }} / {{ project?.images?.length }}</span>
+            <span class="text-gray-300">|</span>
+            <span>{{ project?.title }}</span>
+        </div>
+
+        <!-- Navigation Hints -->
+        <div class="absolute bottom-4 right-4 text-white text-xs bg-black bg-opacity-50 px-3 py-2 rounded">
+            <div>← → Navigate</div>
+            <div>ESC Close</div>
+        </div>
+    </div>
+</div>

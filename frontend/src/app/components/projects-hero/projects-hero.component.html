@@ -1,0 +1,190 @@
+<section
+    class="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20 px-4 overflow-hidden">
+
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-20">
+        <div
+            class="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob">
+        </div>
+        <div
+            class="absolute top-0 right-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000">
+        </div>
+        <div
+            class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000">
+        </div>
+    </div>
+
+    <div class="relative max-w-7xl mx-auto">
+
+        <!-- Main Hero Content -->
+        <div class="text-center mb-16">
+            <!-- Hero Title -->
+            <div class="mb-8">
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6">
+                    My
+                    <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Projects
+                    </span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    A showcase of full-stack applications built with modern technologies.
+                    From e-commerce platforms to management systems, each project demonstrates
+                    practical problem-solving and technical expertise.
+                </p>
+            </div>
+
+            <!-- Project Statistics -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-on-scroll">
+                    <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2 stat-number">
+                        {{ projectStats.totalProjects }}+
+                    </div>
+                    <div class="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Total Projects
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-on-scroll">
+                    <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2 stat-number">
+                        {{ projectStats.technologies }}+
+                    </div>
+                    <div class="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Technologies
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-on-scroll">
+                    <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2 stat-number">
+                        {{ projectStats.liveProjects }}
+                    </div>
+                    <div class="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        Live Projects
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 animate-on-scroll">
+                    <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-2 stat-number">
+                        {{ projectStats.githubStars }}+
+                    </div>
+                    <div class="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                        GitHub Stars
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Highlights -->
+            <div class="mb-12">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                    Built with cutting-edge technologies
+                </h3>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span *ngFor="let tech of techHighlights; let i = index; trackBy: trackByTech"
+                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105"
+                        [ngClass]="getTechBadgeColor(i)">
+                        {{ tech }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and View Controls -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+
+            <!-- Filter Tabs -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        Filter Projects
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button *ngFor="let filter of filterOptions; trackBy: trackByFilter"
+                            (click)="onFilterClick(filter.id)"
+                            class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            [ngClass]="{
+                'bg-blue-600 text-white shadow-lg': filter.active,
+                'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': !filter.active
+              }">
+                            {{ filter.label }}
+                            <span class="ml-2 px-2 py-1 text-xs rounded-full" [ngClass]="{
+                      'bg-blue-500 text-white': filter.active,
+                      'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300': !filter.active
+                    }">
+                                {{ filter.count }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- View Mode Toggle -->
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        View:
+                    </span>
+                    <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                        <button (click)="onViewModeToggle('grid')"
+                            class="flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                            [ngClass]="{
+                'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow': currentViewMode === 'grid',
+                'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white': currentViewMode !== 'grid'
+              }">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            Grid
+                        </button>
+                        <button (click)="onViewModeToggle('list')"
+                            class="flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                            [ngClass]="{
+                'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow': currentViewMode === 'list',
+                'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white': currentViewMode !== 'list'
+              }">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                            </svg>
+                            List
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filter Display -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                        Showing:
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                        [ngClass]="getFilterBadgeColor(getActiveFilter().id)">
+                        {{ getActiveFilter().label }}
+                    </span>
+                </div>
+
+                <!-- Scroll to Projects Button -->
+                <button *ngIf="isInBrowser" (click)="onScrollToProjects()"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    View Projects
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+
+                <!-- SSR Fallback Button -->
+                <a *ngIf="!isInBrowser" href="#projects-grid"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    View Projects
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
