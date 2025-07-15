@@ -5,7 +5,6 @@ interface ProjectStats {
   totalProjects: number;
   technologies: number;
   liveProjects: number;
-  githubStars: number;
 }
 
 interface FilterOption {
@@ -33,7 +32,6 @@ export class ProjectsHeroComponent implements OnInit, AfterViewInit {
     totalProjects: 7,
     technologies: 12,
     liveProjects: 4,
-    githubStars: 28
   };
 
   // Filter options

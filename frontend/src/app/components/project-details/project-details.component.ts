@@ -12,7 +12,7 @@ import { Project } from '../../../interfaces/project.interface';
 @Component({
   selector: 'app-project-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './project-details.component.html',
   styleUrls: ['./project-details.component.css'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

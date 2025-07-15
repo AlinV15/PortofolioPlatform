@@ -18,13 +18,13 @@ export interface TimelineMilestone {
   description: string;
   technologies: string[];
   achievements?: string[];
-  primaryColor: string;
-  secondaryColor: string;
   icon: any;
   isActive?: boolean;
   projectsCount?: number;
   skillsLearned?: number;
   duration?: string;
+  primaryColor: string;
+  secondaryColor: string;
   importance: 'high' | 'medium' | 'low';
   gradient?: string;
   glowColor?: string;

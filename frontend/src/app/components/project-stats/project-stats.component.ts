@@ -5,7 +5,7 @@ import { Project } from '../../../interfaces/project.interface';
 
 interface ProjectStat {
   id: string;
-  label: string;
+  title: string;
   value: string | number;
   icon: any;
   color: string;
@@ -55,7 +55,7 @@ export class ProjectStatsComponent implements OnInit, OnChanges {
     this.stats = [
       {
         id: 'applications',
-        label: 'Applications',
+        title: 'Applications',
         value: this.getTotalApplications(projectsToAnalyze),
         icon: this.layersIcon,
         color: 'text-blue-600 dark:text-blue-400',
@@ -64,7 +64,7 @@ export class ProjectStatsComponent implements OnInit, OnChanges {
       },
       {
         id: 'technologies',
-        label: 'Technologies',
+        title: 'Technologies',
         value: this.getTotalTechnologies(projectsToAnalyze),
         icon: this.codeIcon,
         color: 'text-green-600 dark:text-green-400',
@@ -73,7 +73,7 @@ export class ProjectStatsComponent implements OnInit, OnChanges {
       },
       {
         id: 'featured',
-        label: 'Featured',
+        title: 'Featured',
         value: this.getFeaturedCount(projectsToAnalyze),
         icon: this.starIcon,
         color: 'text-yellow-600 dark:text-yellow-400',
@@ -82,7 +82,7 @@ export class ProjectStatsComponent implements OnInit, OnChanges {
       },
       {
         id: 'production',
-        label: 'Live Apps',
+        title: 'Live Apps',
         value: this.getProductionCount(projectsToAnalyze),
         icon: this.trendingUpIcon,
         color: 'text-purple-600 dark:text-purple-400',
