@@ -1,47 +1,25 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, Inject, PLATFORM_ID, ViewChild, ElementRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import * as Chart from 'chart.js';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import {
   LucideAngularModule,
   Code, Star, Layers, Target, TrendingUp, BarChart3,
   Award, Database, Wrench, Globe, Smartphone, Cloud,
-  ArrowRight, Rocket, ChevronDown
+  ArrowRight, Rocket, ChevronDown,
+  BookOpen
 } from 'lucide-angular';
 
-export interface CoreSkill {
-  id: string;
-  name: string;
-  level: number;
-  proficiency: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  experience: string;
-  color: string;
-  tags: string[];
-  projects: number;
-}
+// Models and Interfaces
+import { Skill, SkillCategory, SkillStats, TopSkill } from '../../shared/models/skill.interface';
+import { CurrentLearning, LearningProgress } from '../../shared/models/education.interface';
+import { Technology } from '../../shared/models/technology.interface';
 
-export interface SkillCategory {
-  id: string;
-  name: string;
-  skillCount: number;
-  avgLevel: number;
-  color: string;
-  bgColor: string;
-  icon: any;
-  trending: number;
-  description: string;
-}
-
-export interface LearningProgress {
-  id: string;
-  name: string;
-  progress: number;
-  color: string;
-  timeSpent: number;
-  eta: string;
-  description: string;
-}
+// Services
+import { IconHelperService } from '../../services/icon-helper.service';
 
 @Component({
   selector: 'app-skills-hero',
@@ -55,6 +33,30 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   @Output() exploreSkills = new EventEmitter<void>();
   @Output() categorySelected = new EventEmitter<string>();
 
+  // Input data from parent component
+  @Input() skillsStats: SkillStats = {
+    description: "",
+    projectsText: "",
+    technologiesText: "",
+    yearsCoding: "",
+    projects: "",
+    certifications: "",
+    avgProficiency: "",
+    yearsCodingLabel: "",
+    projectsLabel: "",
+    certificationsLabel: "",
+    avgProficiencyLabel: ""
+  };
+
+  @Input() coreSkills: Skill[] = [];
+  @Input() topSkills: TopSkill[] = [];
+  @Input() skillCategories: SkillCategory[] = [];
+  @Input() currentLearning: CurrentLearning[] = [];
+  @Input() learningProgress: LearningProgress[] = [];
+  @Input() technologies: Technology[] = [];
+
+
+  private destroy$ = new Subject<void>();
   private isBrowser: boolean;
   private radarChart?: Chart.Chart;
 
@@ -74,184 +76,28 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   readonly arrowRightIcon = ArrowRight;
   readonly rocketIcon = Rocket;
   readonly chevronDownIcon = ChevronDown;
+  readonly bookOpenIcon = BookOpen;
+
+  colorPalette: string[] = [
+    '#FF5733', '#33FF57', '#3357FF', '#F033FF', '#33FFF0',
+    '#FF33A8', '#A833FF', '#33FFA8', '#FF8C33', '#338CFF',
+    '#8C33FF', '#33FF8C', '#FF338C', '#33A8FF', '#A8FF33',
+    '#FF33F0', '#F0FF33', '#33F0FF', '#FF5733', '#57FF33',
+    '#5733FF', '#FF33A8', '#A833FF', '#33FFA8', '#FF338C',
+    '#8CFF33', '#338CFF', '#FF8C33', '#33FF8C', '#8C33FF'
+  ];
+
+  takenColors = new Set<string>();
+
 
   // Animation control
   animateProgress = false;
   private animationTimeout?: number;
 
-  // Hero Stats (din CV)
-  yearsExperience = 3;
-  totalProjects = 7;
-  certificationCount = 3;
-  totalTechnologies = 15;
-  avgSkillLevel = 68;
-
-  // Core Skills (bazate pe CV)
-  coreSkills: CoreSkill[] = [
-    {
-      id: 'javascript',
-      name: 'JavaScript',
-      level: 75,
-      proficiency: 'intermediate',
-      experience: '2+ years',
-      color: '#F7DF1E',
-      tags: ['ES6+', 'Async/Await', 'DOM', 'APIs'],
-      projects: 7
-    },
-    {
-      id: 'typescript',
-      name: 'TypeScript',
-      level: 70,
-      proficiency: 'intermediate',
-      experience: '1.5 years',
-      color: '#3178C6',
-      tags: ['Type Safety', 'Interfaces', 'Generics'],
-      projects: 5
-    },
-    {
-      id: 'react',
-      name: 'React',
-      level: 65,
-      proficiency: 'intermediate',
-      experience: '1.5 years',
-      color: '#61DAFB',
-      tags: ['Hooks', 'Context', 'JSX', 'Components'],
-      projects: 4
-    },
-    {
-      id: 'nextjs',
-      name: 'Next.js',
-      level: 70,
-      proficiency: 'intermediate',
-      experience: '1.5 years',
-      color: '#000000',
-      tags: ['SSR', 'SSG', 'API Routes', 'Performance'],
-      projects: 4
-    },
-    {
-      id: 'nodejs',
-      name: 'Node.js',
-      level: 60,
-      proficiency: 'intermediate',
-      experience: '1.5 years',
-      color: '#339933',
-      tags: ['Express', 'REST APIs', 'NPM', 'Backend'],
-      projects: 3
-    },
-    {
-      id: 'mongodb',
-      name: 'MongoDB',
-      level: 55,
-      proficiency: 'beginner',
-      experience: '1 year',
-      color: '#47A248',
-      tags: ['NoSQL', 'Documents', 'Mongoose', 'Atlas'],
-      projects: 4
-    }
-  ];
-
-  // Skill Categories
-  skillCategories: SkillCategory[] = [
-    {
-      id: 'programming',
-      name: 'Programming',
-      skillCount: 5,
-      avgLevel: 72,
-      color: '#3B82F6',
-      bgColor: 'bg-blue-500/10',
-      icon: this.codeIcon,
-      trending: 2,
-      description: 'Core programming languages'
-    },
-    {
-      id: 'frameworks',
-      name: 'Frameworks',
-      skillCount: 4,
-      avgLevel: 68,
-      color: '#8B5CF6',
-      bgColor: 'bg-purple-500/10',
-      icon: this.layersIcon,
-      trending: 3,
-      description: 'Modern development frameworks'
-    },
-    {
-      id: 'databases',
-      name: 'Databases',
-      skillCount: 3,
-      avgLevel: 55,
-      color: '#10B981',
-      bgColor: 'bg-green-500/10',
-      icon: this.databaseIcon,
-      trending: 1,
-      description: 'Data storage and management'
-    },
-    {
-      id: 'tools',
-      name: 'Dev Tools',
-      skillCount: 6,
-      avgLevel: 75,
-      color: '#F59E0B',
-      bgColor: 'bg-yellow-500/10',
-      icon: this.wrenchIcon,
-      trending: 2,
-      description: 'Development and productivity tools'
-    },
-    {
-      id: 'concepts',
-      name: 'Concepts',
-      skillCount: 5,
-      avgLevel: 65,
-      color: '#EF4444',
-      bgColor: 'bg-red-500/10',
-      icon: this.targetIcon,
-      trending: 1,
-      description: 'Software development principles'
-    },
-    {
-      id: 'methodologies',
-      name: 'Methods',
-      skillCount: 2,
-      avgLevel: 60,
-      color: '#6366F1',
-      bgColor: 'bg-indigo-500/10',
-      icon: this.chartIcon,
-      trending: 0,
-      description: 'Project management approaches'
-    }
-  ];
-
-  // Currently Learning (din CV)
-  currentLearning: LearningProgress[] = [
-    {
-      id: 'angular',
-      name: 'Angular',
-      progress: 55,
-      color: '#DD0031',
-      timeSpent: 120,
-      eta: '2 months',
-      description: 'Enterprise framework for scalable applications'
-    },
-    {
-      id: 'java',
-      name: 'Java',
-      progress: 45,
-      color: '#ED8B00',
-      timeSpent: 80,
-      eta: '3 months',
-      description: 'Object-oriented programming for enterprise'
-    },
-    {
-      id: 'spring-boot',
-      name: 'Spring Boot',
-      progress: 30,
-      color: '#6DB33F',
-      timeSpent: 40,
-      eta: '4 months',
-      description: 'Java framework for microservices'
-    }
-  ];
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private iconHelper: IconHelperService
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -277,6 +123,9 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     if (this.animationTimeout) {
       clearTimeout(this.animationTimeout);
     }
@@ -286,15 +135,16 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   }
 
   private createRadarChart(): void {
-    if (!this.isBrowser || !this.radarCanvas) return;
+    if (!this.isBrowser || !this.radarCanvas || this.skillCategories.length === 0) return;
 
     const ctx = this.radarCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
-    // Data pentru radar chart
+    // Prepare data for radar chart based on skill categories
     const labels = this.skillCategories.map(cat => cat.name);
-    const data = this.skillCategories.map(cat => cat.avgLevel);
-    const colors = this.skillCategories.map(cat => cat.color);
+    const currentData = this.skillCategories.map(cat => this.calculateCategoryLevel(cat.name));
+    const targetData = this.skillCategories.map(() => 90); // Target level for all categories
+    const colors = this.skillCategories.map(() => this.getRandomUntakenColor() || '#3B82F6');
 
     this.radarChart = new Chart.Chart(ctx, {
       type: 'radar',
@@ -302,7 +152,7 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
         labels: labels,
         datasets: [{
           label: 'Current Skills',
-          data: data,
+          data: currentData,
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           borderColor: 'rgba(59, 130, 246, 0.8)',
           borderWidth: 2,
@@ -314,7 +164,7 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
           fill: true
         }, {
           label: 'Target Skills',
-          data: [85, 80, 75, 85, 80, 75], // Target levels
+          data: targetData,
           backgroundColor: 'rgba(147, 51, 234, 0.05)',
           borderColor: 'rgba(147, 51, 234, 0.3)',
           borderWidth: 1,
@@ -354,12 +204,6 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
             borderWidth: 1,
             cornerRadius: 8,
             displayColors: true,
-            callbacks: {
-              label: (context) => {
-                const category = this.skillCategories[context.dataIndex];
-                return `${context.dataset.label}: ${context.parsed.r}% (${category.skillCount} skills)`;
-              }
-            }
           }
         },
         scales: {
@@ -393,18 +237,27 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
             }
           }
         },
-        interaction: {
-          intersect: false,
-          mode: 'point'
-        },
-        onHover: (event, elements) => {
-          if (elements.length > 0) {
-            const categoryIndex = elements[0].index;
-            this.onCategoryClick(this.skillCategories[categoryIndex]);
-          }
-        }
+
       }
     });
+  }
+
+  /**
+   * Calculate average skill level for a category
+   */
+  calculateCategoryLevel(categoryName: string): number {
+    const categorySkills = this.coreSkills.filter(skill => skill.category === categoryName);
+    if (categorySkills.length === 0) return 0;
+
+    const totalLevel = categorySkills.reduce((sum, skill) => sum + skill.level, 0);
+    return Math.round(totalLevel / categorySkills.length);
+  }
+
+  /**
+   * Get skills count for a specific category
+   */
+  getSkillsCountForCategory(categoryName: string): number {
+    return this.coreSkills.filter(skill => skill.category === categoryName).length;
   }
 
   // Event handlers
@@ -413,12 +266,12 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   }
 
   onCategoryClick(category: SkillCategory): void {
-    this.categorySelected.emit(category.id);
+    this.categorySelected.emit(category.name);
   }
 
   // Utility methods
   getProficiencyIcon(proficiency: string): any {
-    switch (proficiency) {
+    switch (proficiency.toLowerCase()) {
       case 'expert': return this.awardIcon;
       case 'advanced': return this.starIcon;
       case 'intermediate': return this.trendingUpIcon;
@@ -434,7 +287,7 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
       'intermediate': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
       'beginner': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
     };
-    return colors[proficiency as keyof typeof colors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    return colors[proficiency.toLowerCase() as keyof typeof colors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   }
 
   getProficiencyLevel(level: number): string {
@@ -444,53 +297,91 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
     return 'beginner';
   }
 
-  getSkillTrendStatus(skill: CoreSkill): 'trending' | 'stable' | 'learning' {
+  getSkillTrendStatus(skill: Skill): 'trending' | 'stable' | 'learning' {
     if (skill.projects >= 4) return 'trending';
     if (skill.level < 50) return 'learning';
     return 'stable';
   }
 
+  /**
+   * Get icon for category using IconHelperService
+   */
+  getCategoryIcon(category: SkillCategory): any {
+    if (category.icon) {
+      return this.iconHelper.stringToLucide(category.icon as string);
+    }
+    return this.layersIcon;
+  }
+
+  /**
+   * Get icon for learning item using IconHelperService
+   */
+  getLearningIcon(learning: CurrentLearning): any {
+    if (learning.icon) {
+      return this.iconHelper.stringToLucide(learning.icon as string);
+    }
+    return this.bookOpenIcon;
+  }
+
   // Track by functions for ngFor optimization
-  trackBySkill(index: number, skill: CoreSkill): string {
+  trackBySkill(index: number, skill: Skill): string {
     return skill.id;
   }
 
-  trackByCategory(index: number, category: SkillCategory): string {
-    return category.id;
+  trackByTopSkill(index: number, skill: TopSkill): string {
+    return skill.name;
   }
 
-  trackByLearning(index: number, learning: LearningProgress): string {
+  trackByCategory(index: number, category: SkillCategory): string {
+    return category.name;
+  }
+
+  trackByTechnology(index: number, technology: Technology): string {
+    return technology.name;
+  }
+
+  trackByLearning(index: number, learning: CurrentLearning): string {
     return learning.id;
   }
 
-  trackByString(index: number, item: string): string {
-    return item;
+  trackByLearningProgress(index: number, progress: LearningProgress): string {
+    return progress.id;
+  }
+
+  get topTechnologiesForDisplay(): Technology[] {
+    return this.technologies.sort((a: Technology, b: Technology) => b.projects - a.projects).slice(0, 6);
   }
 
   // Additional computed properties
-  get topSkills(): CoreSkill[] {
-    return this.coreSkills
-      .sort((a, b) => b.level - a.level)
-      .slice(0, 3);
+  get topSkillsForDisplay(): TopSkill[] {
+    return this.topSkills.slice(0, 5);
   }
 
-  get recentlyUsedSkills(): CoreSkill[] {
+  get recentlyUsedSkills(): Skill[] {
     return this.coreSkills
       .filter(skill => skill.projects > 0)
-      .sort((a, b) => b.projects - a.projects);
+      .sort((a, b) => b.projects - a.projects)
+      .slice(0, 8);
   }
 
-  get skillsInProgress(): CoreSkill[] {
+  get skillsInProgress(): Skill[] {
     return this.coreSkills.filter(skill => skill.level < 70);
   }
 
   get totalHoursLearning(): number {
-    return this.currentLearning.reduce((total, learning) => total + learning.timeSpent, 0);
+    return this.learningProgress.reduce((total, learning) => total + learning.timeSpent, 0);
   }
 
   get completionRate(): number {
+    if (this.currentLearning.length === 0) return 0;
     const totalProgress = this.currentLearning.reduce((sum, learning) => sum + learning.progress, 0);
     return Math.round(totalProgress / this.currentLearning.length);
+  }
+
+  get mostUsedTechnologies(): Technology[] {
+    return this.technologies
+      .sort((a, b) => b.projects - a.projects)
+      .slice(0, 6);
   }
 
   // Animation methods
@@ -502,36 +393,87 @@ export class SkillsHeroComponent implements OnInit, OnDestroy {
   }
 
   // Category interaction methods
-  getCategorySkills(categoryId: string): CoreSkill[] {
-    // This would normally filter skills by category
-    // For now, return relevant skills based on category
-    switch (categoryId) {
-      case 'programming':
-        return this.coreSkills.filter(skill =>
-          ['javascript', 'typescript'].includes(skill.id));
-      case 'frameworks':
-        return this.coreSkills.filter(skill =>
-          ['react', 'nextjs', 'angular'].includes(skill.id));
-      case 'databases':
-        return this.coreSkills.filter(skill =>
-          ['mongodb', 'postgresql', 'prisma'].includes(skill.id));
-      default:
-        return this.coreSkills;
-    }
+  getCategorySkills(categoryName: string): Skill[] {
+    return this.coreSkills.filter(skill => skill.category === categoryName);
   }
 
   // Progress calculation methods
   calculateOverallProgress(): number {
-    const totalSkills = this.coreSkills.length;
+    if (this.coreSkills.length === 0) return 0;
     const totalLevel = this.coreSkills.reduce((sum, skill) => sum + skill.level, 0);
-    return Math.round(totalLevel / totalSkills);
+    return Math.round(totalLevel / this.coreSkills.length);
   }
 
-  getCategoryProgress(categoryId: string): number {
-    const categorySkills = this.getCategorySkills(categoryId);
+  getCategoryProgress(categoryName: string): number {
+    const categorySkills = this.getCategorySkills(categoryName);
     if (categorySkills.length === 0) return 0;
 
     const totalLevel = categorySkills.reduce((sum, skill) => sum + skill.level, 0);
     return Math.round(totalLevel / categorySkills.length);
+  }
+
+  /**
+   * Get learning status color
+   */
+  getLearningStatusColor(status: string): string {
+    const statusColors = {
+      'completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      'in_progress': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      'not_started': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+      'paused': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    };
+    return statusColors[status.toLowerCase() as keyof typeof statusColors] || statusColors['not_started'];
+  }
+
+  /**
+   * Format learning status for display
+   */
+  formatLearningStatus(status: string): string {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  /**
+   * Get progress color based on percentage
+   */
+  getProgressColor(progress: number): string {
+    if (progress >= 80) return 'bg-green-500';
+    if (progress >= 60) return 'bg-blue-500';
+    if (progress >= 40) return 'bg-yellow-500';
+    return 'bg-gray-400';
+  }
+
+  /**
+   * Calculate years of experience from skills
+   */
+  getTotalYearsExperience(): number {
+    if (this.coreSkills.length === 0) return 0;
+    return Math.max(...this.coreSkills.map(skill => skill.yearsOfExperience));
+  }
+
+  /**
+   * Get trending technologies count
+   */
+  getTrendingTechnologiesCount(): number {
+    return this.technologies.filter(tech => tech.trending).length;
+  }
+
+  // Function to get a random color that hasn't been taken
+  private getRandomUntakenColor(): string | null {
+    // Filter out taken colors
+    const availableColors = this.colorPalette.filter(color => !this.takenColors.has(color));
+
+    if (availableColors.length === 0) {
+      console.warn('All colors have been taken!');
+      return null;
+    }
+
+    // Select a random color from available ones
+    const randomIndex = Math.floor(Math.random() * availableColors.length);
+    const selectedColor = availableColors[randomIndex];
+
+    // Mark as taken
+    this.takenColors.add(selectedColor);
+
+    return selectedColor;
   }
 }

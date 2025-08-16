@@ -1,41 +1,34 @@
 import { Component, OnInit, OnDestroy, HostListener, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import {
   LucideAngularModule,
   Code, Clock, Folder, Award, TrendingUp, Target, Star,
   Trophy, BookOpen, Home, Layers, Mail, Download, ArrowUp
 } from 'lucide-angular';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
+
+// Components
 import { SkillsHeroComponent } from '../../components/skills-hero/skills-hero.component';
-import { Skill, SkillsCategoriesComponent } from '../../components/skills-categories/skills-categories.component';
-import { TechnicalStackComponent, Technology } from '../../components/technical-stack/technical-stack.component';
-import { Certification, CertificationsGridComponent } from '../../components/certifications-grid/certifications-grid.component';
-import { SkillsTimelineComponent, TimelineMilestone } from '../../components/skills-timeline/skills-timeline.component';
-import { PdfDownloadService } from '../../services/pdf-download.service';
+import { SkillsCategoriesComponent } from '../../components/skills-categories/skills-categories.component';
+import { TechnicalStackComponent } from '../../components/technical-stack/technical-stack.component';
+import { CertificationsGridComponent } from '../../components/certifications-grid/certifications-grid.component';
+import { SkillsTimelineComponent } from '../../components/skills-timeline/skills-timeline.component';
 import { HireMeComponent } from '../../components/hire-me/hire-me.component';
 import { RouterModule } from '@angular/router';
 
-// Import all skill components
+// UPDATED: Replace individual services with DataService
+import { DataService } from '../../services/data.service';
+import { PdfDownloadService } from '../../services/pdf-download.service';
 
-
-export interface TopSkill {
-  name: string;
-  level: number;
-  color: string;
-}
-
-export interface Achievement {
-  title: string;
-  date: string;
-  type: 'certification' | 'project' | 'milestone';
-}
-
-export interface LearningProgress {
-  skill: string;
-  progress: number;
-  color: string;
-  targetDate: string;
-}
+// Models and Interfaces - keep existing imports
+import { Skill, SkillCategory, SkillStats, TopSkill, FeaturedSkill } from '../../shared/models/skill.interface';
+import { Technology, TechStats, TechCategory } from '../../shared/models/technology.interface';
+import { Certificate, CertificateStats, CertificateCategory } from '../../shared/models/certificate.interface';
+import { CurrentLearning, LearningProgress, AcademicProject } from '../../shared/models/education.interface';
+import { Achievement, FutureGoal } from '../../shared/models/personal.interface';
+import { TimelineMilestone, TimelineStats } from '../../shared/models/timeline.interface';
 
 export interface PageSection {
   id: string;
@@ -63,7 +56,10 @@ export interface PageSection {
 export class SkillsComponent implements OnInit, OnDestroy {
 
   @ViewChild(HireMeComponent) hireMeComponent!: HireMeComponent;
-  // Lucide Icons
+
+  private destroy$ = new Subject<void>();
+
+  // Lucide Icons - keep existing
   readonly codeIcon = Code;
   readonly clockIcon = Clock;
   readonly folderIcon = Folder;
@@ -79,13 +75,13 @@ export class SkillsComponent implements OnInit, OnDestroy {
   readonly downloadIcon = Download;
   readonly arrowUpIcon = ArrowUp;
 
-  // Page state
+  // Page state - keep existing
   showBackToTop = false;
   activeSection = 'skills-hero';
   private isBrowser: boolean;
   private scrollTimeout?: number;
 
-  // Page sections
+  // Page sections - keep existing
   sections: PageSection[] = [
     { id: 'skills-hero', name: 'Overview' },
     { id: 'skills-categories', name: 'Categories' },
@@ -94,99 +90,154 @@ export class SkillsComponent implements OnInit, OnDestroy {
     { id: 'skills-timeline', name: 'Timeline' }
   ];
 
-  // Summary statistics
-  totalTechnologies = 15;
-  yearsExperience = 3;
-  totalProjects = 7;
-  totalCertifications = 3;
-  avgProficiency = 68;
-  learningGoals = 3;
-
-  // Data for child components
+  // Skills Data - keep existing properties with same defaults
   allSkills: Skill[] = [];
+  topSkills: TopSkill[] = [];
+  featuredSkills: FeaturedSkill[] = [];
+  skillsCategories: SkillCategory[] = [];
+  skillsStats: SkillStats = {
+    description: "",
+    projectsText: "",
+    technologiesText: "",
+    yearsCoding: "",
+    projects: "",
+    certifications: "",
+    avgProficiency: "",
+    yearsCodingLabel: "",
+    projectsLabel: "",
+    certificationsLabel: "",
+    avgProficiencyLabel: ""
+  };
+
+  // Technologies Data - keep existing
   technologies: Technology[] = [];
+  techCategories: TechCategory[] = [];
+  techStats: TechStats = {
+    totalTechnologies: 0,
+    trendingCount: 0,
+    averagePopularityScore: 0,
+    categoryDistribution: {
+      distribution: new Map<string, number>()
+    },
+    recentlyReleasedCount: 0,
+    mostPopularCategory: "",
+    trendingPercentage: 0
+  };
 
-  // Summary data
-  topSkills: TopSkill[] = [
-    { name: 'JavaScript', level: 75, color: '#F7DF1E' },
-    { name: 'TypeScript', level: 70, color: '#3178C6' },
-    { name: 'React', level: 65, color: '#61DAFB' },
-    { name: 'Next.js', level: 70, color: '#000000' },
-    { name: 'Problem Solving', level: 80, color: '#45B7D1' }
-  ];
+  // Certificates Data - keep existing
+  certificates: Certificate[] = [];
+  certificateCategories: CertificateCategory[] = [];
+  certificateStats: CertificateStats = {
+    totalCertificates: 0,
+    verifiedCount: 0,
+    averageRelevanceScore: 0,
+    providerDistribution: new Map<string, number>(),
+    expiringCount: 0,
+    featuredCount: 0,
+    highRelevanceCount: 0,
+    featuredPercentage: 0,
+    verificationRate: 0,
+    topProvider: ""
+  };
 
-  recentAchievements: Achievement[] = [
-    {
-      title: 'Microsoft Dynamics AX Certification',
-      date: 'January 2025',
-      type: 'certification'
-    },
-    {
-      title: 'Completed Restaurant Management App',
-      date: 'December 2024',
-      type: 'project'
-    },
-    {
-      title: 'LEADERS Leadership Certificate',
-      date: 'December 2023',
-      type: 'certification'
-    },
-    {
-      title: 'Built E-commerce Platform',
-      date: 'November 2024',
-      type: 'project'
-    },
-    {
-      title: 'Started Enterprise Development',
-      date: 'March 2024',
-      type: 'milestone'
-    }
-  ];
+  // Education Data - keep existing
+  currentLearningHero: CurrentLearning[] = [];
+  learningProgress: LearningProgress[] = [];
+  academicProjects: AcademicProject[] = [];
 
-  currentLearning: LearningProgress[] = [
-    {
-      skill: 'Angular Framework',
-      progress: 65,
-      color: '#DD0031',
-      targetDate: 'April 2025'
-    },
-    {
-      skill: 'Java Spring Boot',
-      progress: 45,
-      color: '#6DB33F',
-      targetDate: 'June 2025'
-    },
-    {
-      skill: 'Cloud Architecture',
-      progress: 20,
-      color: '#FF9900',
-      targetDate: 'August 2025'
-    }
-  ];
+  // Personal Data - keep existing
+  recentAchievements: Achievement[] = [];
+  futureGoal: FutureGoal[] = [];
+
+  // Timeline Data - keep existing
+  timelineMilestones: TimelineMilestone[] = [];
+  timelineStats: TimelineStats = {
+    "Major Milestones": "0",
+    " Achievements": "0"
+  };
 
   constructor(
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object, private pdfService: PdfDownloadService
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private pdfService: PdfDownloadService,
+    // UPDATED: Replace all individual services with DataService
+    private dataService: DataService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-
-
   ngOnInit(): void {
-    if (this.isBrowser) {
-      this.initializePageSections();
-      this.updateActiveSection();
-    }
+    // UPDATED: Replace loadAllData with DataService
+    this.loadAllDataFromDataService();
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('🔄 Route changed - reloading data');
+      this.loadAllDataFromDataService();
+    });
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
     }
   }
 
-  // Scroll event listener
+  /**
+   * UPDATED: Load all required data from DataService instead of individual services
+   */
+  private loadAllDataFromDataService(): void {
+    // Load all data from DataService
+    this.dataService.loadAllData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allData) => {
+          // Skills Data
+          this.allSkills = allData.skills.skills;
+          this.topSkills = allData.skills.topSkills;
+          this.featuredSkills = allData.skills.featuredSkills;
+          this.skillsCategories = allData.skills.skillsCategories;
+          this.skillsStats = allData.skills.skillsStats;
+
+          // Technologies Data
+          this.technologies = allData.technologies.technologies;
+          this.techCategories = allData.technologies.techCategories;
+          this.techStats = allData.technologies.techStats;
+
+          // Certificates Data
+          this.certificates = allData.certificates.certificates;
+          this.certificateCategories = allData.certificates.categories;
+          this.certificateStats = allData.certificates.stats;
+
+          // Education Data
+          this.currentLearningHero = allData.education.currentLearning;
+          this.learningProgress = allData.education.learningProgress;
+          this.academicProjects = allData.education.academicProjects;
+
+          // Personal Data
+          this.recentAchievements = allData.personal.achievements.slice(0, 5); // Get recent achievements
+          this.futureGoal = allData.personal.futureGoals;
+
+          // Timeline Data
+          this.timelineMilestones = allData.timeline.timelineMilestones;
+          this.timelineStats = allData.timeline.timelineStats;
+
+          console.log('✅ All skills page data loaded from DataService');
+        },
+        error: (error) => {
+          console.error('❌ Error loading skills data from DataService:', error);
+        }
+      });
+  }
+
+  // Keep all existing methods unchanged - just the data loading strategy changed above
+
+  // Scroll event listener - UNCHANGED
   @HostListener('window:scroll', ['$event'])
   onWindowScroll(): void {
     if (!this.isBrowser) return;
@@ -204,7 +255,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  // Section management
+  // Section management - UNCHANGED
   private initializePageSections(): void {
     this.sections.forEach(section => {
       const element = document.getElementById(section.id);
@@ -232,7 +283,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navigation methods
+  // Navigation methods - UNCHANGED
   scrollToSection(sectionId: string): void {
     if (!this.isBrowser) return;
 
@@ -258,54 +309,34 @@ export class SkillsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Event handlers from child components
+  // Event handlers from child components - UNCHANGED
   onExploreSkills(): void {
     this.scrollToSection('skills-categories');
   }
 
-  onCategorySelected(categoryId: string): void {
-    // First scroll to technical stack to show relevant technologies
-    this.scrollToSection('technical-stack');
-
-    // Optional: Trigger category filter in technical stack
-    // This would require communication with the technical stack component
-  }
-
-  onCertificationSelected(certification: Certification): void {
-    // Handle certification selection - could open modal or navigate to detail view
-    console.log('Certification selected:', certification);
-
-    // Example: Open certification in new tab if URL available
-    if (certification.certificateUrl && certification.certificateUrl !== '#') {
-      window.open(certification.certificateUrl, '_blank');
-    }
+  onTechClick(technology: Technology): void {
+    console.log('Technology clicked:', technology);
+    // Could show technology details or filter related content
   }
 
   onViewAllCertifications(): void {
-    // Navigate to dedicated certifications page or show expanded view
     console.log('View all certifications requested');
-    // this.router.navigate(['/certifications']);
+    // Could navigate to dedicated certifications page
   }
 
   onMilestoneSelected(milestone: TimelineMilestone): void {
-    // Handle milestone selection - could show more details or highlight related skills
     console.log('Milestone selected:', milestone);
   }
 
   onViewFullJourney(): void {
-    // Navigate to detailed journey page or show expanded timeline
     console.log('View full journey requested');
-    // this.router.navigate(['/journey']);
+    // Could navigate to detailed timeline page
   }
 
-  // Call to action handlers
+  // Call to action handlers - UNCHANGED
   onViewProjects(): void {
     console.log('View projects requested');
-    // Navigate to projects page
-    // this.router.navigate(['/projects']);
-
-    // Or open external portfolio
-    // window.open('https://github.com/AlinV15', '_blank');
+    // Navigate to projects page when implemented
   }
 
   onContactMe(): void {
@@ -315,33 +346,31 @@ export class SkillsComponent implements OnInit, OnDestroy {
   }
 
   onDownloadResume(): void {
-    this.pdfService.downloadPDF("CV_English.pdf", "cv-ciobanu-alin-viorel.pdf")
+    this.pdfService.downloadPDF("CV_English.pdf", "cv-ciobanu-alin-viorel.pdf");
   }
 
-  // Data management methods
+  // Data management methods for child components - UNCHANGED
   getTopSkillsFromAllCategories(): TopSkill[] {
-    // Extract top skills from all skills data
-    return this.allSkills
-      .sort((a, b) => b.level - a.level)
-      .slice(0, 5)
-      .map(skill => ({
-        name: skill.name,
-        level: skill.level,
-        color: skill.color
-      }));
+    return this.topSkills.slice(0, 5);
   }
 
   getCurrentLearningProgress(): LearningProgress[] {
-    // This could be dynamically calculated or fetched from an API
-    return this.currentLearning;
+    return this.learningProgress;
   }
 
   getRecentAchievements(): Achievement[] {
-    // This could be fetched from a service or API
-    return this.recentAchievements.slice(0, 5);
+    return this.recentAchievements;
   }
 
-  // Statistics calculation methods
+  getFeaturedCertifications(): Certificate[] {
+    return this.certificates.filter(cert => cert.featured);
+  }
+
+  getRecentMilestones(): TimelineMilestone[] {
+    return this.timelineMilestones.slice(0, 6);
+  }
+
+  // Statistics calculation methods - UNCHANGED
   calculateTotalTechnologies(): number {
     return this.technologies.length;
   }
@@ -357,28 +386,39 @@ export class SkillsComponent implements OnInit, OnDestroy {
   }
 
   getCertificationsCount(): number {
-    // This could be fetched from certification service
-    return this.totalCertifications;
+    return this.certificates.length;
   }
 
-  // Track by functions for ngFor optimization
+  getTotalProjectsCount(): number {
+    return this.academicProjects.length;
+  }
+
+  // Track by functions for ngFor optimization - UNCHANGED
   trackBySkill(index: number, skill: TopSkill): string {
     return skill.name;
   }
 
   trackByAchievement(index: number, achievement: Achievement): string {
-    return achievement.title + achievement.date;
+    return achievement.id;
   }
 
   trackByLearning(index: number, learning: LearningProgress): string {
-    return learning.skill;
+    return learning.id;
   }
 
   trackBySection(index: number, section: PageSection): string {
     return section.id;
   }
 
-  // Utility methods
+  trackByCertificate(index: number, certificate: Certificate): string {
+    return certificate.id;
+  }
+
+  trackByMilestone(index: number, milestone: TimelineMilestone): string {
+    return milestone.id;
+  }
+
+  // Utility methods - UNCHANGED
   getProgressPercentage(current: number, total: number): number {
     return total > 0 ? Math.round((current / total) * 100) : 0;
   }
@@ -390,23 +430,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Page analytics methods (for future implementation)
-  trackPageView(): void {
-    // Track page view analytics
-    // this.analytics.trackPageView('skills-page');
-  }
-
-  trackSectionView(sectionId: string): void {
-    // Track section view analytics
-    // this.analytics.trackEvent('section-view', { section: sectionId });
-  }
-
-  trackCTAClick(action: string): void {
-    // Track call-to-action clicks
-    // this.analytics.trackEvent('cta-click', { action });
-  }
-
-  // Responsive design helpers
+  // Responsive design helpers - UNCHANGED
   isMobile(): boolean {
     if (!this.isBrowser) return false;
     return window.innerWidth < 768;
@@ -422,37 +446,12 @@ export class SkillsComponent implements OnInit, OnDestroy {
     return window.innerWidth >= 1024;
   }
 
-  // Performance optimization methods
-  shouldShowSection(sectionId: string): boolean {
-    // Implement lazy loading logic if needed
-    return true;
-  }
-
-  preloadImages(): void {
-    // Preload any important images for better UX
-    if (!this.isBrowser) return;
-
-    interface PreloadImage {
-      src: string;
-    }
-
-    const images: string[] = [
-      // Add any important image URLs here
-    ];
-
-    images.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-  }
-
-  // Error handling
+  // Error handling - UNCHANGED
   handleError(error: any, context: string): void {
     console.error(`Error in ${context}:`, error);
-    // Implement proper error handling/reporting
   }
 
-  // Accessibility improvements
+  // Accessibility improvements - UNCHANGED
   announcePageChange(message: string): void {
     if (!this.isBrowser) return;
 
@@ -471,18 +470,19 @@ export class SkillsComponent implements OnInit, OnDestroy {
     announcer.textContent = message;
   }
 
-  // Future enhancements placeholders
+  // Export functionality - UNCHANGED
   exportSkillsData(): void {
-    // Export skills data as JSON/PDF
     const skillsData = {
       skills: this.allSkills,
       technologies: this.technologies,
+      certificates: this.certificates,
       achievements: this.recentAchievements,
-      currentLearning: this.currentLearning,
+      currentLearning: this.currentLearningHero,
       statistics: {
-        totalTechnologies: this.totalTechnologies,
-        avgProficiency: this.avgProficiency,
-        yearsExperience: this.yearsExperience
+        totalTechnologies: this.calculateTotalTechnologies(),
+        avgProficiency: this.calculateAvgProficiency(),
+        totalCertifications: this.getCertificationsCount(),
+        totalProjects: this.getTotalProjectsCount()
       },
       exportDate: new Date().toISOString()
     };
@@ -499,7 +499,6 @@ export class SkillsComponent implements OnInit, OnDestroy {
   }
 
   shareSkillsPage(): void {
-    // Implement sharing functionality
     if (navigator.share) {
       navigator.share({
         title: 'Alin Ciobanu - Technical Skills',
@@ -510,7 +509,6 @@ export class SkillsComponent implements OnInit, OnDestroy {
   }
 
   printSkillsSummary(): void {
-    // Trigger print-friendly version
     window.print();
   }
 }

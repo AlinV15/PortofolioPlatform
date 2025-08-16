@@ -1,11 +1,5 @@
 package com.example.portofolio.dto;
-import com.example.portofolio.entity.Achievement;
-import com.example.portofolio.entity.Icon;
-import com.example.portofolio.entity.Skill;
-import com.example.portofolio.entity.enums.ActivityLevel;
-import com.example.portofolio.entity.enums.ComplexityLevel;
-import com.example.portofolio.entity.enums.HobbyCategory;
-import com.example.portofolio.entity.enums.ImpactLevel;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

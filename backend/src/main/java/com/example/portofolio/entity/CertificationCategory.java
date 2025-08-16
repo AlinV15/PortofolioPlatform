@@ -15,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class CertificationCategory extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 100)

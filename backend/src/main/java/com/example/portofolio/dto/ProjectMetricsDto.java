@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,6 +19,6 @@ public class ProjectMetricsDto {                // Add Dto suffix
     private String codeQuality;
     private Long lines;                         // Integer → Long
     private Integer commits;
-    private Double testCoverage;
+    private BigDecimal testCoverage;
     private String lastUpdated;
 }

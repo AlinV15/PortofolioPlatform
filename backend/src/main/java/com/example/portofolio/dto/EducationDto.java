@@ -14,19 +14,21 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EducationDto {
-    private Long id;
-    private String level;              // enum → string
+    private String id;                          // Long → String
+    private String level;                       // EducationLevel → String
     private String institution;
     private String degree;
     private String field;
     private String period;
     private String location;
     private String description;
-    private List<AchievementDto> achievements;     // DTO în loc de entity
-    private List<CourseDto> relevantCourses;       // DTO în loc de entity
-    private String status;             // enum → string
+    private List<AchievementDto> achievements;  // List<Achievement> → List<AchievementDto>
+    private List<CourseDto> relevantCourses;    // List<Course> → List<CourseDto>
+    private String status;                      // EducationStatus → String
     private String gpa;
-    private List<HighlightDto> highlights;         // DTO în loc de entity
-    private String icon;
+    private List<HighlightDto> highlights;      // List<Highlight> → List<HighlightDto>
+    private String icon;                        // Icon → String
+    private String primaryColor;
+    private String secondaryColor;
 }
 

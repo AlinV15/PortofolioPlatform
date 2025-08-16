@@ -1,6 +1,6 @@
 // Declare gtag as a global variable for TypeScript
 declare var gtag: (...args: any[]) => void;
-import { Component, OnInit, signal, computed, effect, viewChild, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, viewChild, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -11,10 +11,15 @@ import { ContactFormComponent } from '../../components/contact-form/contact-form
 import { ContactMapComponent } from '../../components/contact-map/contact-map.component';
 import { PdfDownloadService } from '../../services/pdf-download.service';
 
-// Import sub-components
+// UPDATED: Replace ContactService with DataService
+import { DataService } from '../../services/data.service';
 
+import { ContactInfo, ContactLocation } from '../../shared/models/contact.interface';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
 
-// Interface pentru secțiunile de contact
+// Interface pentru secțiunile de contact - keep existing
 export interface ContactSection {
   id: string;
   title: string;
@@ -38,8 +43,8 @@ export interface ContactSection {
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.css']
 })
-export class ContactComponent implements OnInit {
-  // Icon variables for template
+export class ContactComponent implements OnInit, OnDestroy {
+  // Icon variables for template - keep existing
   readonly mailIcon = Mail;
   readonly phoneIcon = Phone;
   readonly shareIcon = Share2;
@@ -52,22 +57,53 @@ export class ContactComponent implements OnInit {
   readonly userIcon = User;
   readonly mapPinIcon = MapPin;
 
-  // Angular 19 dependency injection
+  // Subjects for cleanup - keep existing
+  private readonly destroy$ = new Subject<void>();
+
+  // Contact data signals - keep existing structure
+  readonly contactInfo = signal<ContactInfo>({
+    email: "",
+    phone: "",
+    location: "",
+    github: "",
+    linkedin: ""
+  });
+
+  readonly contactLocation = signal<ContactLocation>({
+    name: "",
+    address: "",
+    city: "",
+    country: "",
+    coordinates: {
+      lat: 0,
+      lng: 0
+    },
+    timezone: "",
+    workingHours: ""
+  });
+
+  // Error handling signals - keep existing
+  readonly contactDataError = signal<string | null>(null);
+  readonly locationDataError = signal<string | null>(null);
+
+  // Angular 19 dependency injection - UPDATED: Replace ContactService with DataService
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly dataService = inject(DataService); // UPDATED: Replace contactService
+  private readonly downloadPdf = inject(PdfDownloadService);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
-  // Angular 19 viewChild pentru referințe la componente
+  // Angular 19 viewChild pentru referințe la componente - keep existing
   private readonly contactForm = viewChild(ContactFormComponent, { read: ContactFormComponent });
   private readonly contactMap = viewChild(ContactMapComponent, { read: ContactMapComponent });
 
-  // Signals pentru state management
+  // Signals pentru state management - keep existing
   readonly activeSection = signal<string>('info');
   readonly isScrolled = signal<boolean>(false);
   readonly isMobileMenuOpen = signal<boolean>(false);
 
-  // Computed signals pentru UI state
+  // Computed signals pentru UI state - keep existing
   readonly showBackToTop = computed(() => this.isScrolled());
   readonly sections = signal<ContactSection[]>([
     {
@@ -93,12 +129,141 @@ export class ContactComponent implements OnInit {
     }
   ]);
 
-  // Computed pentru secțiunea activă
+  // Computed pentru secțiunea activă - keep existing
   readonly activeSectionData = computed(() =>
     this.sections().find(section => section.id === this.activeSection())
   );
 
-  // Method to get icon variable from icon string
+  // Analytics și tracking - keep existing
+  private readonly pageViewTime = signal<number>(Date.now());
+
+  constructor(
+    private router: Router
+  ) {
+    // Angular 19 effect pentru scroll monitoring - doar în browser - keep existing
+    if (this.isBrowser) {
+      effect(() => {
+        const handleScroll = () => {
+          this.isScrolled.set(window.scrollY > 100);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      });
+    }
+
+    // Effect pentru tracking secțiunea activă - keep existing
+    effect(() => {
+      this.trackSectionView(this.activeSection());
+    });
+  }
+
+  ngOnInit(): void {
+    this.setupSEO();
+    this.trackPageView();
+    this.setupKeyboardNavigation();
+    this.loadContactData();
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('🔄 Route changed - reloading data');
+      this.loadContactData();
+    });
+
+
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Cleanup și tracking - keep existing
+    if (this.isBrowser) {
+      const timeOnPage = Date.now() - this.pageViewTime();
+
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'page_engagement', {
+          engagement_time_msec: timeOnPage,
+          page_title: 'Contact Page'
+        });
+      }
+    }
+  }
+
+  /**
+   * UPDATED: Load contact data from DataService instead of ContactService
+   */
+  private loadContactData(): void {
+    // UPDATED: Single call to DataService instead of separate contact service calls
+    this.dataService.loadAllData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allData) => {
+          // UPDATED: Extract contact data from complete portfolio data
+          this.contactInfo.set(allData.contact.info);
+          this.contactLocation.set(allData.contact.location);
+
+          // Clear any previous errors
+          this.contactDataError.set(null);
+          this.locationDataError.set(null);
+
+          console.log('✅ Contact data loaded from DataService');
+        },
+        error: (error) => {
+          console.error('❌ Error loading contact data from DataService:', error);
+
+          // Keep existing error handling
+          this.contactDataError.set('Failed to load contact information');
+          this.locationDataError.set('Failed to load location information');
+
+          // Keep default empty values in case of error
+          this.contactInfo.set({
+            email: "",
+            phone: "",
+            location: "",
+            github: "",
+            linkedin: ""
+          });
+
+          this.contactLocation.set({
+            name: "",
+            address: "",
+            city: "",
+            country: "",
+            coordinates: { lat: 0, lng: 0 },
+            timezone: "",
+            workingHours: ""
+          });
+        }
+      });
+  }
+
+  /**
+   * UPDATED: Retry loading contact data using DataService
+   */
+  retryLoadContactData(): void {
+    this.contactDataError.set(null);
+    this.locationDataError.set(null);
+
+    // UPDATED: Force refresh contact data through DataService
+    this.dataService.refreshSection('contact').subscribe({
+      next: (contactData) => {
+        this.contactInfo.set(contactData.info);
+        this.contactLocation.set(contactData.location);
+        console.log('✅ Contact data refreshed successfully');
+      },
+      error: (error) => {
+        console.error('❌ Error refreshing contact data:', error);
+        this.contactDataError.set('Failed to refresh contact information');
+        this.locationDataError.set('Failed to refresh location information');
+      }
+    });
+  }
+
+  // Keep all existing methods unchanged - UNCHANGED from here on
+
+  // Method to get icon variable from icon string - UNCHANGED
   getIconForSection(iconName: string): any {
     const iconMap: { [key: string]: any } = {
       'user': this.userIcon,
@@ -116,37 +281,8 @@ export class ContactComponent implements OnInit {
     return iconMap[iconName] || this.userIcon;
   }
 
-  // Analytics și tracking
-  private readonly pageViewTime = signal<number>(Date.now());
-
-  constructor(private downloadPdf: PdfDownloadService) {
-    // Angular 19 effect pentru scroll monitoring - doar în browser
-    if (this.isBrowser) {
-      effect(() => {
-        const handleScroll = () => {
-          this.isScrolled.set(window.scrollY > 100);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-      });
-    }
-
-    // Effect pentru tracking secțiunea activă
-    effect(() => {
-
-      this.trackSectionView(this.activeSection());
-    });
-  }
-
-  ngOnInit(): void {
-    this.setupSEO();
-    this.trackPageView();
-    this.setupKeyboardNavigation();
-  }
-
   private setupSEO(): void {
-    // SEO optimization pentru pagina de contact
+    // SEO optimization pentru pagina de contact - UNCHANGED
     this.title.setTitle('Contact - Alin Viorel Ciobanu | Full Stack Developer');
 
     this.meta.updateTag({
@@ -163,7 +299,7 @@ export class ContactComponent implements OnInit {
     this.meta.updateTag({ property: 'og:description', content: 'Contact me for collaborations and web development projects' });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
 
-    // Schema.org structured data - doar în browser
+    // Schema.org structured data - doar în browser - UNCHANGED
     if (this.isBrowser) {
       const structuredData = {
         "@context": "https://schema.org",
@@ -192,7 +328,7 @@ export class ContactComponent implements OnInit {
   }
 
   private trackPageView(): void {
-    // Analytics tracking pentru vizualizare pagină - doar în browser
+    // Analytics tracking pentru vizualizare pagină - doar în browser - UNCHANGED
     if (this.isBrowser && typeof gtag !== 'undefined') {
       gtag('event', 'page_view', {
         page_title: 'Contact Page',
@@ -203,7 +339,7 @@ export class ContactComponent implements OnInit {
   }
 
   private trackSectionView(sectionId: string): void {
-    // Analytics tracking pentru vizualizare secțiuni
+    // Analytics tracking pentru vizualizare secțiuni - UNCHANGED
     if (typeof gtag !== 'undefined') {
       gtag('event', 'section_view', {
         section_name: sectionId,
@@ -213,7 +349,7 @@ export class ContactComponent implements OnInit {
   }
 
   private setupKeyboardNavigation(): void {
-    // Keyboard navigation pentru accessibility - doar în browser
+    // Keyboard navigation pentru accessibility - doar în browser - UNCHANGED
     if (this.isBrowser) {
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Tab' && event.shiftKey) {
@@ -227,7 +363,7 @@ export class ContactComponent implements OnInit {
     }
   }
 
-  // Navigation methods
+  // Navigation methods - UNCHANGED
   setActiveSection(sectionId: string): void {
     // Actualizează secțiunea activă
     this.sections.update(sections =>
@@ -269,32 +405,36 @@ export class ContactComponent implements OnInit {
     this.isMobileMenuOpen.update(isOpen => !isOpen);
   }
 
-  // Quick actions
+  // Quick actions - now using dynamic contact info - UNCHANGED
   sendQuickEmail(): void {
-    if (this.isBrowser) {
-      window.location.href = 'mailto:alinviorelciobanu@gmail.com?subject=Contact from Portfolio';
+    const email = this.contactInfo().email;
+    if (this.isBrowser && email) {
+      window.location.href = `mailto:${email}?subject=Contact from Portfolio`;
     }
   }
 
   makeQuickCall(): void {
-    if (this.isBrowser) {
-      window.location.href = 'tel:0753586216';
+    const phone = this.contactInfo().phone;
+    if (this.isBrowser && phone) {
+      window.location.href = `tel:${phone}`;
     }
   }
 
   openLinkedIn(): void {
-    if (this.isBrowser) {
-      window.open('https://www.linkedin.com/in/alin-v-ciobanu-84b06b269/', '_blank');
+    const linkedin = this.contactInfo().linkedin;
+    if (this.isBrowser && linkedin) {
+      window.open(linkedin, '_blank');
     }
   }
 
   openGitHub(): void {
-    if (this.isBrowser) {
-      window.open('https://github.com/AlinV15', '_blank');
+    const github = this.contactInfo().github;
+    if (this.isBrowser && github) {
+      window.open(github, '_blank');
     }
   }
 
-  // Utility methods
+  // Utility methods - UNCHANGED
   shareContact(): void {
     if (this.isBrowser) {
       if (navigator.share) {
@@ -325,7 +465,7 @@ export class ContactComponent implements OnInit {
     this.downloadPdf.downloadPDF("CV_English.pdf", "CV_Alin-Viorel-Ciobanu")
   }
 
-  // Form interaction methods
+  // Form interaction methods - UNCHANGED
   focusContactForm(): void {
     this.setActiveSection('form');
     if (this.isBrowser) {
@@ -343,7 +483,7 @@ export class ContactComponent implements OnInit {
     this.contactForm()?.resetForm();
   }
 
-  // Map interaction methods
+  // Map interaction methods - UNCHANGED
   centerMap(): void {
     this.contactMap()?.centerMap();
   }
@@ -353,22 +493,7 @@ export class ContactComponent implements OnInit {
     this.contactMap()?.openInGoogleMaps();
   }
 
-  // Lifecycle hooks
-  ngOnDestroy(): void {
-    // Cleanup și tracking
-    if (this.isBrowser) {
-      const timeOnPage = Date.now() - this.pageViewTime();
-
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'page_engagement', {
-          engagement_time_msec: timeOnPage,
-          page_title: 'Contact Page'
-        });
-      }
-    }
-  }
-
-  // Error handling
+  // Error handling - UNCHANGED
   onComponentError(error: any, componentName: string): void {
     console.error(`Error in ${componentName}:`, error);
 

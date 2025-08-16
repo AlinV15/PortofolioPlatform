@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class Interest extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

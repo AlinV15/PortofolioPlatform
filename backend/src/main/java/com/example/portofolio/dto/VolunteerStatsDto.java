@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VolunteerStatsDto {
-    private Integer total_years;
+    private Integer totalYears;
     private Integer organizations;
-    private Integer projects_coordinated;
-    private Integer events_organized;
+    private Integer projectsCoordinated;
+    private Integer eventsOrganized;
 
     @Data
     @AllArgsConstructor

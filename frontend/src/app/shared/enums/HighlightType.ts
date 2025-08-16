@@ -1,0 +1,6 @@
+export enum HighlightType {
+    ACHIEVEMENT = 'ACHIEVEMENT',
+    SKILL = 'SKILL',
+    EXPERIENCE = 'EXPERIENCE',
+    RECOGNITION = 'RECOGNITION'
+}

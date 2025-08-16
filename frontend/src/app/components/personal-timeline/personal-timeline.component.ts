@@ -1,21 +1,10 @@
-import { Component, OnInit, ElementRef, ViewChildren, QueryList, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChildren, QueryList, AfterViewInit, Inject, PLATFORM_ID, Input } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule, GraduationCap, Building2, Award, Rocket, Users, Code, Brain, BookOpen, Target, Trophy, LucideIconData } from 'lucide-angular';
+import { TimelineItem } from '../../shared/models/timeline.interface';
+import { IconHelperService } from '../../services/icon-helper.service';
 
-export interface TimelineItem {
-  id: string;
-  year: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  type: 'education' | 'experience' | 'certification' | 'project';
-  icon: LucideIconData;
-  color: string;
-  details?: string[];
-  current?: boolean;
-  achievements?: string[];
-  link?: string;
-}
+
 
 export interface TimelineConfig {
   showAnimation: boolean;
@@ -34,7 +23,7 @@ export interface TimelineConfig {
 export class PersonalTimelineComponent implements OnInit, AfterViewInit {
   @ViewChildren('timelineItem') timelineElements!: QueryList<ElementRef>;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private iconHelper: IconHelperService) { }
 
   // Icon variables for Lucide icons
   readonly icons = {
@@ -53,147 +42,9 @@ export class PersonalTimelineComponent implements OnInit, AfterViewInit {
     success: Trophy
   };
 
-  timelineItems: TimelineItem[] = [
-    {
-      id: '2018',
-      year: '2018-2022',
-      title: 'Vasile Sav Technological High School',
-      subtitle: 'Automation and Computer Technology',
-      description: 'Specialized education in automation and computer technology, building foundational knowledge in programming, electronics, and technical systems.',
-      type: 'education',
-      icon: this.icons.education,
-      color: 'blue',
-      details: [
-        'Introduction to C++ programming',
-        'Digital Electronics',
-        'Analog Electronics',
-        'Organic Chemistry'
-      ],
-      achievements: [
-        'Mathematics Competition - Mention (12th grade)',
-        'Inorganic Chemistry Competition - Mention (9th grade)'
-      ]
-    },
-    {
-      id: '2022',
-      year: '2022-Present',
-      title: 'Alexandru Ioan Cuza University',
-      subtitle: 'Economic Informatics - 3rd Year Student',
-      description: 'Pursuing Bachelor\'s degree at Faculty of Economics and Business Administration, specializing in Economic Informatics, combining technology with business and economic understanding.',
-      type: 'education',
-      icon: this.icons.education,
-      color: 'blue',
-      current: true,
-      details: [
-        'Programming I & II, Algorithms and Programming Logic',
-        'Databases I, Information Systems Analysis & Design',
-        'Website Development, Electronic Commerce, e-Marketing',
-        'ERP, Computer Networks I, Information Systems Security',
-        'Economics: Microeconomics, Macroeconomics, Finance',
-        'Management, Marketing, Financial Accounting',
-        'French for Business (Level B1-B2)',
-        'Economic Projects in Informatics'
-      ],
-      achievements: [
-        'Comprehensive curriculum covering both technical and business aspects',
-        'Hands-on experience with modern technologies and business tools',
-        'Strong foundation in programming, databases, and system analysis'
-      ]
-    },
-    {
-      id: '2022-2023',
-      year: '2022-2023',
-      title: 'ASFI Student Association',
-      subtitle: 'Active Volunteer & Project Co-coordinator',
-      description: 'Active participation in student association activities, developing leadership and organizational skills through cultural and social projects.',
-      type: 'experience',
-      icon: this.icons.volunteer,
-      color: 'green',
-      details: [
-        'Co-coordinated "Défi pour la littérature" project',
-        'Co-coordinated ticket sales and outdoor film activities',
-        'Active participation in association projects',
-        'Participated in ANOSR trainings in Fundraising and Projects'
-      ],
-      achievements: [
-        'Enhanced teamwork and project management skills',
-        'Experience in event organization and coordination',
-        'Leadership development through student community involvement'
-      ]
-    },
-    {
-      id: '2023-cert',
-      year: 'December 2023',
-      title: 'Professional Certifications',
-      subtitle: 'Leadership & Technical Skills Development',
-      description: 'Completed comprehensive certification programs to enhance both leadership capabilities and technical programming skills.',
-      type: 'certification',
-      icon: this.icons.certification,
-      color: 'yellow',
-      details: [
-        'LEADERS Explore - Leadership Certificate (ID: LDRS03090/12/21/2023)',
-        'Learn C# Course - Codecademy (ID: 90AEA8BA-E)',
-        'Problem Solving and Decision Making',
-        'Taking Initiative and Self-Leadership',
-        'Critical Thinking and Personal Efficiency',
-        'Emotional Intelligence and Communication',
-        'Object-Oriented Programming with C#'
-      ],
-      achievements: [
-        'Enhanced leadership and team management skills',
-        'Strengthened programming knowledge in C#',
-        'Improved communication and interpersonal abilities'
-      ]
-    },
-    {
-      id: '2025-clubs',
-      year: 'March-May 2025',
-      title: 'University Programming Clubs',
-      subtitle: 'Enterprise Technologies & Low-Code Platforms',
-      description: 'Expanding expertise in enterprise technologies through active participation in specialized programming clubs focusing on modern business solutions.',
-      type: 'experience',
-      icon: this.icons.skills,
-      color: 'purple',
-      details: [
-        'Codeless Club: Mendix Low-Code Platform development',
-        'WinMentor Club: SQL integration and custom template development',
-        'Microsoft Dynamics AX (Axapta) User Certification',
-        'Enterprise application development and customization',
-        'Business process automation and optimization'
-      ],
-      achievements: [
-        'Intermediate proficiency in Mendix platform',
-        'Experience with ERP system integration',
-        'Understanding of enterprise software architecture'
-      ]
-    },
-    {
-      id: '2024-projects',
-      year: '2024-2025',
-      title: 'Full-Stack Development Portfolio',
-      subtitle: '7+ Production-Ready Applications',
-      description: 'Building comprehensive portfolio of modern web applications using cutting-edge technologies, with some projects launched in production.',
-      type: 'project',
-      icon: this.icons.project,
-      color: 'red',
-      current: true,
-      details: [
-        'FloweringStories E-commerce App - Next.js, MongoDB, TypeScript',
-        'Restaurant Management Application - Next.js, Prisma, PostgreSQL',
-        'QuotezApp - CRUD Platform - React, Express, MongoDB',
-        'Todo/Kanban Application - Next.js, MongoDB',
-        'RoomieFinder Student Platform - Next.js, Prisma, PostgreSQL',
-        'Angular Collaborative University Project - Angular, TypeScript',
-        'Personal Portfolio Website - HTML, CSS, JavaScript'
-      ],
-      achievements: [
-        'Hands-on experience with modern full-stack technologies',
-        'Production deployment and user experience optimization',
-        'Comprehensive understanding of web development lifecycle'
-      ],
-      link: 'https://github.com/AlinV15'
-    }
-  ];
+  @Input() timelineItems: TimelineItem[] = [];
+
+
 
   ngOnInit(): void {
     // Component initialization logic
@@ -316,4 +167,14 @@ export class PersonalTimelineComponent implements OnInit, AfterViewInit {
   trackByAchievement(index: number, achievement: string): string {
     return achievement;
   }
+
+  stringToFontAwesome(iconString: string) {
+    return this.iconHelper.stringToFontAwesome(iconString);
+  }
+
+  stringToLucide(icoString: string) {
+    return this.iconHelper.stringToLucide(icoString);
+  }
+
+
 }

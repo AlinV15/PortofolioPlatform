@@ -1,34 +1,55 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnDestroy, Inject, PLATFORM_ID, AfterViewInit, OnChanges, SimpleChanges, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, Inject, PLATFORM_ID, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   LucideAngularModule,
   Rocket, Wrench, Lightbulb, Star, ExternalLink, Github,
   X, ChevronLeft, ChevronRight, Monitor, Server, Check,
   Zap, Settings, Camera, ZoomIn, ArrowLeft, ArrowRight,
-  Clock, Calendar, FolderOpen, Target, Code, Globe
+  Clock, Calendar, FolderOpen, Target, Code, Globe,
+  Play, Eye, Download, Share2, Bookmark, Hash
 } from 'lucide-angular';
-import { Project } from '../../../interfaces/project.interface';
+import { Project } from '../../shared/models/project.interface';
+import { ProjectStatus } from '../../shared/enums/ProjectStatus';
+import { ComplexityLevel } from '../../shared/enums/ComplexityLevel';
+
+type TabType = 'overview' | 'technical' | 'gallery' | 'details';
 
 @Component({
   selector: 'app-project-details',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './project-details.component.html',
-  styleUrls: ['./project-details.component.css'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  styleUrls: ['./project-details.component.css']
 })
-export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
-  @Input() project: Project | null = null;
-  @Input() isOpen = false;
-  @Input() allProjects: Project[] = []; // Pentru navigarea între proiecte
-  @Output() close = new EventEmitter<void>();
-  @Output() previousProject = new EventEmitter<void>();
-  @Output() nextProject = new EventEmitter<void>();
+export class ProjectDetailsComponent implements OnDestroy, AfterViewInit, OnChanges {
 
-  // Lucide Icons
+  // ========================
+  // INPUTS FROM PARENT
+  // ========================
+  @Input() project: Project | null = null;
+  @Input() canNavigate = false;
+  @Input() isFirst = false;
+  @Input() isLast = false;
+  @Input() currentIndex = -1;
+  @Input() totalProjects = 0;
+  @Input() onOpen = false;
+
+  // ========================
+  // OUTPUTS TO PARENT
+  // ========================
+  @Output() close = new EventEmitter<void>();
+  @Output() previous = new EventEmitter<void>();
+  @Output() next = new EventEmitter<void>();
+  @Output() demoClick = new EventEmitter<Project>();
+  @Output() githubClick = new EventEmitter<Project>();
+
+  // ========================
+  // LUCIDE ICONS
+  // ========================
   readonly rocketIcon = Rocket;
   readonly wrenchIcon = Wrench;
   readonly lightbulbIcon = Lightbulb;
+  readonly layersIcon = Star;
   readonly starIcon = Star;
   readonly externalLinkIcon = ExternalLink;
   readonly githubIcon = Github;
@@ -50,45 +71,57 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
   readonly targetIcon = Target;
   readonly codeIcon = Code;
   readonly globeIcon = Globe;
+  readonly playIcon = Play;
+  readonly eyeIcon = Eye;
+  readonly downloadIcon = Download;
+  readonly share2Icon = Share2;
+  readonly bookmarkIcon = Bookmark;
+  readonly hashIcon = Hash;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  // ========================
+  // COMPONENT STATE
+  // ========================
 
   // Gallery state
   currentImageIndex = 0;
   showImageGallery = false;
+  imageLoading = false;
 
-  // Content tabs - simplificate
-  activeTab: 'overview' | 'technical' | 'gallery' = 'overview';
+  // Content tabs
+  activeTab: TabType = 'overview';
 
   // Browser detection for SSR
   private isBrowser = false;
   private keyboardListener?: (event: KeyboardEvent) => void;
   private scrollPosition = 0;
+  toolsAndOther: string[] = [];
 
-  ngOnInit(): void {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngAfterViewInit(): void {
-    if (this.isBrowser && this.isOpen) {
+    this.toolsAndOther = [
+      ...(this.technicalDetails?.tools || []),
+      ...(this.technicalDetails?.other || [])
+    ];
+    if (this.isBrowser && this.project) {
       this.setupModalBehavior();
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen']) {
-      if (this.isOpen && this.isBrowser) {
+    this.toolsAndOther = [
+      ...(this.technicalDetails?.tools || []),
+      ...(this.technicalDetails?.other || [])
+    ];
+    if (changes['project']) {
+      if (this.project && this.isBrowser) {
         this.openModal();
-      } else if (!this.isOpen && this.isBrowser) {
+        this.resetState();
+      } else if (!this.project && this.isBrowser) {
         this.closeModal();
       }
-    }
-
-    if (changes['project'] && this.project) {
-      // Reset state when project changes
-      this.currentImageIndex = 0;
-      this.showImageGallery = false;
-      this.activeTab = 'overview';
     }
   }
 
@@ -96,17 +129,29 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
     this.cleanup();
   }
 
-  // Modal behavior methods (păstrează din codul original)
+  // ========================
+  // STATE MANAGEMENT
+  // ========================
+
+  private resetState(): void {
+    this.currentImageIndex = 0;
+    this.showImageGallery = false;
+    this.activeTab = 'overview';
+    this.imageLoading = false;
+  }
+
+  // ========================
+  // MODAL BEHAVIOR
+  // ========================
+
   private setupModalBehavior(): void {
     if (!this.isBrowser) return;
     try {
       this.setupKeyboardNavigation();
-      this.setupFocusTrap();
       this.setupScrollLock();
+      this.setupFocusTrap();
     } catch (error) {
-      if (this.isBrowser) {
-        console.warn('Modal setup failed:', error);
-      }
+      console.warn('Modal setup failed:', error);
     }
   }
 
@@ -120,6 +165,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
       document.body.style.width = '100%';
       document.body.classList.add('modal-open');
 
+      // Focus the modal after it's rendered
       setTimeout(() => {
         const modalElement = document.querySelector('.project-details-modal');
         if (modalElement instanceof HTMLElement) {
@@ -127,7 +173,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }, 100);
     } catch (error) {
-      // Silent fail for SSR
+      console.warn('Modal open failed:', error);
     }
   }
 
@@ -141,7 +187,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
       document.body.classList.remove('modal-open');
       window.scrollTo(0, this.scrollPosition);
     } catch (error) {
-      // Silent fail for SSR
+      console.warn('Modal close failed:', error);
     }
   }
 
@@ -149,20 +195,40 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
     if (!this.isBrowser) return;
 
     this.keyboardListener = (event: KeyboardEvent) => {
+      // Don't handle keyboard events if user is typing in an input
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       switch (event.key) {
         case 'Escape':
-          this.onClose();
+          event.preventDefault();
+          if (this.showImageGallery) {
+            this.closeImageGallery();
+          } else {
+            this.onClose();
+          }
           break;
         case 'ArrowLeft':
-          if (!this.showImageGallery) {
-            event.preventDefault();
-            this.onPreviousProject();
+          event.preventDefault();
+          if (this.showImageGallery) {
+            this.previousImage();
+          } else if (this.canNavigate && !this.isFirst) {
+            this.onPrevious();
           }
           break;
         case 'ArrowRight':
-          if (!this.showImageGallery) {
+          event.preventDefault();
+          if (this.showImageGallery) {
+            this.nextImage();
+          } else if (this.canNavigate && !this.isLast) {
+            this.onNext();
+          }
+          break;
+        case ' ': // Spacebar
+          if (this.showImageGallery) {
             event.preventDefault();
-            this.onNextProject();
+            this.nextImage();
           }
           break;
       }
@@ -171,16 +237,21 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
     document.addEventListener('keydown', this.keyboardListener);
   }
 
-  private setupFocusTrap(): void {
-    // Păstrează din implementarea originală
+  private setupScrollLock(): void {
     if (!this.isBrowser) return;
-    // ... implementarea focus trap
+
+    // Calculate scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
   }
 
-  private setupScrollLock(): void {
-    // Păstrează din implementarea originală
+  private setupFocusTrap(): void {
     if (!this.isBrowser) return;
-    // ... implementarea scroll lock
+
+    // This would implement focus trapping within the modal
+    // For production, consider using a library like focus-trap
   }
 
   private cleanup(): void {
@@ -192,11 +263,14 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
       this.closeModal();
       document.body.style.paddingRight = '';
     } catch (error) {
-      // Silent fail for SSR
+      console.warn('Cleanup failed:', error);
     }
   }
 
-  // Event handlers
+  // ========================
+  // EVENT HANDLERS
+  // ========================
+
   onClose(): void {
     this.close.emit();
   }
@@ -207,78 +281,262 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  onPreviousProject(): void {
-    this.previousProject.emit();
-  }
-
-  onNextProject(): void {
-    this.nextProject.emit();
-  }
-
-  // Tab navigation - simplificat
-  setActiveTab(tab: 'overview' | 'technical' | 'gallery'): void {
-    this.activeTab = tab;
-  }
-
-  // Image gallery methods - îmbunătățite
-  openImageGallery(index: number = 0): void {
-    if (!this.project?.images?.length || !this.isBrowser) return;
-    this.currentImageIndex = index;
-    this.showImageGallery = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  closeImageGallery(): void {
-    this.showImageGallery = false;
-    if (this.isBrowser) {
-      document.body.style.overflow = '';
+  onPrevious(): void {
+    if (this.canNavigate && !this.isFirst) {
+      this.previous.emit();
     }
   }
 
-  previousImage(): void {
-    if (!this.project?.images?.length) return;
-    this.currentImageIndex = this.currentImageIndex > 0
-      ? this.currentImageIndex - 1
-      : this.project.images.length - 1;
+  onNext(): void {
+    if (this.canNavigate && !this.isLast) {
+      this.next.emit();
+    }
   }
 
-  nextImage(): void {
-    if (!this.project?.images?.length) return;
-    this.currentImageIndex = this.currentImageIndex < this.project.images.length - 1
-      ? this.currentImageIndex + 1
-      : 0;
-  }
-
-  // External link handlers
   onDemoClick(): void {
-    if (!this.isBrowser || !this.project?.demoUrl) return;
-    try {
-      window.open(this.project.demoUrl, '_blank', 'noopener,noreferrer');
-    } catch (error) {
-      if (this.isBrowser) {
-        console.warn('Demo link failed:', error);
-      }
+    if (this.project) {
+      this.demoClick.emit(this.project);
     }
   }
 
   onGithubClick(): void {
-    if (!this.isBrowser || !this.project?.githubUrl) return;
-    try {
-      window.open(this.project.githubUrl, '_blank', 'noopener,noreferrer');
-    } catch (error) {
-      if (this.isBrowser) {
-        console.warn('GitHub link failed:', error);
-      }
+    if (this.project) {
+      this.githubClick.emit(this.project);
     }
+  }
+
+  // ========================
+  // TAB MANAGEMENT
+  // ========================
+
+  setActiveTab(tab: TabType): void {
+    this.activeTab = tab;
+  }
+
+  get availableTabs(): { id: TabType; label: string; icon: any; count?: number }[] {
+    const tabs = [
+      { id: 'overview' as TabType, label: 'Overview', icon: this.eyeIcon },
+      { id: 'technical' as TabType, label: 'Technical', icon: this.codeIcon }
+    ];
+
+    if (this.hasImages) {
+      tabs.push({
+        id: 'gallery' as TabType,
+        label: 'Gallery',
+        icon: this.cameraIcon,
+      });
+    }
+
+    if (this.hasDetailedInfo) {
+      tabs.push({ id: 'details' as TabType, label: 'Details', icon: this.folderOpenIcon });
+    }
+
+    return tabs;
+  }
+
+  // ========================
+  // IMAGE GALLERY
+  // ========================
+
+  openImageGallery(index: number = 0): void {
+    if (!this.hasImages || !this.isBrowser) return;
+    this.currentImageIndex = Math.max(0, Math.min(index, (this.project?.images?.length || 1) - 1));
+    this.showImageGallery = true;
+    this.imageLoading = true;
+  }
+
+  closeImageGallery(): void {
+    this.showImageGallery = false;
+    this.imageLoading = false;
+  }
+
+  previousImage(): void {
+    if (!this.hasImages) return;
+    this.imageLoading = true;
+    this.currentImageIndex = this.currentImageIndex > 0
+      ? this.currentImageIndex - 1
+      : (this.project?.images?.length || 1) - 1;
+  }
+
+  nextImage(): void {
+    if (!this.hasImages) return;
+    this.imageLoading = true;
+    this.currentImageIndex = this.currentImageIndex < (this.project?.images?.length || 1) - 1
+      ? this.currentImageIndex + 1
+      : 0;
+  }
+
+  onImageLoad(): void {
+    this.imageLoading = false;
+  }
+
+  onImageError(): void {
+    this.imageLoading = false;
+    console.warn('Failed to load image:', this.currentImage);
+  }
+
+  // ========================
+  // COMPUTED PROPERTIES
+  // ========================
+
+  get isInBrowser(): boolean {
+    return this.isBrowser;
+  }
+
+  get hasImages(): boolean {
+    return !!(this.project?.images?.length);
+  }
+
+  get hasFeatures(): boolean {
+    return !!(this.project?.features?.length);
+  }
+
+  get hasChallenges(): boolean {
+    return !!(this.project?.challenges?.length);
+  }
+
+  get hasTechnologies(): boolean {
+    return !!(this.project?.technologies?.length);
+  }
+
+  get hasMetrics(): boolean {
+    return !!(this.project?.metrics);
+  }
+
+  get hasDetailedInfo(): boolean {
+    return this.hasChallenges || this.hasMetrics || !!(this.project?.longDescription);
+  }
+
+  get currentImage(): string | undefined {
+    return this.project?.images?.[this.currentImageIndex];
+  }
+
+  get navigationInfo(): string {
+    if (!this.canNavigate || this.totalProjects <= 1) return '';
+    return `${this.currentIndex + 1} of ${this.totalProjects}`;
+  }
+
+  // ========================
+  // PROJECT DATA PROCESSING
+  // ========================
+
+  get projectStats() {
+    if (!this.project) return null;
+
+    return {
+      developmentTime: this.project.developmentTime || 'N/A',
+      year: this.project.year || 'N/A',
+      category: this.formatCategory(this.project.category || ''),
+      complexity: this.formatComplexity(this.project.complexity || ''),
+      status: this.formatStatus(this.project.status || '')
+    };
+  }
+
+  get technicalDetails() {
+    if (!this.project?.technologies) return { frontend: [], backend: [], tools: [], other: [] };
+
+    const frontend = ['React', 'Angular', 'Vue', 'Next.js', 'HTML', 'CSS', 'JavaScript', 'TypeScript', 'TailwindCSS', 'SCSS', 'Bootstrap'];
+    const backend = ['Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'Prisma', 'Java', 'Spring', 'C#', '.NET', 'Python', 'Django', 'Flask'];
+    const tools = ['Docker', 'AWS', 'Vercel', 'Netlify', 'Git', 'GitHub', 'GitLab', 'Webpack', 'Vite', 'Jest', 'Cypress'];
+
+    return {
+      frontend: this.project.technologies.filter(tech =>
+        frontend.some(f => tech.toLowerCase().includes(f.toLowerCase()))
+      ),
+      backend: this.project.technologies.filter(tech =>
+        backend.some(b => tech.toLowerCase().includes(b.toLowerCase()))
+      ),
+      tools: this.project.technologies.filter(tech =>
+        tools.some(t => tech.toLowerCase().includes(t.toLowerCase()))
+      ),
+      other: this.project.technologies.filter(tech =>
+        ![...frontend, ...backend, ...tools].some(known =>
+          tech.toLowerCase().includes(known.toLowerCase())
+        )
+      )
+    };
+  }
+
+  get primaryMetrics() {
+    if (!this.project?.metrics) return [];
+
+    const metrics = [
+      { label: 'Users', value: this.project.metrics.users, icon: this.targetIcon },
+      { label: 'Performance', value: this.project.metrics.performance, icon: this.zapIcon },
+      { label: 'Code Quality', value: this.project.metrics.codeQuality, icon: this.checkIcon },
+      { label: 'Lines of Code', value: this.project.metrics.lines, icon: this.codeIcon },
+      { label: 'Commits', value: this.project.metrics.commits, icon: this.githubIcon },
+      { label: 'Test Coverage', value: this.project.metrics.testCoverage ? `${this.project.metrics.testCoverage}%` : undefined, icon: this.checkIcon }
+    ];
+
+    return metrics.filter(metric => metric.value !== undefined && metric.value !== null);
+  }
+
+  // ========================
+  // FORMATTING HELPERS
+  // ========================
+
+  public formatCategory(category: string): string {
+    const categoryMap: { [key: string]: string } = {
+      'ecommerce': 'E-commerce',
+      'management': 'Management System',
+      'crud': 'CRUD Application',
+      'collaboration': 'Collaborative Tool',
+      'portfolio': 'Portfolio Website',
+      'webapp': 'Web Application',
+      'mobile': 'Mobile Application',
+      'api': 'API Service'
+    };
+    return categoryMap[category.toLowerCase()] || category.charAt(0).toUpperCase() + category.slice(1);
+  }
+
+  public formatComplexity(complexity: string): string {
+    return complexity.charAt(0).toUpperCase() + complexity.slice(1).toLowerCase();
+  }
+
+  public formatStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'production': 'Live in Production',
+      'development': 'In Development',
+      'testing': 'Testing Phase',
+      'maintenance': 'Maintenance Mode',
+      'archived': 'Archived',
+      'planning': 'Planning Phase'
+    };
+    return statusMap[status.toLowerCase()] || status.charAt(0).toUpperCase() + status.slice(1);
   }
 
   getStatusIcon(status: string): any {
     const icons = {
       'production': this.rocketIcon,
       'development': this.wrenchIcon,
-      'concept': this.lightbulbIcon
+      'testing': this.checkIcon,
+      'maintenance': this.settingsIcon,
+      'archived': this.folderOpenIcon,
+      'planning': this.lightbulbIcon
     };
-    return icons[status as keyof typeof icons] || this.wrenchIcon;
+    return icons[status.toLowerCase() as keyof typeof icons] || this.wrenchIcon;
+  }
+
+  getStatusColor(status: string): string {
+    const colors = {
+      'production': 'text-green-600 dark:text-green-400',
+      'development': 'text-yellow-600 dark:text-yellow-400',
+      'testing': 'text-blue-600 dark:text-blue-400',
+      'maintenance': 'text-purple-600 dark:text-purple-400',
+      'archived': 'text-gray-600 dark:text-gray-400',
+      'planning': 'text-orange-600 dark:text-orange-400'
+    };
+    return colors[status.toLowerCase() as keyof typeof colors] || 'text-gray-600 dark:text-gray-400';
+  }
+
+  getComplexityColor(complexity: string): string {
+    const colors = {
+      'beginner': 'text-green-600 dark:text-green-400',
+      'intermediate': 'text-yellow-600 dark:text-yellow-400',
+      'advanced': 'text-red-600 dark:text-red-400'
+    };
+    return colors[complexity.toLowerCase() as keyof typeof colors] || 'text-gray-600 dark:text-gray-400';
   }
 
   getTechBadgeColor(index: number): string {
@@ -287,26 +545,18 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
       'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
       'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
-      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300'
+      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300'
     ];
     return colors[index % colors.length];
   }
 
-  // Project navigation helpers
-  get currentProjectIndex(): number {
-    if (!this.project || !this.allProjects.length) return -1;
-    return this.allProjects.findIndex(p => p.id === this.project!.id);
-  }
+  // ========================
+  // PERFORMANCE HELPERS
+  // ========================
 
-  get isFirstProject(): boolean {
-    return this.currentProjectIndex <= 0;
-  }
-
-  get isLastProject(): boolean {
-    return this.currentProjectIndex >= this.allProjects.length - 1;
-  }
-
-  // Track by functions
   trackByImage(index: number, image: string): string {
     return image;
   }
@@ -319,46 +569,22 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy, AfterViewInit
     return tech;
   }
 
-  // Getters for template
-  get isInBrowser(): boolean {
-    return this.isBrowser;
+  trackByChallenge(index: number, challenge: string): string {
+    return challenge;
   }
 
-  get hasImages(): boolean {
-    return !!(this.project?.images?.length);
+  trackByTab(index: number, tab: any): string {
+    return tab.id;
   }
 
-  get currentImage(): string | undefined {
-    return this.project?.images?.[this.currentImageIndex];
+  trackByMetric(index: number, metric: any): string {
+    return metric.label;
   }
 
-  get isFirstImage(): boolean {
-    return this.currentImageIndex === 0;
+  onPreviewImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    // Optionally, set a fallback image or hide the image
+    target.src = 'assets/images/placeholder-image.png';
   }
 
-  get isLastImage(): boolean {
-    return this.currentImageIndex === (this.project?.images?.length || 1) - 1;
-  }
-
-  // Informații de proiect organizate
-  get projectStats() {
-    return {
-      developmentTime: this.project?.developmentTime || 'N/A',
-      year: this.project?.year || 'N/A',
-      category: this.project?.category || 'N/A',
-      complexity: this.project?.complexity || 'N/A',
-      status: this.project?.status || 'N/A'
-    };
-  }
-
-  get technicalDetails() {
-    return {
-      frontend: this.project?.technologies.filter((tech: string) =>
-        ['React', 'Angular', 'Vue', 'Next.js', 'HTML', 'CSS', 'JavaScript', 'TypeScript', 'TailwindCSS'].includes(tech)
-      ) || [],
-      backend: this.project?.technologies.filter((tech: string) =>
-        ['Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'Prisma', 'Java', 'Spring', 'C#'].includes(tech)
-      ) || []
-    };
-  }
 }

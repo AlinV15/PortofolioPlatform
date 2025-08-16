@@ -40,7 +40,7 @@
                 From first lines of code to full-stack development. A chronological journey through my technical
                 evolution, showcasing continuous learning and skill acquisition over the past
                 <span class="font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">{{
-                    totalYears }} years</span>.
+                    skillsStats.yearsCoding }} years</span>.
             </p>
 
             <!-- Enhanced Timeline Controls -->
@@ -65,7 +65,7 @@
                     class="control-button px-6 py-3 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-pink-600 transition-all duration-300">
                     <lucide-icon [img]="playIcon" class="w-4 h-4 mr-2 inline" *ngIf="!isAnimating"></lucide-icon>
                     <lucide-icon [img]="pauseIcon" class="w-4 h-4 mr-2 inline" *ngIf="isAnimating"></lucide-icon>
-                    {{ isAnimating ? 'Pause Magic' : 'Animate Timeline' }}
+                    {{ isAnimating ? 'Pause Animation' : 'Start Animation' }}
                 </button>
             </div>
         </div>
@@ -79,7 +79,7 @@
                 </div>
                 <div
                     class="text-3xl font-bold text-gray-900 dark:text-white mb-1 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    {{ totalYears }}</div>
+                    {{ skillsStats.yearsCoding }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Years Learning</div>
             </div>
 
@@ -101,7 +101,7 @@
                 </div>
                 <div
                     class="text-3xl font-bold text-gray-900 dark:text-white mb-1 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    {{ totalTechnologies }}</div>
+                    {{ skillsStats.technologiesText.slice(0,3) }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Technologies</div>
             </div>
 
@@ -131,22 +131,23 @@
                     [attr.data-milestone-index]="i" [@slideIn]="animationState"
                     [style.animation-delay]="getAnimationDelay(i)">
 
-                    <!-- Enhanced Timeline Node -->
+                    <!-- FIXED: Enhanced Timeline Node - Now uses isMilestoneActive method -->
                     <div class="timeline-node absolute left-8 md:left-1/2 w-6 h-6 transform md:-translate-x-1/2 z-10"
-                        [class.active]="milestone.isActive" [style.--node-color]="milestone.primaryColor"
-                        [style.--glow-color]="milestone.glowColor">
+                        [class.active]="isMilestoneActive(milestone, i)" [style.--node-color]="milestone.primaryColor"
+                        [style.--glow-color]="milestone.primaryColor">
                         <div class="w-full h-full rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
-                            [style.background]="milestone.gradient">
-                            <lucide-icon [img]="milestone.icon" class="w-3 h-3 text-white"></lucide-icon>
+                            [style.background]="milestone.secondaryColor">
+                            <lucide-icon [img]="getMilestoneIcon(milestone)" class="w-3 h-3 text-white"></lucide-icon>
                         </div>
                     </div>
 
                     <!-- Enhanced Milestone Content -->
                     <div class="ml-20 md:ml-0 md:w-5/12" [class.md:mr-8]="i % 2 === 0" [class.md:ml-8]="i % 2 === 1">
 
+                        <!-- FIXED: Milestone card now uses isMilestoneActive method -->
                         <div class="milestone-card group rounded-2xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer"
-                            [class.active]="milestone.isActive" [style.--glow-color]="milestone.glowColor"
-                            (click)="onMilestoneClick(milestone)">
+                            [class.active]="isMilestoneActive(milestone, i)"
+                            [style.--glow-color]="milestone.primaryColor" (click)="onMilestoneClick(milestone, i)">
 
                             <!-- Enhanced Milestone Header -->
                             <div class="relative p-6 pb-4"
@@ -156,7 +157,7 @@
                                 <div class="absolute top-4 right-4">
                                     <span
                                         class="inline-flex items-center px-4 py-2 rounded-2xl text-sm font-bold text-white shadow-lg backdrop-blur-sm"
-                                        [style.background]="milestone.gradient">
+                                        [style.background]="milestone.secondaryColor">
                                         <lucide-icon [img]="sparklesIcon"
                                             class="w-3 h-3 mr-1 animate-pulse"></lucide-icon>
                                         {{ milestone.year }}
@@ -173,8 +174,8 @@
                                 <div class="flex items-center mb-4">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-lg"
                                         [style.background]="milestone.primaryColor + '20'">
-                                        <lucide-icon [img]="milestone.icon" [style.color]="milestone.primaryColor"
-                                            class="w-5 h-5"></lucide-icon>
+                                        <lucide-icon [img]="getMilestoneIcon(milestone)"
+                                            [style.color]="milestone.primaryColor" class="w-5 h-5"></lucide-icon>
                                     </div>
                                     <span class="text-sm font-semibold px-3 py-1 rounded-full"
                                         [style.background]="milestone.primaryColor + '15'"
@@ -191,7 +192,7 @@
                                 </p>
 
                                 <!-- Enhanced Technologies/Skills -->
-                                <div class="mb-6" *ngIf="milestone.technologies.length > 0">
+                                <div class="mb-6" *ngIf="milestone.technologies && milestone.technologies.length > 0">
                                     <h4
                                         class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 flex items-center">
                                         <lucide-icon [img]="codeIcon" class="w-4 h-4 mr-2"
@@ -206,46 +207,6 @@
                                             [style.color]="milestone.primaryColor">
                                             {{ tech }}
                                         </span>
-                                    </div>
-                                </div>
-
-                                <!-- Enhanced Achievements -->
-                                <div class="mb-6" *ngIf="milestone.achievements && milestone.achievements.length > 0">
-                                    <h4
-                                        class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 flex items-center">
-                                        <lucide-icon [img]="checkCircleIcon" class="w-4 h-4 mr-2"
-                                            [style.color]="milestone.primaryColor"></lucide-icon>
-                                        Key Achievements
-                                    </h4>
-                                    <ul class="space-y-2">
-                                        <li *ngFor="let achievement of milestone.achievements; trackBy: trackByString"
-                                            class="flex items-start text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
-                                            <lucide-icon [img]="checkCircleIcon" [style.color]="milestone.primaryColor"
-                                                class="w-4 h-4 mr-2 mt-0.5 flex-shrink-0"></lucide-icon>
-                                            {{ achievement }}
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- Enhanced Projects Stats -->
-                                <div class="grid grid-cols-3 gap-3" *ngIf="timelineView === 'detailed'">
-                                    <div
-                                        class="text-center bg-white/50 dark:bg-gray-700/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                                        <div class="text-lg font-bold text-gray-900 dark:text-white">{{
-                                            milestone.projectsCount || 0 }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Projects</div>
-                                    </div>
-                                    <div
-                                        class="text-center bg-white/50 dark:bg-gray-700/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                                        <div class="text-lg font-bold" [style.color]="milestone.primaryColor">{{
-                                            milestone.skillsLearned || 0 }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Skills</div>
-                                    </div>
-                                    <div
-                                        class="text-center bg-white/50 dark:bg-gray-700/30 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                                        <div class="text-sm font-bold text-gray-900 dark:text-white">{{
-                                            milestone.duration || 'Ongoing' }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Duration</div>
                                     </div>
                                 </div>
                             </div>
@@ -277,7 +238,7 @@
 
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                            <lucide-icon [img]="current.icon" [style.color]="current.color"
+                            <lucide-icon [img]="getLearningIcon(current)" [style.color]="current.color"
                                 class="w-6 h-6"></lucide-icon>
                         </div>
                         <div>
@@ -296,7 +257,7 @@
                         <div class="progress-container w-full h-3 rounded-full">
                             <div class="progress-bar transition-all duration-1000 ease-out"
                                 [style.width.%]="current.progress"
-                                [style.--progress-gradient]="current.gradient || 'linear-gradient(90deg, ' + current.color + ', ' + current.color + '80)'">
+                                [style.--progress-gradient]="current.color || 'linear-gradient(90deg, ' + current.color + ', ' + current.color + '80)'">
                             </div>
                         </div>
                     </div>
@@ -304,16 +265,6 @@
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{{ current.description }}
                     </p>
 
-                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span class="flex items-center">
-                            <lucide-icon [img]="calendarIcon" class="w-3 h-3 mr-1"></lucide-icon>
-                            Started: {{ current.startDate }}
-                        </span>
-                        <span class="flex items-center">
-                            <lucide-icon [img]="targetIcon" class="w-3 h-3 mr-1"></lucide-icon>
-                            ETA: {{ current.expectedCompletion }}
-                        </span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -330,14 +281,14 @@
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                <div *ngFor="let goal of futureGoals; let i = index; trackBy: trackByGoal"
+                <div *ngFor="let goal of futureGoal; let i = index; trackBy: trackByGoal"
                     class="goal-card rounded-2xl p-8 border hover:shadow-2xl transition-all duration-500"
                     [style.--goal-color]="goal.color" [style.--goal-gradient]="goal.gradient"
                     [style.animation-delay]="(i * 200) + 'ms'">
 
                     <div class="goal-icon w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl"
                         [style.background]="goal.gradient || 'linear-gradient(135deg, ' + goal.color + ', ' + goal.color + '80)'">
-                        <lucide-icon [img]="goal.icon" class="w-10 h-10 text-white"></lucide-icon>
+                        <lucide-icon [img]="getLearningIcon(goal)" class="w-10 h-10 text-white"></lucide-icon>
                     </div>
 
                     <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3">{{ goal.title }}</h4>

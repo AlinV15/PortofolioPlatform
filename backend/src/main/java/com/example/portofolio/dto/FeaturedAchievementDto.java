@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeaturedAchievementDto {
-    private Long id;
+    private String id;
     private String title;
     private String description;
     private Integer year;

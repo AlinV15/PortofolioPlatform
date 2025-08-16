@@ -1,7 +1,5 @@
 package com.example.portofolio.dto;
-import com.example.portofolio.entity.Course;
-import com.example.portofolio.entity.Icon;
-import com.example.portofolio.entity.Technology;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

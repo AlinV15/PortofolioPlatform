@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PersonalValueDto {
-    private Long id;
+    private String id;
     private String title;
     private String description;
     private String icon;

@@ -57,7 +57,7 @@
             <div class="space-y-16">
                 <!-- Contact Info Section -->
                 <section id="section-info" class="scroll-mt-20">
-                    <app-contact-info></app-contact-info>
+                    <app-contact-info [contactInfo]="contactInfo()" [error]="contactDataError()">></app-contact-info>
                 </section>
 
                 <!-- Contact Form Section -->
@@ -67,7 +67,7 @@
 
                 <!-- Contact Map Section -->
                 <section id="section-map" class="scroll-mt-20">
-                    <app-contact-map></app-contact-map>
+                    <app-contact-map [location]="contactLocation()" [error]="locationDataError()">></app-contact-map>
                 </section>
             </div>
 

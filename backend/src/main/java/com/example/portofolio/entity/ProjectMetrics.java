@@ -39,7 +39,7 @@ public class ProjectMetrics extends BaseEntity {
 
     @Builder.Default
     @Column(name = "commits_count")
-    private Long commitsCount = 0L;
+    private Integer commitsCount = 0;
 
     @Column(name = "test_coverage_percentage", precision = 5, scale = 2)
     private BigDecimal testCoveragePercentage;

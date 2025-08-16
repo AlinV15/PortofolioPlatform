@@ -1,0 +1,72 @@
+# Adaugă în application-dev.yml
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # 🔥 SECURITY DISABLED în development
+  security:
+    user:
+      name: dev
+      password: dev
+    basic:
+      enabled: false
+
+  # 🔥 ACTUATOR fără securitate în dev
+  management:
+    security:
+      enabled: false
+
+  # 🔥 CONFIGURAȚIE OPTIMIZATĂ DevTools pentru development
+  devtools:
+    restart:
+      enabled: true
+      additional-paths:
+        - src/main/java
+        - src/main/resources
+      exclude:
+        - static/**
+        - public/**
+        - templates/**
+        - META-INF/maven/**
+        - META-INF/resources/**
+        - WEB-INF/**
+      poll-interval: 300      # Mai rapid - 300ms
+      quiet-period: 100       # Mai rapid - 100ms
+      trigger-file: .reloadtrigger
+      additional-exclude: "**/SecurityConfig.class,**/WebSecurityConfig.class"
+    livereload:
+      enabled: true
+      port: 35729
+    add-properties: false
+    # 🔥 EXCLUSION pentru clasele de securitate
+
+
+  # 🔥 CACHE DISABLED în development
+  cache:
+    type: none
+    cache-names: []
+
+# 🔥 MANAGEMENT endpoints fără autentificare
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Toate endpoint-urile disponibile
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  security:
+    enabled: false
+
+# 🔥 LOGGING îmbunătățit pentru debugging
+logging:
+  level:
+    com.example.portofolio: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.devtools: DEBUG
+    org.springframework.security: DEBUG  # Pentru debugging security
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.boot.autoconfigure: INFO

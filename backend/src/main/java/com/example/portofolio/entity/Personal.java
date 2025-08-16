@@ -18,7 +18,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Personal extends BaseEntity {
 
     @Column(name = "first_name", nullable = false, length = 100)

@@ -1,54 +1,14 @@
 // education.component.ts
 
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, GraduationCap, School, Trophy, Award, Users, User, Calendar, MapPin, ExternalLink, Github, Lightbulb, Check, LucideIconData, RefreshCcw } from 'lucide-angular';
+import { LucideAngularModule, GraduationCap, School, Trophy, Award, Users, User, Calendar, MapPin, ExternalLink, Github, Lightbulb, Check, LucideIconData, RefreshCcw, X } from 'lucide-angular';
+import { AcademicProject, Education, EducationStats, RelevantCourse } from '../../shared/models/education.interface';
+import { Certificate } from '../../shared/models/certificate.interface';
+import { EducationStatus } from '../../shared/enums/EducationStatus';
+import { IconHelperService } from '../../services/icon-helper.service';
 
-interface Education {
-  id: number;
-  level: 'university' | 'highschool';
-  institution: string;
-  degree: string;
-  field: string;
-  period: string;
-  location: string;
-  description: string;
-  achievements: string[];
-  relevant_courses: string[];
-  status: 'completed' | 'ongoing';
-  gpa?: string;
-  highlights?: string[];
-  icon: any;
-  iconType: 'lucide' | 'fontawesome' | 'emoji';
-}
-
-interface Certificate {
-  id: number;
-  name: string;
-  issuer: string;
-  date: string;
-  certificate_id?: string;
-  description: string;
-  skills_gained: string[];
-  type: 'technical' | 'leadership' | 'business';
-  link?: string;
-  icon: any;
-  iconType: 'lucide' | 'fontawesome' | 'emoji';
-}
-
-interface AcademicProject {
-  id: number;
-  title: string;
-  course: string;
-  description: string;
-  technologies: string[];
-  duration: string;
-  type: 'individual' | 'group';
-  github_link?: string;
-  icon: any;
-  iconType: 'lucide' | 'fontawesome' | 'emoji';
-}
 
 @Component({
   selector: 'app-education',
@@ -73,207 +33,41 @@ export class EducationComponent {
   readonly Lightbulb = Lightbulb
   readonly Check = Check;
   readonly Reaload = RefreshCcw;
+  readonly X = X;
 
 
   // Educational background
-  education: Education[] = [
-    {
-      id: 1,
-      level: 'university',
-      institution: 'Alexandru Ioan Cuza University',
-      degree: 'Bachelor\'s Degree',
-      field: 'Economic Informatics',
-      period: 'September 2022 - July 2025',
-      location: 'Faculty of Economics and Business Administration, Iași',
-      status: 'completed',
-      description: 'Pursuing studies at the Faculty of Economics and Business Administration, specializing in Economic Informatics, combining technology with business and economic understanding.',
-      achievements: [
-        'Developing expertise in both technical and business domains',
-        'Active participation in programming clubs and student organizations',
-        'Building practical skills through hands-on projects'
-      ],
-      relevant_courses: [
-        'Microeconomics', 'Applied Mathematics in Economics', 'Information Technologies in Business',
-        'Accounting Fundamentals', 'Business Law', 'French for Business 1 & 2',
-        'Statistics Fundamentals', 'Software Tools for Business', 'Financial Accounting',
-        'Management', 'Macroeconomics', 'Programming I', 'Marketing',
-        'Office Information Systems', 'Finance', 'Econometrics', 'French for Business 3 & 4',
-        'Algorithms and Programming Logic', 'Databases I', 'Money and Credit',
-        'Specialty Practice', 'Operations Research', 'Groupware', 'Computer Networks I',
-        'Programming II', 'Electronic Commerce', 'Information Systems Analysis',
-        'Financial-Accounting Management of the Enterprise', 'Information Systems Design',
-        'Information Systems Security', 'Website Development', 'e-Marketing', 'ERP',
-        'Economic Projects in Informatics'
-      ],
-      highlights: [
-        'Comprehensive curriculum covering both technical and business aspects',
-        'Hands-on experience with modern technologies and business tools',
-        'Strong foundation in programming, databases, and system analysis'
-      ],
-      icon: this.GraduationCap,
-      iconType: 'lucide'
-    },
-    {
-      id: 2,
-      level: 'highschool',
-      institution: 'Vasile Sav Technological High School',
-      degree: 'High School Diploma',
-      field: 'Automation and Computer Technology',
-      period: 'September 2018 - June 2022',
-      location: 'Roman',
-      status: 'completed',
-      description: 'Specialized in Automation and Computer Technology, building foundational knowledge in programming, electronics, and technical systems.',
-      achievements: [
-        'Inorganic Chemistry Competition - Mention (9th grade)',
-        'Mathematics Competition - Mention (12th grade)'
-      ],
-      relevant_courses: [
-        'Organic Chemistry',
-        'Introduction to C++',
-        'Digital Electronics',
-        'Analog Electronics'
-      ],
-      highlights: [
-        'First exposure to programming with C++',
-        'Strong analytical and problem-solving foundation',
-        'Academic recognition in mathematics and chemistry'
-      ],
-      icon: this.School,
-      iconType: 'lucide'
-    }
-  ];
+  @Input() education: Education[] = [];
 
   // Certifications and additional qualifications
-  certificates: Certificate[] = [
-    {
-      id: 1,
-      name: 'LEADERS Explore - Leadership Certificate',
-      issuer: 'LEADERS Organization',
-      date: 'December 2023',
-      certificate_id: 'LDRS03090/12/21/2023',
-      type: 'leadership',
-      description: 'Comprehensive leadership development program focusing on essential leadership skills, critical thinking, and team management in professional environments.',
-      skills_gained: [
-        'Problem Solving and Decision Making',
-        'Taking Initiative and Self-Leadership',
-        'Critical Thinking and Personal Efficiency',
-        'Emotional Intelligence and Communication',
-        'Self Awareness and Teamwork'
-      ],
-      icon: this.Trophy,
-      iconType: 'lucide'
-    },
-    {
-      id: 2,
-      name: 'Learn C# Course - Certificate of Completion',
-      issuer: 'Codecademy',
-      date: 'December 2023',
-      certificate_id: '90AEA8BA-E',
-      type: 'technical',
-      description: 'Successful completion of comprehensive C# programming course, strengthening object-oriented programming knowledge and advanced C# concepts.',
-      skills_gained: [
-        'Object-Oriented Programming',
-        'C# Syntax and Advanced Concepts',
-        'Software Development Best Practices',
-        'Problem-Solving with C#'
-      ],
-      icon: 'fas fa-code',
-      iconType: 'fontawesome'
-    },
-    {
-      id: 3,
-      name: 'Microsoft Dynamics AX (Axapta) - User Certification',
-      issuer: 'Microsoft',
-      date: '2025',
-      type: 'business',
-      description: 'Certification in Microsoft Dynamics AX application usage, ERP system operation, and business process management.',
-      skills_gained: [
-        'ERP System Operation',
-        'Business Process Management',
-        'Microsoft Dynamics AX Usage',
-        'Enterprise Resource Planning'
-      ],
-      icon: this.Award,
-      iconType: 'lucide'
-    }
-  ];
+  @Input() certificates: Certificate[] = []
 
   // Academic projects (based on university courses)
-  academicProjects: AcademicProject[] = [
-    {
-      id: 1,
-      title: 'Web Application with Angular',
-      course: 'Website Development',
-      description: 'Collaborative university project demonstrating competency in Angular framework with team development experience and version control.',
-      technologies: ['Angular', 'TypeScript', 'HTML/CSS', 'Git'],
-      duration: '3 months',
-      type: 'group',
-      github_link: 'https://github.com/AlinV15/Proiect-Web-App-with-Angular',
-      icon: this.Users,
-      iconType: 'lucide'
-    },
-    {
-      id: 2,
-      title: 'Database Design Project',
-      course: 'Databases I',
-      description: 'Comprehensive database design and implementation project focusing on relational database principles and SQL optimization.',
-      technologies: ['SQL', 'PostgreSQL', 'Database Design', 'ER Modeling'],
-      duration: '2 months',
-      type: 'individual',
-      icon: this.User,
-      iconType: 'lucide'
-    },
-    {
-      id: 3,
-      title: 'ERP System Analysis',
-      course: 'ERP',
-      description: 'Analysis and implementation of enterprise resource planning concepts with focus on business process optimization.',
-      technologies: ['ERP Concepts', 'Business Analysis', 'Process Modeling'],
-      duration: '1 semester',
-      type: 'group',
-      icon: this.Users,
-      iconType: 'lucide'
-    },
-    {
-      id: 4,
-      title: 'E-Commerce Platform Design',
-      course: 'Electronic Commerce',
-      description: 'Design and development of e-commerce solution with focus on user experience and business requirements.',
-      technologies: ['Web Development', 'UX/UI Design', 'E-Commerce Principles'],
-      duration: '4 months',
-      type: 'individual',
-      icon: this.User,
-      iconType: 'lucide'
-    }
-  ];
+  @Input() academicProjects: AcademicProject[] = [];
 
   // Academic statistics
-  academicStats = {
-    totalCourses: 30,
-    currentYear: 3,
-    specialization: 'Economic Informatics',
-    focusAreas: ['Programming', 'Database Systems', 'Business Analysis', 'Web Development'],
-    languages: [
-      { name: 'French', level: 'B1-B2', icon: '🇫🇷', iconType: 'emoji' },
-      { name: 'English', level: 'A2-B1', icon: '🇬🇧', iconType: 'emoji' }
-    ]
-  };
-
-  // Track by functions
-  trackByEducation(index: number, education: Education): number {
-    return education.id;
+  @Input() academicStats: EducationStats = {
+    totalCourses: 0,
+    currentYear: "",// or number if preferred
+    specialization: "",
+    focusAreas: [],
+    languages: [],
   }
 
-  trackByCertificate(index: number, certificate: Certificate): number {
-    return certificate.id;
+  constructor(private iconHelper: IconHelperService) {
+
   }
 
-  trackByProject(index: number, project: AcademicProject): number {
-    return project.id;
+  trackByProject(index: number, project: AcademicProject): string {
+    return project.title
   }
 
-  trackByCourse(index: number, course: string): string {
-    return course;
+  trackByCertificate(index: number, certificate: Certificate): string {
+    return certificate.certificateId
+  }
+
+  trackByCourse(index: number, course: RelevantCourse): string {
+    return course.title;
   }
 
   trackBySkill(index: number, skill: string): string {
@@ -312,33 +106,28 @@ export class EducationComponent {
   expandedCourses: { [key: number]: boolean } = {};
 
   // Toggle course expansion
-  toggleCourseExpansion(eduId: number): void {
-    this.expandedCourses[eduId] = !this.expandedCourses[eduId];
+  toggleCourseExpansion(eduId: string): void {
+    this.expandedCourses[parseInt(eduId)] = !this.expandedCourses[parseInt(eduId)];
   }
 
   // Check if courses are expanded
-  isCoursesExpanded(eduId: number): boolean {
-    return this.expandedCourses[eduId] || false;
+  isCoursesExpanded(eduId: string): boolean {
+    const eduNr = parseInt(eduId);
+    return this.expandedCourses[eduNr] || false;
   }
 
   // Get courses to display
-  getCoursesToDisplay(courses: string[], eduId: number): string[] {
+  getCoursesToDisplay(courses: RelevantCourse[], eduId: string): RelevantCourse[] {
     return this.isCoursesExpanded(eduId) ? courses : courses.slice(0, 12);
   }
 
-  // Handle external links
-  onCertificateClick(certificate: Certificate): void {
-    if (certificate.link) {
-      window.open(certificate.link, '_blank');
-    }
-    console.log(`Certificate clicked: ${certificate.name}`);
+  stringToFontAwesome(iconString: string) {
+    return this.iconHelper.stringToFontAwesome(iconString);
+  }
+
+  stringToLucide(icoString: string) {
+    return this.iconHelper.stringToLucide(icoString);
   }
 
 
-  onProjectClick(project: AcademicProject): void {
-    if (project.github_link) {
-      window.open(project.github_link, '_blank');
-    }
-    console.log(`Project clicked: ${project.title}`);
-  }
 }

@@ -1,6 +1,5 @@
 package com.example.portofolio.dto;
 
-import com.example.portofolio.entity.Icon;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,5 +14,5 @@ import lombok.NoArgsConstructor;
 public class FeaturedStatDto {
     private String value;
     private String label;
-    private Icon icon;
+    private String icon;
 }

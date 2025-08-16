@@ -1,33 +1,49 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Code, Layers, Star, TrendingUp, Users, Calendar, Target, Award } from 'lucide-angular';
-import { Project } from '../../../interfaces/project.interface';
-
-interface ProjectStat {
-  id: string;
-  title: string;
-  value: string | number;
-  icon: any;
-  color: string;
-  bgColor: string;
-  description: string;
-}
+import { LucideAngularModule, Code, Layers, Star, TrendingUp, Users, Calendar, Target, Award, BarChart3, Zap } from 'lucide-angular';
+import { Project, ProjectsStats, ProjectCategoryDistribution, StatCard, TechStat, ProjectExperience } from '../../shared/models/project.interface';
+import { ComplexityLevel } from '../../shared/enums/ComplexityLevel';
+import { ProjectStatus } from '../../shared/enums/ProjectStatus';
 
 @Component({
   selector: 'app-project-stats',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './project-stats.component.html',
-  styleUrls: ['./project-stats.component.css']
+  styleUrls: ['./project-stats.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush // CRITICAL: Prevent unnecessary change detection
 })
-export class ProjectStatsComponent implements OnInit, OnChanges {
-  @Input() projects: Project[] = [];
-  @Input() filteredProjects: Project[] = [];
+export class ProjectStatsComponent implements OnChanges {
 
-  // Add this property to your component class
-  public successRate: number = 0; // Set a default value or compute as
+  // ========================
+  // INPUTS FROM PARENT
+  // ========================
+  @Input() projectStats: ProjectsStats = {
+    technologies: 0,
+    totalProjects: 0,
+    liveProjects: 0
+  };
+  @Input() projectExperience: ProjectExperience = {
+    yearsActive: 0,
+    firstProjectYear: 0,
+    latestProjectYear: 0,
+    avgComplexity: 'N/A',
+    avgComplexityLabel: 'N/A',
+    successRate: 0,
+    formattedSuccessRate: '0%',
+    deployedProjects: 0,
+    totalProjects: 0,
+    liveProjects: 0,
+    experienceLevel: 'N/A'
+  };
+  @Input() categoryDistribution: readonly ProjectCategoryDistribution[] = []; // Make readonly
+  @Input() allProjects: readonly Project[] = []; // Make readonly
+  @Input() isLoading = false;
+  @Input() hasError = false;
 
-  // Lucide Icons
+  // ========================
+  // LUCIDE ICONS (READONLY TO PREVENT MUTATIONS)
+  // ========================
   readonly codeIcon = Code;
   readonly layersIcon = Layers;
   readonly starIcon = Star;
@@ -36,164 +52,365 @@ export class ProjectStatsComponent implements OnInit, OnChanges {
   readonly calendarIcon = Calendar;
   readonly targetIcon = Target;
   readonly awardIcon = Award;
+  readonly barChartIcon = BarChart3;
+  readonly zapIcon = Zap;
 
-  stats: ProjectStat[] = [];
+  // ========================
+  // COMPUTED DATA (IMMUTABLE)
+  // ========================
+  private _statCards: readonly StatCard[] = [];
+  private _complexityDistribution: readonly { level: string; count: number; percentage: number }[] = [];
+  private _topTechnologies: readonly TechStat[] = [];
+  private _yearlyDistribution: readonly { year: string; count: number }[] = [];
 
-  ngOnInit(): void {
-    this.calculateStats();
-  }
+  // Getters to prevent direct mutation
+  get statCards(): readonly StatCard[] { return this._statCards; }
+  get complexityDistribution(): readonly { level: string; count: number; percentage: number }[] { return this._complexityDistribution; }
+  get topTechnologies(): readonly TechStat[] { return this._topTechnologies; }
+  get yearlyDistribution(): readonly { year: string; count: number }[] { return this._yearlyDistribution; }
+
+  // Cache for expensive computations
+  private _lastProjectsHash = '';
+  private _lastStatsHash = '';
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['projects'] || changes['filteredProjects']) {
-      this.calculateStats();
+    // Only recalculate if inputs actually changed
+    let shouldRecalculate = false;
+
+    if (changes['allProjects'] && changes['allProjects'].currentValue !== changes['allProjects'].previousValue) {
+      const newHash = this.hashProjects(this.allProjects);
+      if (newHash !== this._lastProjectsHash) {
+        this._lastProjectsHash = newHash;
+        shouldRecalculate = true;
+      }
+    }
+
+    if (changes['projectStats'] && changes['projectStats'].currentValue !== changes['projectStats'].previousValue) {
+      const newHash = this.hashStats(this.projectStats);
+      if (newHash !== this._lastStatsHash) {
+        this._lastStatsHash = newHash;
+        shouldRecalculate = true;
+      }
+    }
+
+    if (changes['categoryDistribution'] || changes['projectExperience']) {
+      shouldRecalculate = true;
+    }
+
+    if (shouldRecalculate) {
+      this.calculateDisplayStats();
     }
   }
 
-  private calculateStats(): void {
-    const projectsToAnalyze = this.projects.length > 0 ? this.projects : [];
+  get projectCategoriesDistribution() {
+    console.log("Este ceva" + this.categoryDistribution[0].category);
+    return this.categoryDistribution;
 
-    this.stats = [
-      {
-        id: 'applications',
-        title: 'Applications',
-        value: this.getTotalApplications(projectsToAnalyze),
-        icon: this.layersIcon,
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/20',
-        description: 'Total projects built'
-      },
-      {
-        id: 'technologies',
-        title: 'Technologies',
-        value: this.getTotalTechnologies(projectsToAnalyze),
-        icon: this.codeIcon,
-        color: 'text-green-600 dark:text-green-400',
-        bgColor: 'bg-green-100 dark:bg-green-900/20',
-        description: 'Different tech stacks used'
-      },
+  }
+
+  // Hash functions to detect actual changes
+  private hashProjects(projects: readonly Project[]): string {
+    return `${projects.length}-${projects.map(p => p.id).join(',')}-${projects.map(p => p.complexity).join(',')}`;
+  }
+
+  private hashStats(stats: ProjectsStats): string {
+    return `${stats.totalProjects}-${stats.technologies}-${stats.liveProjects}`;
+  }
+
+  private calculateDisplayStats(): void {
+    // Create new immutable arrays instead of modifying existing ones
+    this._statCards = Object.freeze(this.buildStatCards());
+    this._topTechnologies = Object.freeze(this.calculateTechStats());
+    this._complexityDistribution = Object.freeze(this.calculateComplexityStats());
+    this._yearlyDistribution = Object.freeze(this.calculateYearlyDistribution());
+  }
+
+  // ========================
+  // STAT CARDS CALCULATION (PURE FUNCTIONS)
+  // ========================
+
+  private buildStatCards(): StatCard[] {
+    return [
       {
         id: 'featured',
-        title: 'Featured',
-        value: this.getFeaturedCount(projectsToAnalyze),
+        title: 'Featured Work',
+        value: this.projectExperience.liveProjects,
         icon: this.starIcon,
         color: 'text-yellow-600 dark:text-yellow-400',
         bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
-        description: 'Highlighted projects'
+        description: 'Highlighted achievements'
       },
       {
-        id: 'production',
-        title: 'Live Apps',
-        value: this.getProductionCount(projectsToAnalyze),
-        icon: this.trendingUpIcon,
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-100 dark:bg-purple-900/20',
-        description: 'Applications in production'
+        id: 'success-rate',
+        title: 'Success Rate',
+        value: this.projectExperience.formattedSuccessRate,
+        icon: this.targetIcon,
+        color: 'text-emerald-600 dark:text-emerald-400',
+        bgColor: 'bg-emerald-100 dark:bg-emerald-900/20',
+        description: 'Projects completed successfully'
+      },
+      {
+        id: 'experience',
+        title: 'Years Active',
+        value: this.projectExperience.yearsActive,
+        icon: this.calendarIcon,
+        color: 'text-indigo-600 dark:text-indigo-400',
+        bgColor: 'bg-indigo-100 dark:bg-indigo-900/20',
+        description: 'Years of development experience'
       }
     ];
   }
 
-  private getTotalApplications(projects: Project[]): string {
-    const count = projects.length;
-    return count > 0 ? `${count}+` : '0';
+  // Pure function - no mutations
+  formatedPercentage(percentage: number): string {
+    return `${percentage.toFixed(2)}%`;
   }
 
-  private getTotalTechnologies(projects: Project[]): string {
-    const allTechnologies = new Set<string>();
+  // Pure function
+  getSuccessRate(): number {
+    if (!this.allProjects.length) return 0;
 
-    projects.forEach(project => {
-      project.technologies?.forEach(tech => {
-        allTechnologies.add(tech.toLowerCase());
-      });
-    });
+    const completedProjects = this.allProjects.filter(project =>
+      project.status === ProjectStatus.PRODUCTION ||
+      project.status === ProjectStatus.MAINTENANCE
+    );
 
-    const count = allTechnologies.size;
-    return count > 0 ? `${count}+` : '0';
+    return Math.round((completedProjects.length / this.allProjects.length) * 100);
   }
 
-  private getFeaturedCount(projects: Project[]): string {
-    const count = projects.filter(project => project.featured).length;
-    return count > 0 ? `${count}+` : '0';
-  }
+  // Pure function
+  getTotalYearsActive(): number {
+    if (!this.allProjects.length) return 0;
 
-  private getProductionCount(projects: Project[]): string {
-    const count = projects.filter(project => project.status === 'production').length;
-    return count > 0 ? `${count}+` : '0';
-  }
+    const years = this.allProjects
+      .map(p => Number(p.year))
+      .filter(year => !isNaN(year) && year > 0);
 
-  // Additional stats getters pentru utilizare în template
-  get totalYearsActive(): number {
-    if (!this.projects.length) return 0;
-
-    const years = this.projects.map(p => Number(p.year)).filter(year => !isNaN(year));
     if (years.length === 0) return 0;
 
     const minYear = Math.min(...years);
     const currentYear = new Date().getFullYear();
-    return currentYear - minYear + 1;
+    return Math.max(1, currentYear - minYear + 1);
   }
 
-  get averageComplexity(): string {
-    if (!this.projects.length) return 'N/A';
+  // ========================
+  // TECHNOLOGY STATS (PURE FUNCTION)
+  // ========================
 
-    const complexityValues = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 };
-    const totalComplexity = this.projects.reduce((sum, project) => {
-      return sum + (complexityValues[project.complexity as keyof typeof complexityValues] || 0);
-    }, 0);
-
-    const average = totalComplexity / this.projects.length;
-
-    if (average <= 1.5) return 'Beginner';
-    if (average <= 2.5) return 'Intermediate';
-    return 'Advanced';
-  }
-
-  get topTechnologies(): string[] {
+  private calculateTechStats(): TechStat[] {
     const techCount = new Map<string, number>();
 
-    this.projects.forEach(project => {
+    this.allProjects.forEach(project => {
       project.technologies?.forEach(tech => {
         const normalizedTech = tech.trim();
         techCount.set(normalizedTech, (techCount.get(normalizedTech) || 0) + 1);
       });
     });
 
+    const totalTechUsage = Array.from(techCount.values()).reduce((sum, count) => sum + count, 0);
+
     return Array.from(techCount.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([tech]) => tech);
+      .slice(0, 8)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: Math.round((count / totalTechUsage) * 100)
+      }));
   }
 
-  get categoryDistribution(): { category: string; count: number; percentage: number }[] {
-    if (!this.projects.length) return [];
+  // ========================
+  // COMPLEXITY STATS (PURE FUNCTION)
+  // ========================
 
-    const categoryCount = new Map<string, number>();
+  private calculateComplexityStats(): { level: string; count: number; percentage: number }[] {
+    if (!this.allProjects.length) {
+      return [
+        { level: 'beginner', count: 0, percentage: 0 },
+        { level: 'intermediate', count: 0, percentage: 0 },
+        { level: 'advanced', count: 0, percentage: 0 }
+      ];
+    }
 
-    this.projects.forEach(project => {
-      const category = project.category || 'other';
-      categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+    const complexityCount = { beginner: 0, intermediate: 0, advanced: 0 };
+
+    this.allProjects.forEach(project => {
+      switch (project.complexity) {
+        case ComplexityLevel.BEGINNER:
+          complexityCount.beginner += 1;
+          break;
+        case ComplexityLevel.INTERMEDIATE:
+          complexityCount.intermediate += 1;
+          break;
+        case ComplexityLevel.ADVANCED:
+          complexityCount.advanced += 1;
+          break;
+      }
     });
 
-    const total = this.projects.length;
+    const totalProjects = this.allProjects.length;
 
-    return Array.from(categoryCount.entries())
-      .map(([category, count]) => ({
-        category: category.charAt(0).toUpperCase() + category.slice(1),
-        count,
-        percentage: Math.round((count / total) * 100)
-      }))
-      .sort((a, b) => b.count - a.count);
+    return [
+      {
+        level: 'beginner',
+        count: complexityCount.beginner,
+        percentage: Math.round((complexityCount.beginner / totalProjects) * 100)
+      },
+      {
+        level: 'intermediate',
+        count: complexityCount.intermediate,
+        percentage: Math.round((complexityCount.intermediate / totalProjects) * 100)
+      },
+      {
+        level: 'advanced',
+        count: complexityCount.advanced,
+        percentage: Math.round((complexityCount.advanced / totalProjects) * 100)
+      }
+    ];
   }
 
-  // Track by function pentru *ngFor
-  trackByStat(index: number, stat: ProjectStat): string {
+  // ========================
+  // YEARLY DISTRIBUTION (PURE FUNCTION)
+  // ========================
+
+  private calculateYearlyDistribution(): { year: string; count: number }[] {
+    if (!this.allProjects.length) {
+      return [];
+    }
+
+    const yearCount = new Map<string, number>();
+
+    this.allProjects.forEach(project => {
+      const year = String(project.year);
+      yearCount.set(year, (yearCount.get(year) || 0) + 1);
+    });
+
+    return Array.from(yearCount.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([year, count]) => ({ year, count }));
+  }
+
+  // ========================
+  // COMPUTED PROPERTIES (CACHED)
+  // ========================
+
+  private _cachedAverageComplexity: string | null = null;
+  private _cachedMostUsedTechnology: string | null = null;
+  private _cachedProjectsPerYear: number | null = null;
+
+  get averageComplexity(): string {
+    if (this._cachedAverageComplexity !== null) return this._cachedAverageComplexity;
+
+    if (!this.allProjects.length) {
+      this._cachedAverageComplexity = 'N/A';
+      return this._cachedAverageComplexity;
+    }
+
+    const complexityValues = {
+      [ComplexityLevel.BEGINNER]: 1,
+      [ComplexityLevel.INTERMEDIATE]: 2,
+      [ComplexityLevel.ADVANCED]: 3
+    };
+
+    const totalComplexity = this.allProjects.reduce((sum, project) => {
+      return sum + (complexityValues[project.complexity] || 0);
+    }, 0);
+
+    const average = totalComplexity / this.allProjects.length;
+
+    if (average <= 1.5) this._cachedAverageComplexity = 'Beginner';
+    else if (average <= 2.5) this._cachedAverageComplexity = 'Intermediate';
+    else this._cachedAverageComplexity = 'Advanced';
+
+    return this._cachedAverageComplexity;
+  }
+
+  get mostUsedTechnology(): string {
+    if (this._cachedMostUsedTechnology !== null) return this._cachedMostUsedTechnology;
+
+    if (!this.topTechnologies.length) {
+      this._cachedMostUsedTechnology = 'N/A';
+      return this._cachedMostUsedTechnology;
+    }
+
+    this._cachedMostUsedTechnology = this.topTechnologies[0].name;
+    return this._cachedMostUsedTechnology;
+  }
+
+  get projectsPerYear(): number {
+    if (this._cachedProjectsPerYear !== null) return this._cachedProjectsPerYear;
+
+    const years = this.getTotalYearsActive();
+    if (years === 0) {
+      this._cachedProjectsPerYear = 0;
+      return this._cachedProjectsPerYear;
+    }
+
+    this._cachedProjectsPerYear = Math.round((this.projectStats.totalProjects || 0) / years * 10) / 10;
+    return this._cachedProjectsPerYear;
+  }
+
+  get hasData(): boolean {
+    return this.allProjects.length > 0 || this.projectStats.totalProjects > 0;
+  }
+
+  // ========================
+  // HELPER METHODS (PURE FUNCTIONS)
+  // ========================
+
+  getComplexityColor(level: string): string {
+    const colors = {
+      'beginner': 'text-green-600 dark:text-green-400',
+      'intermediate': 'text-yellow-600 dark:text-yellow-400',
+      'advanced': 'text-red-600 dark:text-red-400'
+    };
+    return colors[level as keyof typeof colors] || 'text-gray-600 dark:text-gray-400';
+  }
+
+  getComplexityBgColor(level: string): string {
+    const colors = {
+      'beginner': 'bg-green-100 dark:bg-green-900/20',
+      'intermediate': 'bg-yellow-100 dark:bg-yellow-900/20',
+      'advanced': 'bg-red-100 dark:bg-red-900/20'
+    };
+    return colors[level as keyof typeof colors] || 'bg-gray-100 dark:bg-gray-900/20';
+  }
+
+  getTechBarWidth(percentage: number): string {
+    return `${Math.max(percentage, 5)}%`; // Minimum 5% for visibility
+  }
+
+  // ========================
+  // PERFORMANCE HELPERS (PREVENT UNNECESSARY RE-RENDERS)
+  // ========================
+
+  trackByStatCard(index: number, stat: StatCard): string {
     return stat.id;
   }
 
-  trackByTech(index: number, tech: string): string {
-    return tech;
+  trackByTech(index: number, tech: TechStat): string {
+    return tech.name;
   }
 
-  trackByCategory(index: number, category: any): string {
+  trackByCategory(index: number, category: ProjectCategoryDistribution): string {
     return category.category;
+  }
+
+  trackByComplexity(index: number, complexity: { level: string; count: number; percentage: number }): string {
+    return complexity.level;
+  }
+
+  trackByYear(index: number, year: { year: string; count: number }): string {
+    return year.year;
+  }
+
+  // ========================
+  // CACHE INVALIDATION
+  // ========================
+
+  private invalidateCache(): void {
+    this._cachedAverageComplexity = null;
+    this._cachedMostUsedTechnology = null;
+    this._cachedProjectsPerYear = null;
   }
 }

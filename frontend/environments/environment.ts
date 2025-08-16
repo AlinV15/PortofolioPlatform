@@ -20,7 +20,7 @@ export const environment = {
         version: '2.0.0'
     },
     api: {
-        baseUrl: 'http://localhost:4200'
+        baseUrl: 'http://localhost:8080/api'
     },
     debug: "true" === 'true'
 };

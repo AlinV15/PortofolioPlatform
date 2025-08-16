@@ -3,33 +3,41 @@
 
     <!-- Skills Hero Section -->
     <section id="skills-hero" class="relative">
-        <app-skills-hero (exploreSkills)="onExploreSkills()" (categorySelected)="onCategorySelected($event)">
+        <app-skills-hero [skillsStats]="skillsStats" [coreSkills]="allSkills" [topSkills]="topSkills"
+            [skillCategories]="skillsCategories" [currentLearning]="currentLearningHero"
+            [learningProgress]="learningProgress" [technologies]="technologies" (exploreSkills)="onExploreSkills()">
         </app-skills-hero>
     </section>
 
     <!-- Skills Categories Section -->
     <section id="skills-categories" class="scroll-mt-20">
-        <app-skills-categories [skills]="allSkills" [showAnimations]="true" [autoRotateCategories]="false">
+        <app-skills-categories [skills]="allSkills" [skillCategories]="skillsCategories" [showAnimations]="true"
+            [autoRotateCategories]="false">
         </app-skills-categories>
     </section>
 
     <!-- Technical Stack Section -->
     <section id="technical-stack" class="scroll-mt-20">
-        <app-technical-stack [technologies]="technologies" [showCategoryFilter]="true" [showSearch]="true"
-            [animateOnScroll]="true" [gridLayout]="'dense'">
+        <app-technical-stack [technologies]="technologies" [techCategories]="techCategories" [techStats]="techStats"
+            [showCategoryFilter]="true" [showSearch]="true" [animateOnScroll]="true" [gridLayout]="'dense'"
+            (technologySelected)="onTechClick($event)">
         </app-technical-stack>
     </section>
 
     <!-- Certifications Grid Section -->
     <section id="certifications" class="scroll-mt-20">
-        <app-certifications-grid (certificationSelected)="onCertificationSelected($event)"
-            (viewAllCertifications)="onViewAllCertifications()">
+        <app-certifications-grid [certificates]="certificates" [certificateCategories]="certificateCategories"
+            [certificateStats]="certificateStats" (viewAllCertifications)="onViewAllCertifications()">
         </app-certifications-grid>
     </section>
 
     <!-- Skills Timeline Section -->
     <section id="skills-timeline" class="scroll-mt-20">
-        <app-skills-timeline (milestoneSelected)="onMilestoneSelected($event)" (viewFullJourney)="onViewFullJourney()">
+        <app-skills-timeline [futureGoal]="futureGoal" [skillsStats]="skillsStats"
+            [timelineMilestones]="timelineMilestones" [timelineStats]="timelineStats"
+            [currentLearning]="currentLearningHero" [learningProgress]="learningProgress"
+            [recentAchievements]="recentAchievements" (milestoneSelected)="onMilestoneSelected($event)"
+            (viewFullJourney)="onViewFullJourney()">
         </app-skills-timeline>
     </section>
 
@@ -44,11 +52,11 @@
             </p>
 
             <div class="flex flex-wrap justify-center gap-4">
-                <a routerLink="/projects"
+                <button (click)="onViewProjects()"
                     class="inline-flex items-center px-8 py-4 bg-white text-gray-900 rounded-2xl font-semibold hover:bg-gray-100 transition-colors duration-200 transform hover:scale-105 cursor-pointer">
                     <lucide-icon [img]="folderIcon" class="w-5 h-5 mr-3"></lucide-icon>
                     View My Projects
-                </a>
+                </button>
 
                 <button (click)="onContactMe()"
                     class="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-2xl font-semibold hover:bg-white hover:text-gray-900 transition-all duration-200 transform hover:scale-105">
@@ -73,11 +81,13 @@
 
     <!-- Section Progress Indicator -->
     <div class="fixed top-1/2 right-4 transform -translate-y-1/2 space-y-2 z-40 hidden lg:block">
-        <div *ngFor="let section of sections; let i = index"
+        <div *ngFor="let section of sections; trackBy: trackBySection"
             [class]="'w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ' + 
                   (activeSection === section.id ? 'bg-blue-600 scale-125' : 'bg-gray-300 dark:bg-gray-600 hover:bg-blue-400')" [title]="section.name"
             (click)="scrollToSection(section.id)">
         </div>
     </div>
+
+    <!-- Hire Me Component -->
     <app-hire-me></app-hire-me>
 </div>

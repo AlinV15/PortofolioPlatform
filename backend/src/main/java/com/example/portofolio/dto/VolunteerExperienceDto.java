@@ -1,10 +1,5 @@
 package com.example.portofolio.dto;
 
-import com.example.portofolio.entity.*;
-import com.example.portofolio.entity.enums.ImpactLevel;
-import com.example.portofolio.entity.enums.VolunteerStatus;
-import com.example.portofolio.entity.enums.VolunteerType;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,25 +9,26 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-
-public class AboutVolunteerExp {
-    private Long id;
+public class VolunteerExperienceDto {           // Renamed
+    private String id;                          // Long → String
     private String organization;
     private String role;
     private String period;
     private String location;
-    private VolunteerType type;
-    private VolunteerStatus status;
+    private String type;                        // VolunteerType → String
+    private String status;                      // VolunteerStatus → String
     private String description;
-    private List<VolunteerResponsibility> responsibilities;
-    private List<Achievement> achievements;
-    private List<Skill> skills_gained;
-    private List<Project> projects;
-    private ImpactLevel impact;
-    private Icon icon;
+    private List<ResponsibilityDto> responsibilities; // List<VolunteerResponsibility> → DTO
+    private List<AchievementDto> achievements;  // List<Achievement> → DTO
+    private List<String> skillsGained;          // List<Skill> → List<String>
+    private List<FeaturedProjectDto> projects;          // List<Project> → DTO
+    private String impactLevel;                 // ImpactLevel → String
+    private String icon;                        // Icon → String
     private String website;
+    private String primaryColor;
+    private String secondaryColor;
 }

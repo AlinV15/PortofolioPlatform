@@ -1,27 +1,42 @@
-// skills.component.ts
-
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, Palette, Server, Database } from 'lucide-angular';
+import { LucideAngularModule, Palette, Server, Database, Code, Layers, Zap, Star, TrendingUp, BookCopy } from 'lucide-angular';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+// Services
+import { IconHelperService } from '../../services/icon-helper.service';
 
-interface Skill {
-  id: number;
-  name: string;
-  level: number;
-  category: 'frontend' | 'backend' | 'database' | 'tools' | 'soft';
-  icon: string; // DevIcon class name
-  description: string;
-  yearsOfExperience: number;
-  color: string;
-  projects?: string[];
+// Interfaces
+import {
+  Skill,
+  TopSkill,
+  FeaturedSkill,
+  SkillCategory,
+  SkillStats
+} from '../../shared/models/skill.interface';
+import { TechCategory, Technology, TechStats } from '../../shared/models/technology.interface';
+import { ProficiencyLevel } from '../../shared/enums/ProficiencyLevel';
+
+export interface SkillsData {
+  featuredSkills: FeaturedSkill[];
+  skillsCategories: SkillCategory[];
+  skillsStats: SkillStats;
+  // Simplified to use only compatible data structures
 }
 
-interface SkillCategory {
+export interface TechData {
+  technologies: Technology[],
+  techCategories: TechCategory[],
+  techStats: TechStats
+}
+
+interface ProcessedSkillCategory {
   name: string;
-  skills: Skill[];
+  skills: FeaturedSkill[]; // Only use FeaturedSkill for compatibility
   icon: any;
   description: string;
+  averageLevel: number;
+  totalProjects: number;
 }
 
 @Component({
@@ -29,179 +44,182 @@ interface SkillCategory {
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: './skills.component.html',
-  styleUrls: ['./skills.component.css']
+  styleUrls: ['./skills.component.css'],
+  schemas: [NO_ERRORS_SCHEMA]
 })
-export class SkillsComponent implements OnInit {
+export class SkillsComponent implements OnInit, OnChanges {
+
+  // Input from parent component (HomeComponent)
+  @Input() skillsData: SkillsData | null = null;
+  @Input() techData: TechData | null = null;
 
   // Register Lucide icons for categories
   readonly Palette = Palette;
   readonly Server = Server;
   readonly Database = Database;
+  readonly Code = Code;
+  readonly Layers = Layers;
+  readonly Zap = Zap;
 
-  // Skills data with DevIcon classes (bazate pe CV-ul tău)
-  topSkills: Skill[] = [
-    {
-      id: 1,
-      name: 'JavaScript',
-      level: 85,
-      category: 'frontend',
-      icon: 'devicon-javascript-plain',
-      description: 'Modern ES6+ JavaScript with deep understanding of async/await, closures, and prototypes',
-      yearsOfExperience: 3,
-      color: '#F7DF1E',
-      projects: ['E-commerce Application', 'Todo Application', 'Personal Portfolio Website']
-    },
-    {
-      id: 2,
-      name: 'TypeScript',
-      level: 80,
-      category: 'frontend',
-      icon: 'devicon-typescript-plain',
-      description: 'Strong typing, interfaces, generics, and advanced TypeScript patterns',
-      yearsOfExperience: 2,
-      color: '#3178C6',
-      projects: ['Restaurant Management App', 'RoomieFinder Application', 'Angular Web Application']
-    },
-    {
-      id: 3,
-      name: 'React',
-      level: 82,
-      category: 'frontend',
-      icon: 'devicon-react-original',
-      description: 'Hooks, Context API, Next.js, and modern React patterns',
-      yearsOfExperience: 2,
-      color: '#61DAFB',
-      projects: ['QuotezApp', 'FloweringStoriesApp', 'Todo Application']
-    },
-    {
-      id: 4,
-      name: 'Angular',
-      level: 75,
-      category: 'frontend',
-      icon: 'devicon-angularjs-plain',
-      description: 'Component architecture, RxJS, Services, and standalone components',
-      yearsOfExperience: 1,
-      color: '#DD0031',
-      projects: ['Angular Web Application', 'Portfolio Platform']
-    },
-    {
-      id: 5,
-      name: 'Next.js',
-      level: 80,
-      category: 'frontend',
-      icon: 'devicon-nextjs-plain',
-      description: 'Server-side rendering, static generation, and full-stack React applications',
-      yearsOfExperience: 2,
-      color: '#000000',
-      projects: ['E-commerce Application', 'Restaurant Management App', 'Todo Application', 'RoomieFinder Application']
-    },
-    {
-      id: 6,
-      name: 'Java',
-      level: 70,
-      category: 'backend',
-      icon: 'devicon-java-plain',
-      description: 'Object-oriented programming, Spring fundamentals, and enterprise patterns',
-      yearsOfExperience: 2,
-      color: '#ED8B00',
-      projects: ['University Projects', 'Programming Exercises']
-    },
-    {
-      id: 7,
-      name: 'C#',
-      level: 68,
-      category: 'backend',
-      icon: 'devicon-csharp-plain',
-      description: 'Object-oriented programming and .NET framework basics',
-      yearsOfExperience: 1,
-      color: '#f728f0',
-      projects: ['Codecademy Course Projects', 'Learning Exercises']
-    },
-    {
-      id: 8,
-      name: 'PostgreSQL',
-      level: 75,
-      category: 'database',
-      icon: 'devicon-postgresql-plain',
-      description: 'Advanced queries, indexing, database design, and performance optimization',
-      yearsOfExperience: 2,
-      color: '#336791',
-      projects: ['Restaurant Management App', 'RoomieFinder Application']
-    },
-    {
-      id: 9,
-      name: 'MongoDB',
-      level: 70,
-      category: 'database',
-      icon: 'devicon-mongodb-plain',
-      description: 'NoSQL database design, aggregation pipelines, and document-based storage',
-      yearsOfExperience: 2,
-      color: '#47A248',
-      projects: ['E-commerce Application', 'QuotezApp', 'Todo Application']
-    }
-  ];
+  // Component data - simplified to use only FeaturedSkills
+  featuredSkills: FeaturedSkill[] = [];
+  skillsCategories: SkillCategory[] = [];
+  skillsStats: SkillStats = {
+    description: "Nothing for now",
+    projectsText: "0",
+    technologiesText: "0",
+    yearsCoding: "0",
+    projects: "0",
+    certifications: "0",
+    avgProficiency: "0",
+    yearsCodingLabel: "0 years",
+    projectsLabel: "0 projects",
+    certificationsLabel: "0 certifications",
+    avgProficiencyLabel: "0 %"
+  };
+  technologies: Technology[] = [];
+  techCategories: TechCategory[] = [];
+  techStats: TechStats = {
+    totalTechnologies: 0,
+    trendingCount: 0,
+    averagePopularityScore: 0,
+    categoryDistribution: { distribution: new Map<string, number>() },
+    recentlyReleasedCount: 0,
+    mostPopularCategory: "",
+    trendingPercentage: 0,
+  }
 
-  // Array-uri pentru fiecare categorie
-  frontendSkills: Skill[] = [];
-  backendSkills: Skill[] = [];
-  databaseSkills: Skill[] = [];
-  skillCategories: SkillCategory[] = [];
+
+  // Processed data for display
+  processedCategories: ProcessedSkillCategory[] = [];
+  displayedSkills: FeaturedSkill[] = [];
+  maxSkillsToShow = 9; // For home page display
 
   // Animation states
   animationTriggered = false;
-  animatedSkills = new Set<number>();
+  animatedSkills = new Set<string>();
+
+  // Enums for template access
+  readonly ProficiencyLevel = ProficiencyLevel;
+  readonly star = Star;
+  readonly trending = TrendingUp;
+  readonly books = BookCopy;
+
+  constructor(private iconHelperService: IconHelperService) { }
 
   ngOnInit(): void {
-    console.log('🚀 Component started, topSkills length:', this.topSkills.length);
+    this.initializeSkillsData();
+    this.triggerAnimations();
+  }
 
-    // Populează array-urile direct
-    this.frontendSkills = this.topSkills.filter(skill => skill.category === 'frontend');
-    this.backendSkills = this.topSkills.filter(skill => skill.category === 'backend');
-    this.databaseSkills = this.topSkills.filter(skill => skill.category === 'database');
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['skillsData'] && this.skillsData) {
+      this.initializeSkillsData();
+    }
+  }
 
-    console.log('🎨 Frontend skills:', this.frontendSkills.length);
-    console.log('⚙️ Backend skills:', this.backendSkills.length);
-    console.log('🗄️ Database skills:', this.databaseSkills.length);
+  /**
+   * Initialize skills data from parent component input
+   */
+  private initializeSkillsData(): void {
+    if (!this.skillsData) return;
 
-    // Creează categoriile
-    this.skillCategories = [
-      {
-        name: 'Frontend',
-        skills: this.frontendSkills,
-        icon: this.Palette,
-        description: 'Modern web technologies and frameworks'
-      },
-      {
-        name: 'Backend',
-        skills: this.backendSkills,
-        icon: this.Server,
-        description: 'Server-side development and APIs'
-      },
-      {
-        name: 'Database',
-        skills: this.databaseSkills,
-        icon: this.Database,
-        description: 'Data management and optimization'
-      }
-    ];
+    // Set main data
 
-    // Trigger animations after component loads
+    this.featuredSkills = this.skillsData.featuredSkills || [];
+    this.skillsCategories = this.skillsData.skillsCategories || [];
+    this.skillsStats = this.skillsData.skillsStats || this.getDefaultStats();
+
+
+    this.processCategories();
+  }
+
+
+
+  /**
+   * Process categories with associated skills
+   */
+  private processCategories(): void {
+    this.processedCategories = this.skillsCategories.map(category => {
+      // Find skills for this category
+      const categorySkills = this.displayedSkills.filter((skill: any) => {
+        if ('categoryName' in skill) {
+          return skill.categoryName === category.name;
+        }
+        if ('category' in skill) {
+          return skill.categoryName === category.name;
+        }
+        return false;
+      });
+
+      // Calculate metrics for category
+      const averageLevel = categorySkills.length > 0
+        ? categorySkills.reduce((sum, skill) => sum + skill.level, 0) / categorySkills.length
+        : 0;
+
+      const totalProjects = categorySkills.reduce((sum, skill) => {
+        if ('projects' in skill && typeof skill.projects === 'number') {
+          return sum + skill.projects;
+        }
+        if ('projects' in skill && Array.isArray(skill.projects)) {
+          return sum + skill.projects.length;
+        }
+        return sum;
+      }, 0);
+
+      return {
+        name: category.name,
+        skills: categorySkills,
+        icon: this.getCategoryIcon(category),
+        description: category.description,
+        averageLevel: Math.round(averageLevel),
+        totalProjects
+      };
+    }).filter(category => category.skills.length > 0); // Only show categories with skills
+  }
+
+  /**
+   * Get icon for category - handle both string and LucideIconData
+   */
+  getCategoryIcon(category: SkillCategory): any {
+    if (typeof category.icon === 'string') {
+      return this.iconHelperService.stringToLucide(category.icon);
+    }
+    return category.icon || this.Zap;
+  }
+
+  /**
+   * Trigger animations after component loads
+   */
+  private triggerAnimations(): void {
     setTimeout(() => {
       this.animationTriggered = true;
       this.animateSkillBars();
     }, 500);
   }
 
-  // Animate skill bars sequentially
-  animateSkillBars(): void {
-    this.topSkills.forEach((skill, index) => {
+  /**
+   * Animate skill bars sequentially
+   */
+  private animateSkillBars(): void {
+    this.displayedSkills.forEach((skill, index) => {
       setTimeout(() => {
-        this.animatedSkills.add(skill.id);
+        const skillId = this.getSkillId(skill);
+        this.animatedSkills.add(skillId);
       }, index * 200);
     });
   }
 
-  // Get skill level class for styling
+  /**
+   * Get unique skill identifier - simplified for FeaturedSkill
+   */
+  private getSkillId(skill: FeaturedSkill): string {
+    return skill.id || skill.name;
+  }
+
+  /**
+   * Get skill level class for styling
+   */
   getSkillLevelClass(level: number): string {
     if (level >= 85) return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
     if (level >= 70) return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
@@ -209,7 +227,9 @@ export class SkillsComponent implements OnInit {
     return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
 
-  // Get skill level text
+  /**
+   * Get skill level text
+   */
   getSkillLevelText(level: number): string {
     if (level >= 85) return 'Expert';
     if (level >= 70) return 'Advanced';
@@ -217,54 +237,268 @@ export class SkillsComponent implements OnInit {
     return 'Beginner';
   }
 
-  // Get progress bar width style
-  getProgressWidth(skill: Skill): { [key: string]: string } {
-    const isAnimated = this.animatedSkills.has(skill.id);
+  /**
+   * Get proficiency level text
+   */
+  getProficiencyText(proficiency: ProficiencyLevel | string): string {
+    if (typeof proficiency === 'string') {
+      return proficiency.charAt(0).toUpperCase() + proficiency.slice(1).toLowerCase();
+    }
+    return String(proficiency);
+  }
+
+  /**
+   * Get progress bar width style with animation
+   */
+  getProgressWidth(skill: FeaturedSkill): { [key: string]: string } {
+    const skillId = skill.id;
+    //const isAnimated = this.animatedSkills.has(skillId);
+    const color = this.getSkillColor(skill);
+
     return {
-      'width': isAnimated ? `${skill.level}%` : '0%',
-      'background-color': skill.color,
+      'width': `${skill.level}%`,
+      'background-color': color,
       'transition': 'width 1s ease-in-out'
     };
   }
 
-  // Track by function for performance
-  trackBySkill(index: number, skill: Skill): number {
+  /**
+   * Get skill color
+   */
+  getSkillColor(skill: FeaturedSkill): string {
+    if ('color' in skill && skill.color) {
+      return skill.color;
+    }
+    // Default color based on level
+    if (skill.level >= 85) return '#10B981'; // Green
+    if (skill.level >= 70) return '#3B82F6'; // Blue
+    if (skill.level >= 50) return '#F59E0B'; // Yellow
+    return '#6B7280'; // Gray
+  }
+
+  /**
+   * Get years of experience text
+   */
+  getExperienceText(skill: Skill | TopSkill | FeaturedSkill): string {
+    if ('yearsOfExperience' in skill && skill.yearsOfExperience) {
+      const years = skill.yearsOfExperience;
+      return years === 1 ? '1 year' : `${years} years`;
+    }
+    return 'New';
+  }
+
+  /**
+   * Get project count text
+   */
+  getProjectsText(skill: Skill | TopSkill | FeaturedSkill): string {
+    if ('projects' in skill) {
+      if (typeof skill.projects === 'number') {
+        return skill.projects === 1 ? '1 project' : `${skill.projects} projects`;
+      }
+      if (Array.isArray(skill.projects)) {
+        const count = skill.projects.length;
+        return count === 1 ? '1 project' : `${count} projects`;
+      }
+    }
+    return '0 projects';
+  }
+
+  /**
+   * Check if skill is featured - always true for FeaturedSkill
+   */
+  isSkillFeatured(skill: FeaturedSkill): boolean {
+    return true; // All skills are featured in this simplified version
+  }
+
+  /**
+   * Check if skill is trending - for FeaturedSkill
+   */
+  isSkillTrending(skill: FeaturedSkill): boolean {
+    return skill.trending || false;
+  }
+
+  /**
+   * Check if skill is currently being learned - for FeaturedSkill
+   */
+  isSkillLearning(skill: FeaturedSkill): boolean {
+    return skill.learning || false;
+  }
+
+  /**
+   * Get skill description - for FeaturedSkill
+   */
+  getSkillDescription(skill: FeaturedSkill): string {
+    return skill.description || `${skill.level}% proficiency in ${skill.name}`;
+  }
+
+  /**
+   * Track by functions for performance - for FeaturedSkill
+   */
+  trackBySkill(index: number, skill: FeaturedSkill): string {
     return skill.id;
   }
 
-  trackByCategory(index: number, category: SkillCategory): string {
+  trackByCategory(index: number, category: ProcessedSkillCategory): string {
     return category.name;
   }
 
-  trackByTechnology(index: number, tech: any): string {
-    return tech.name;
+  trackBySkillCategory(index: number, category: SkillCategory): string {
+    return category.name;
   }
 
-  // Method to handle skill click for detailed view
-  onSkillClick(skill: Skill): void {
+  /**
+   * Handle skill click for detailed view - for FeaturedSkill
+   */
+  onSkillClick(skill: FeaturedSkill): void {
     console.log(`Skill clicked: ${skill.name}`);
+    // Analytics tracking could go here
+    // Example: this.analytics.track('skill_clicked', { skill_name: skill.name, skill_level: skill.level });
   }
 
-  // Calculate total years of experience
-  getTotalExperience(): number {
-    return Math.max(...this.topSkills.map(skill => skill.yearsOfExperience));
+  /**
+   * Get category background color
+   */
+  getCategoryBgColor(category: SkillCategory): string {
+    // Generate color based on category name or use default
+    const colors = [
+      'bg-blue-50 dark:bg-blue-900/20',
+      'bg-green-50 dark:bg-green-900/20',
+      'bg-purple-50 dark:bg-purple-900/20',
+      'bg-orange-50 dark:bg-orange-900/20',
+      'bg-pink-50 dark:bg-pink-900/20',
+      'bg-indigo-50 dark:bg-indigo-900/20'
+    ];
+    const index = category.name.length % colors.length;
+    return colors[index];
   }
 
-  // Get average skill level
+  /**
+   * Get category text color
+   */
+  getCategoryTextColor(category: SkillCategory): string {
+    const colors = [
+      'text-blue-700 dark:text-blue-300',
+      'text-green-700 dark:text-green-300',
+      'text-purple-700 dark:text-purple-300',
+      'text-orange-700 dark:text-orange-300',
+      'text-pink-700 dark:text-pink-300',
+      'text-indigo-700 dark:text-indigo-300'
+    ];
+    const index = category.name.length % colors.length;
+    return colors[index];
+  }
+
+  /**
+   * Get total skills across all types
+   */
+  getTotalSkillsCount(): number {
+    return new Set([
+      ...this.featuredSkills.map(s => s.name)
+    ]).size;
+  }
+
+  /**
+   * Get average skill level
+   */
   getAverageSkillLevel(): number {
-    const total = this.topSkills.reduce((sum, skill) => sum + skill.level, 0);
-    return Math.round(total / this.topSkills.length);
+    if (this.displayedSkills.length === 0) return 0;
+    const total = this.displayedSkills.reduce((sum, skill) => sum + skill.level, 0);
+    return Math.round(total / this.displayedSkills.length);
   }
 
-  // Additional technologies from CV
-  additionalTechnologies = [
-    { name: 'Prisma', category: 'Database ORM', icon: 'devicon-prisma-original' },
-    { name: 'TailwindCSS', category: 'CSS Framework', icon: 'devicon-tailwindcss-plain' },
-    { name: 'Git & GitHub', category: 'Version Control', icon: 'devicon-git-plain' },
-    { name: 'HTML5', category: 'Markup', icon: 'devicon-html5-plain' },
-    { name: 'CSS3', category: 'Styling', icon: 'devicon-css3-plain' },
-    { name: 'Node.js', category: 'Runtime', icon: 'devicon-nodejs-plain' },
-    { name: 'Express.js', category: 'Backend Framework', icon: 'devicon-express-original' },
-    { name: 'WordPress', category: 'CMS Platform', icon: 'devicon-wordpress-plain' }
-  ];
+  /**
+   * Get highest skill level
+   */
+  getHighestSkillLevel(): number {
+    if (this.techData) {
+      if (this.techData.technologies.length === 0) return 0;
+      return Math.max(...this.techData.technologies.map(skill => skill.level));
+    }
+    return 0;
+  }
+
+  /**
+   * Get skills by proficiency level
+   */
+  getSkillsByProficiency(level: ProficiencyLevel): (Technology)[] {
+    if (this.techData) {
+      return this.techData.technologies.filter((tech: any) => {
+        if ('proficiency' in tech) {
+          return tech.proficiency === level;
+        }
+        // Fallback based on numeric level
+        switch (level) {
+          case ProficiencyLevel.EXPERT: return tech.level >= 85;
+          case ProficiencyLevel.ADVANCED: return tech.level >= 70 && tech.level < 85;
+          case ProficiencyLevel.INTERMEDIATE: return tech.level >= 50 && tech.level < 70;
+          case ProficiencyLevel.BEGINNER: return tech.level < 50;
+          default: return false;
+        }
+      });
+    }
+    return [];
+  }
+
+  /**
+   * Default stats fallback
+   */
+  private getDefaultStats(): SkillStats {
+    return {
+      description: "Nothing for now",
+      projectsText: "0",
+      technologiesText: "0",
+      yearsCoding: "0",
+      projects: "0",
+      certifications: "0",
+      avgProficiency: "0",
+      yearsCodingLabel: "0 years",
+      projectsLabel: "0 projects",
+      certificationsLabel: "0 certifications",
+      avgProficiencyLabel: "0 %"
+    };
+  }
+
+  /**
+   * Check if skills data is loaded
+   */
+  hasSkillsData(): boolean {
+    return this.skillsData !== null && (
+      this.featuredSkills.length > 0
+    );
+  }
+
+
+  getAllSkillOnCategory(category: SkillCategory): FeaturedSkill[] {
+    return this.skillsData?.featuredSkills.filter(d => d.categoryName === category.name) || [];
+  }
+
+
+  getAverageLevelOnCategory(category: SkillCategory): number {
+    const data = this.getAllSkillOnCategory(category);
+    if (data.length === 0) return 0;
+    const sum = data.reduce((acc: number, curr: FeaturedSkill) => acc + curr.level, 0);
+    return Math.round(sum / data.length);
+  }
+
+  getAllProjectsOnCategory(category: SkillCategory): number {
+    const data = this.getAllSkillOnCategory(category);
+    if (data.length > 0) {
+      return data.reduce((acc: number, curr: FeaturedSkill) => acc + curr.projects.length, 0);
+    }
+    return 0;
+  }
+
+  /**
+   * Get skills stats for display
+   */
+  getSkillsStatsForDisplay() {
+    return {
+      description: this.skillsStats.description,
+      yearsCoding: this.skillsStats.yearsCodingLabel,
+      projects: this.skillsStats.projectsLabel,
+      technologies: this.skillsStats.technologiesText,
+      certifications: this.skillsStats.certificationsLabel,
+      avgProficiency: this.skillsStats.avgProficiencyLabel
+    };
+  }
 }

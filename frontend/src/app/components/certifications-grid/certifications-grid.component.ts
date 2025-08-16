@@ -1,53 +1,55 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// Add these imports at the top of technical-stack.component.ts
+import { Inject, PLATFORM_ID } from '@angular/core';
 import {
   LucideAngularModule,
   Award, Star, Search, ExternalLink, ShieldCheck, Crown,
   Info, Check, GraduationCap, ArrowRight, Code, Database,
   Users, Briefcase, BookOpen, Settings, CheckCircle, Calendar
 } from 'lucide-angular';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
-export interface Certification {
-  id: string;
-  title: string;
-  provider: string;
-  category: 'technical' | 'leadership' | 'platform' | 'academic';
-  issueDate: Date;
-  expiryDate?: Date;
-  hasExpiry: boolean;
-  credentialId?: string;
-  verificationUrl?: string;
-  certificateUrl?: string;
-  description: string;
-  skills: string[];
-  primaryColor: string;
-  secondaryColor: string;
-  icon?: any;
-  verified: boolean;
-  featured: boolean;
-  score?: string;
-  relevanceScore: number;
-}
+// Services
+import { IconHelperService } from '../../services/icon-helper.service';
 
-export interface CertificationCategory {
-  id: string;
-  name: string;
-  icon: any;
-  activeClass: string;
-  hoverClass: string;
-}
+// Models and Interfaces
+import { Certificate, CertificateCategory, CertificateStats } from '../../shared/models/certificate.interface';
 
 @Component({
   selector: 'app-certifications-grid',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './certifications-grid.component.html',
-  styleUrls: ['./certifications-grid.component.css']
+  styleUrls: ['./certifications-grid.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CertificationsGridComponent implements OnInit {
-  @Output() certificationSelected = new EventEmitter<Certification>();
+export class CertificationsGridComponent implements OnInit, OnDestroy {
+  // Input data from parent component
+  @Input() certificates: Certificate[] = [];
+  @Input() certificateCategories: CertificateCategory[] = [];
+  @Input() certificateStats: CertificateStats = {
+    totalCertificates: 0,
+    verifiedCount: 0,
+    averageRelevanceScore: 0,
+    providerDistribution: new Map<string, number>(),
+    expiringCount: 0,
+    featuredCount: 0,
+    highRelevanceCount: 0,
+    featuredPercentage: 0,
+    verificationRate: 0,
+    topProvider: ""
+  };
+
+  // Output events
+  @Output() certificationSelected = new EventEmitter<Certificate>();
   @Output() viewAllCertifications = new EventEmitter<void>();
+  @Output() categorySelected = new EventEmitter<string>();
+
+  private destroy$ = new Subject<void>();
 
   // Lucide Icons
   readonly awardIcon = Award;
@@ -74,142 +76,77 @@ export class CertificationsGridComponent implements OnInit {
   searchTerm = '';
   sortBy: 'date' | 'name' | 'provider' | 'relevance' = 'date';
 
-  // Stats
-  totalCertifications = 3;
-  activeCertifications = 3;
-  certificationProviders = 3;
-  upcomingCertifications = 2;
+  // Category mapping for ID/name mismatches
+  private categoryNameToIdMap = new Map<string, string>();
+  private categoryIdToNameMap = new Map<string, string>();
 
-  // Certification Categories
-  certificationCategories: CertificationCategory[] = [
-    {
-      id: 'technical',
-      name: 'Technical',
-      icon: this.codeIcon,
-      activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600',
-      hoverClass: 'hover:border-blue-300 dark:hover:border-blue-600'
-    },
-    {
-      id: 'leadership',
-      name: 'Leadership',
-      icon: this.usersIcon,
-      activeClass: 'bg-gradient-to-r from-purple-500 to-purple-600',
-      hoverClass: 'hover:border-purple-300 dark:hover:border-purple-600'
-    },
-    {
-      id: 'platform',
-      name: 'Platform',
-      icon: this.settingsIcon,
-      activeClass: 'bg-gradient-to-r from-green-500 to-green-600',
-      hoverClass: 'hover:border-green-300 dark:hover:border-green-600'
-    },
-    {
-      id: 'academic',
-      name: 'Academic',
-      icon: this.bookOpenIcon,
-      activeClass: 'bg-gradient-to-r from-orange-500 to-orange-600',
-      hoverClass: 'hover:border-orange-300 dark:hover:border-orange-600'
-    }
-  ];
-
-  // Certifications based on CV
-  certifications: Certification[] = [
-    {
-      id: 'microsoft-dynamics-ax',
-      title: 'Microsoft Dynamics AX (Axapta) - User Certification',
-      provider: 'Microsoft',
-      category: 'platform',
-      issueDate: new Date('2025-01-01'),
-      hasExpiry: false,
-      credentialId: 'MS-AX-2025-001',
-      description: 'Comprehensive certification in using Microsoft Dynamics AX application for ERP system operation and business process management.',
-      skills: ['ERP Systems', 'Business Process Management', 'Microsoft Dynamics', 'Enterprise Applications', 'Supply Chain Management'],
-      primaryColor: '#00BCF2',
-      secondaryColor: '#0078D4',
-      icon: this.briefcaseIcon,
-      verified: true,
-      featured: true,
-      score: 'Certified',
-      relevanceScore: 95,
-      verificationUrl: 'https://learn.microsoft.com/en-us/credentials/',
-      certificateUrl: '#'
-    },
-    {
-      id: 'codecademy-csharp',
-      title: 'Learn C# Course - Complete Certification',
-      provider: 'Codecademy',
-      category: 'technical',
-      issueDate: new Date('2023-12-01'),
-      hasExpiry: false,
-      credentialId: '90AEA8BA-E',
-      description: 'Successful completion of comprehensive C# programming course covering object-oriented programming, advanced syntax, and .NET development concepts.',
-      skills: ['C# Programming', 'Object-Oriented Programming', '.NET Framework', 'Advanced C# Syntax', 'Software Development'],
-      primaryColor: '#239120',
-      secondaryColor: '#68217A',
-      icon: this.codeIcon,
-      verified: true,
-      featured: false,
-      score: 'Completed',
-      relevanceScore: 85,
-      verificationUrl: 'https://www.codecademy.com/profiles/certificates',
-      certificateUrl: '#'
-    },
-    {
-      id: 'leaders-explore',
-      title: 'LEADERS Explore - Leadership Certificate',
-      provider: 'LEADERS Program',
-      category: 'leadership',
-      issueDate: new Date('2023-12-21'),
-      hasExpiry: false,
-      credentialId: 'LDRS03090/12/21/2023',
-      description: 'Advanced leadership development program focusing on problem-solving, decision making, critical thinking, emotional intelligence, and team management in professional environments.',
-      skills: ['Problem Solving', 'Decision Making', 'Critical Thinking', 'Emotional Intelligence', 'Team Management', 'Self-Leadership'],
-      primaryColor: '#8B5CF6',
-      secondaryColor: '#A78BFA',
-      icon: this.usersIcon,
-      verified: true,
-      featured: true,
-      score: 'Excellence',
-      relevanceScore: 90,
-      verificationUrl: 'https://leaders.ro/verify',
-      certificateUrl: '#'
-    }
-  ];
-
-  // Upcoming certifications (in progress)
-  upcomingCertificationsList = [
-    'Angular Developer Certification',
-    'Java Spring Boot Certification'
-  ];
-
-  // Certification providers for verification notice
-  certificationProvidersList = [
-    'Microsoft Learn',
-    'Codecademy',
-    'LEADERS Program'
-  ];
-
-  constructor() { }
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private iconHelper: IconHelperService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
+    this.initializeCategoryMappings();
     // Sort certifications by date (newest first) on component load
     this.sortCertifications();
   }
 
-  // Filter and search methods
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Initialize category mappings to handle ID/name mismatches
+   */
+  private initializeCategoryMappings(): void {
+    this.certificateCategories.forEach(category => {
+      this.categoryIdToNameMap.set(category.id, category.name);
+      this.categoryNameToIdMap.set(category.name, category.id);
+    });
+
+    // Debug logging
+    console.log('=== CERTIFICATE CATEGORY MAPPINGS ===');
+    console.log('Categories:', this.certificateCategories.map(c => ({ id: c.id, name: c.name })));
+    console.log('Sample certificates:', this.certificates.slice(0, 3).map(c => ({ name: c.name, categoryName: c.categoryName })));
+    console.log('ID to Name map:', Array.from(this.categoryIdToNameMap.entries()));
+    console.log('Name to ID map:', Array.from(this.categoryNameToIdMap.entries()));
+    console.log('=======================================');
+  }
+
+  /**
+   * Get category ID from name
+   */
+  private getCategoryIdFromName(categoryName: string): string {
+    return this.categoryNameToIdMap.get(categoryName) || categoryName;
+  }
+
+  /**
+   * Get category name from ID
+   */
+  private getCategoryNameFromId(categoryId: string): string {
+    return this.categoryIdToNameMap.get(categoryId) || categoryId;
+  }
+
+  // Filter and search methods - FIXED
   setActiveFilter(filter: string): void {
     this.activeFilter = filter;
+    this.categorySelected.emit(filter);
+    this.cdr.markForCheck();
   }
 
   onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchTerm = target.value;
+    this.cdr.markForCheck();
   }
 
   onSortChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.sortBy = target.value as 'date' | 'name' | 'provider' | 'relevance';
     this.sortCertifications();
+    this.cdr.markForCheck();
   }
 
   clearFilters(): void {
@@ -217,42 +154,64 @@ export class CertificationsGridComponent implements OnInit {
     this.searchTerm = '';
     this.sortBy = 'date';
     this.sortCertifications();
+    this.cdr.markForCheck();
   }
 
-  get filteredCertifications(): Certification[] {
-    let filtered = this.certifications;
+  // FIXED: Handle category matching properly
+  get filteredCertificates(): Certificate[] {
+    let filtered = [...this.certificates];
 
-    // Filter by category
+    // Filter by category - Handle both ID and name matching
     if (this.activeFilter !== 'all') {
-      filtered = filtered.filter(cert => cert.category === this.activeFilter);
+      filtered = filtered.filter(cert => {
+        // Try matching by categoryName directly
+        if (cert.categoryName === this.activeFilter) {
+          return true;
+        }
+
+        // Try matching by converting category name to ID
+        const categoryId = this.getCategoryIdFromName(cert.categoryName);
+        if (categoryId === this.activeFilter) {
+          return true;
+        }
+
+        // Try matching by converting active filter to name
+        const categoryName = this.getCategoryNameFromId(this.activeFilter);
+        if (cert.categoryName === categoryName) {
+          return true;
+        }
+
+        return false;
+      });
     }
 
     // Filter by search term
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(cert =>
-        cert.title.toLowerCase().includes(term) ||
-        cert.provider.toLowerCase().includes(term) ||
+        cert.name.toLowerCase().includes(term) ||
+        cert.issuer.toLowerCase().includes(term) ||
         cert.description.toLowerCase().includes(term) ||
-        cert.skills.some(skill => skill.toLowerCase().includes(term))
+        cert.skillsGained.some(skill => skill.toLowerCase().includes(term))
       );
     }
 
     return filtered;
   }
 
-  // Sorting method
+  // Sorting method - Made SSR safe
   private sortCertifications(): void {
-    this.certifications.sort((a, b) => {
+    this.certificates.sort((a, b) => {
       switch (this.sortBy) {
         case 'date':
-          return b.issueDate.getTime() - a.issueDate.getTime();
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
         case 'name':
-          return a.title.localeCompare(b.title);
+          return a.name.localeCompare(b.name);
         case 'provider':
-          return a.provider.localeCompare(b.provider);
+          return a.issuer.localeCompare(b.issuer);
         case 'relevance':
-          return b.relevanceScore - a.relevanceScore;
+          // Assuming higher relevance score is better
+          return (b as any).relevanceScore - (a as any).relevanceScore || 0;
         default:
           return 0;
       }
@@ -260,78 +219,89 @@ export class CertificationsGridComponent implements OnInit {
   }
 
   // Event handlers
-  onCertificationClick(certification: Certification): void {
-    this.certificationSelected.emit(certification);
-  }
-
-  viewCertificate(certification: Certification, event: Event): void {
-    event.stopPropagation();
-    if (certification.certificateUrl) {
-      window.open(certification.certificateUrl, '_blank');
-    }
-  }
-
-  verifyCertificate(certification: Certification, event: Event): void {
-    event.stopPropagation();
-    if (certification.verificationUrl) {
-      window.open(certification.verificationUrl, '_blank');
-    }
-  }
-
   onViewAllCertifications(): void {
     this.viewAllCertifications.emit();
   }
 
-  // Date utility methods
+  // Icon helpers using IconHelperService
+  getCertificateIcon(certificate: Certificate): any {
+    if (certificate.icon) {
+      return this.iconHelper.stringToLucide(certificate.icon as string);
+    }
+    return this.awardIcon;
+  }
+
+  getCategoryIcon(category: CertificateCategory): any {
+    if (category.icon) {
+      return this.iconHelper.stringToLucide(category.icon as string);
+    }
+    return this.graduationCapIcon;
+  }
+
+  // Date utility methods - Made SSR safe
   isExpired(expiryDate?: Date): boolean {
-    if (!expiryDate) return false;
+    if (!expiryDate || typeof window === 'undefined') return false;
     return expiryDate < new Date();
   }
 
   isExpiringSoon(expiryDate?: Date): boolean {
-    if (!expiryDate) return false;
+    if (!expiryDate || typeof window === 'undefined') return false;
     const threeMonthsFromNow = new Date();
     threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
     return expiryDate <= threeMonthsFromNow && expiryDate >= new Date();
   }
 
   getDaysUntilExpiry(expiryDate?: Date): number {
-    if (!expiryDate) return -1;
+    if (!expiryDate || typeof window === 'undefined') return -1;
     const today = new Date();
     const timeDiff = expiryDate.getTime() - today.getTime();
     return Math.ceil(timeDiff / (1000 * 3600 * 24));
   }
 
-  // Certification analysis methods
-  getCertificationsByCategory(category: string): Certification[] {
-    return this.certifications.filter(cert => cert.category === category);
+  /**
+   * Format certificate date for display
+   */
+  formatCertificateDate(date: string): string {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long'
+    });
   }
 
-  getRecentCertifications(months: number = 12): Certification[] {
+  // Certificate analysis methods - FIXED
+  getCertificationsByCategory(category: string): Certificate[] {
+    const categoryName = this.getCategoryNameFromId(category);
+    return this.certificates.filter(cert =>
+      cert.categoryName === categoryName || cert.categoryName === category
+    );
+  }
+
+  getRecentCertifications(months: number = 12): Certificate[] {
+    if (typeof window === 'undefined') return [];
     const cutoffDate = new Date();
     cutoffDate.setMonth(cutoffDate.getMonth() - months);
-    return this.certifications.filter(cert => cert.issueDate >= cutoffDate);
+    return this.certificates.filter(cert => new Date(cert.date) >= cutoffDate);
   }
 
-  getFeaturedCertifications(): Certification[] {
-    return this.certifications.filter(cert => cert.featured);
+  getFeaturedCertifications(): Certificate[] {
+    return this.certificates.filter(cert => cert.featured);
   }
 
-  getVerifiedCertifications(): Certification[] {
-    return this.certifications.filter(cert => cert.verified);
+  getVerifiedCertifications(): Certificate[] {
+    return this.certificates.filter(cert => cert.verified);
   }
 
   // Skills aggregation methods
   getAllSkillsFromCertifications(): string[] {
-    const allSkills = this.certifications.flatMap(cert => cert.skills);
+    const allSkills = this.certificates.flatMap(cert => cert.skillsGained);
     return [...new Set(allSkills)]; // Remove duplicates
   }
 
   getTopSkills(limit: number = 10): string[] {
     const skillCounts = new Map<string, number>();
 
-    this.certifications.forEach(cert => {
-      cert.skills.forEach(skill => {
+    this.certificates.forEach(cert => {
+      cert.skillsGained.forEach(skill => {
         skillCounts.set(skill, (skillCounts.get(skill) || 0) + 1);
       });
     });
@@ -342,30 +312,60 @@ export class CertificationsGridComponent implements OnInit {
       .map(entry => entry[0]);
   }
 
-  // Statistics methods
+  // Statistics methods using real certificateStats
   getAverageRelevanceScore(): number {
-    if (this.certifications.length === 0) return 0;
-    const total = this.certifications.reduce((sum, cert) => sum + cert.relevanceScore, 0);
-    return Math.round(total / this.certifications.length);
+    return Math.round(this.certificateStats.averageRelevanceScore);
   }
 
   getCertificationTrend(): 'increasing' | 'stable' | 'decreasing' {
-    if (this.certifications.length < 2) return 'stable';
-
     const recentCerts = this.getRecentCertifications(12);
-    const olderCerts = this.certifications.length - recentCerts.length;
+    const totalCerts = this.certificates.length;
 
-    if (recentCerts.length > olderCerts) return 'increasing';
-    if (recentCerts.length < olderCerts) return 'decreasing';
+    if (totalCerts < 2) return 'stable';
+
+    const recentPercentage = (recentCerts.length / totalCerts) * 100;
+
+    if (recentPercentage > 50) return 'increasing';
+    if (recentPercentage < 20) return 'decreasing';
     return 'stable';
   }
 
+  /**
+   * Get provider distribution from stats
+   */
+  getProviderDistribution(): Array<{ provider: string; count: number; percentage: number }> {
+    const distribution = this.certificateStats.providerDistribution;
+    const total = this.certificateStats.totalCertificates;
+
+    if (!distribution || total === 0) return [];
+
+    return Array.from(distribution.entries()).map(([provider, count]) => ({
+      provider,
+      count,
+      percentage: Math.round((count / total) * 100)
+    })).sort((a, b) => b.count - a.count);
+  }
+
+  /**
+   * Get verification rate percentage
+   */
+  getVerificationRate(): number {
+    return Math.round(this.certificateStats.verificationRate);
+  }
+
+  /**
+   * Get featured percentage
+   */
+  getFeaturedPercentage(): number {
+    return Math.round(this.certificateStats.featuredPercentage);
+  }
+
   // Track by functions for ngFor optimization
-  trackByCertification(index: number, certification: Certification): string {
+  trackByCertification(index: number, certification: Certificate): string {
     return certification.id;
   }
 
-  trackByCategory(index: number, category: CertificationCategory): string {
+  trackByCategory(index: number, category: CertificateCategory): string {
     return category.id;
   }
 
@@ -374,9 +374,12 @@ export class CertificationsGridComponent implements OnInit {
   }
 
   // Utility methods for template
-  getCertificationAge(issueDate: Date): string {
+  getCertificationAge(issueDate: string): string {
+    if (typeof window === 'undefined') return 'Recently obtained';
+
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - issueDate.getTime());
+    const issued = new Date(issueDate);
+    const diffTime = Math.abs(now.getTime() - issued.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 30) return 'Recent';
@@ -384,40 +387,80 @@ export class CertificationsGridComponent implements OnInit {
     return `${Math.floor(diffDays / 365)} years ago`;
   }
 
-  getCertificationPriority(certification: Certification): 'high' | 'medium' | 'low' {
-    if (certification.featured && certification.relevanceScore >= 90) return 'high';
-    if (certification.relevanceScore >= 80) return 'medium';
+  getCertificationPriority(certification: Certificate): 'high' | 'medium' | 'low' {
+    if (certification.featured && certification.verified) return 'high';
+    if (certification.verified) return 'medium';
     return 'low';
   }
 
-  // Search and filter helper methods
+  /**
+   * Get certificate status color
+   */
+  getCertificateStatusColor(certificate: Certificate): string {
+    if (certificate.featured) return 'border-yellow-500 bg-yellow-50';
+    if (certificate.verified) return 'border-green-500 bg-green-50';
+    return 'border-gray-200 bg-white';
+  }
+
+  /**
+   * Get skills badge colors
+   */
+  getSkillBadgeColor(index: number): string {
+    const colors = [
+      'bg-blue-100 text-blue-800',
+      'bg-green-100 text-green-800',
+      'bg-purple-100 text-purple-800',
+      'bg-yellow-100 text-yellow-800',
+      'bg-pink-100 text-pink-800',
+      'bg-indigo-100 text-indigo-800'
+    ];
+    return colors[index % colors.length];
+  }
+
+  // Search and filter helper methods - FIXED
   getFilteredCount(category: string): number {
-    if (category === 'all') return this.certifications.length;
-    return this.certifications.filter(cert => cert.category === category).length;
+    if (category === 'all') return this.certificates.length;
+
+    const categoryName = this.getCategoryNameFromId(category);
+    return this.certificates.filter(cert =>
+      cert.categoryName === categoryName || cert.categoryName === category
+    ).length;
   }
 
   hasActiveCertifications(): boolean {
-    return this.certifications.some(cert => !this.isExpired(cert.expiryDate));
+    return this.certificates.length > 0;
   }
 
-  // Export and sharing methods
+  hasFeaturedCertifications(): boolean {
+    return this.certificates.some(cert => cert.featured);
+  }
+
+  hasVerifiedCertifications(): boolean {
+    return this.certificates.some(cert => cert.verified);
+  }
+
+  // Export and analysis methods
   exportCertificationData(): any {
     return {
       summary: {
-        total: this.totalCertifications,
-        active: this.activeCertifications,
-        providers: this.certificationProviders,
-        averageRelevance: this.getAverageRelevanceScore()
+        total: this.certificateStats.totalCertificates,
+        verified: this.certificateStats.verifiedCount,
+        featured: this.certificateStats.featuredCount,
+        averageRelevance: this.getAverageRelevanceScore(),
+        verificationRate: this.getVerificationRate(),
+        topProvider: this.certificateStats.topProvider
       },
-      certifications: this.certifications.map(cert => ({
-        title: cert.title,
-        provider: cert.provider,
-        issueDate: cert.issueDate,
-        skills: cert.skills,
+      certifications: this.certificates.map(cert => ({
+        name: cert.name,
+        issuer: cert.issuer,
+        date: cert.date,
+        skills: cert.skillsGained,
         verified: cert.verified,
-        credentialId: cert.credentialId
+        featured: cert.featured,
+        certificateId: cert.certificateId
       })),
       skills: this.getAllSkillsFromCertifications(),
+      providers: this.getProviderDistribution(),
       exportDate: new Date().toISOString()
     };
   }
@@ -427,33 +470,65 @@ export class CertificationsGridComponent implements OnInit {
     return `${index * 100}ms`;
   }
 
-  getCertificationGradient(certification: Certification): string {
+  getCertificationGradient(certification: Certificate): string {
     return `linear-gradient(135deg, ${certification.primaryColor}, ${certification.secondaryColor})`;
   }
 
   // Validation methods
-  isValidCertification(certification: Certification): boolean {
+  isValidCertification(certification: Certificate): boolean {
     return !!(
-      certification.title &&
-      certification.provider &&
-      certification.issueDate &&
-      certification.skills.length > 0
+      certification.name &&
+      certification.issuer &&
+      certification.date &&
+      certification.skillsGained.length > 0
     );
   }
 
-  // Future enhancements placeholders
-  refreshCertificationStatus(): void {
-    // Placeholder for future API calls to refresh certification status
-    console.log('Refreshing certification status...');
+  /**
+   * Get category active class using the provided activeClass
+   */
+  getCategoryActiveClass(category: CertificateCategory): string {
+    return this.isCategoryActive(category.id) ? category.activeClass : '';
   }
 
-  syncWithLinkedIn(): void {
-    // Placeholder for LinkedIn integration
-    console.log('Syncing with LinkedIn...');
+  // FIXED: Get unique certificate providers
+  get certificatesProviders(): string[] {
+    return this.certificates.reduce((acc: string[], cert) => {
+      if (!acc.includes(cert.issuer)) {
+        acc.push(cert.issuer);
+      }
+      return acc;
+    }, []);
   }
 
-  generateCertificationReport(): void {
-    // Placeholder for generating detailed reports
-    console.log('Generating certification report...');
+  /**
+   * Get category hover class using the provided hoverClass  
+   */
+  getCategoryHoverClass(category: CertificateCategory): string {
+    return category.hoverClass;
   }
+
+  /**
+   * Check if category is active - FIXED
+   */
+  isCategoryActive(categoryId: string): boolean {
+    return this.activeFilter === categoryId ||
+      this.activeFilter === this.getCategoryNameFromId(categoryId);
+  }
+
+  /**
+   * Get search results count
+   */
+  getSearchResultsCount(): number {
+    return this.filteredCertificates.length;
+  }
+
+  /**
+   * Check if search has results
+   */
+  hasSearchResults(): boolean {
+    return this.filteredCertificates.length > 0;
+  }
+
+
 }

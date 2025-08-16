@@ -1,467 +1,285 @@
 package com.example.portofolio.repository.base;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Utility class for common repository operations - optimized for read-only portfolio
+ * Utility class for repository operations
  */
-public final class RepositoryUtils {
+public class RepositoryUtils {
 
-    private RepositoryUtils() {
-        // Utility class
-    }
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 20;
 
     // ===== PAGINATION UTILITIES =====
-
-    /**
-     * Create default pageable (page 0, size 20, sorted by createdAt DESC)
-     */
-    public static Pageable createDefaultPageable() {
-        return PageRequest.of(0, 20, Sort.by("createdAt").descending());
-    }
-
-    /**
-     * Create pageable with default size (20)
-     */
-    public static Pageable createPageable(int page) {
-        return PageRequest.of(page, 20, Sort.by("createdAt").descending());
-    }
-
-    /**
-     * Create pageable with custom size
-     */
-    public static Pageable createPageable(int page, int size) {
-        return PageRequest.of(page, size, Sort.by("createdAt").descending());
-    }
-
-    /**
-     * Create pageable with sorting
-     */
-    public static Pageable createPageable(int page, int size, String sortBy, String direction) {
-        Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return PageRequest.of(page, size, Sort.by(dir, sortBy));
-    }
-
-    /**
-     * Create pageable for recent items (sorted by createdAt DESC)
-     */
-    public static Pageable createRecentPageable(int page, int size) {
-        return PageRequest.of(page, size, Sort.by("createdAt").descending());
-    }
-
-    /**
-     * Create pageable for featured items
-     */
-    public static Pageable createFeaturedPageable(int page, int size) {
-        return PageRequest.of(page, size, Sort.by("updatedAt").descending());
-    }
-
-    // ===== DATE UTILITIES =====
-
-    /**
-     * Get start of current year
-     */
-    public static LocalDateTime getCurrentYearStart() {
-        return LocalDateTime.now().withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-    }
-
-    /**
-     * Get start of current month
-     */
-    public static LocalDateTime getCurrentMonthStart() {
-        return LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-    }
-
-    /**
-     * Get start of current week
-     */
-    public static LocalDateTime getCurrentWeekStart() {
-        return LocalDateTime.now().minusDays(LocalDateTime.now().getDayOfWeek().getValue() - 1)
-                .withHour(0).withMinute(0).withSecond(0).withNano(0);
-    }
-
-    /**
-     * Get date N days ago
-     */
-    public static LocalDateTime getDaysAgo(int days) {
-        return LocalDateTime.now().minusDays(days);
-    }
-
-    /**
-     * Get date N weeks ago
-     */
-    public static LocalDateTime getWeeksAgo(int weeks) {
-        return LocalDateTime.now().minusWeeks(weeks);
-    }
-
-    /**
-     * Get date N months ago
-     */
-    public static LocalDateTime getMonthsAgo(int months) {
-        return LocalDateTime.now().minusMonths(months);
-    }
-
-    /**
-     * Get date N years ago
-     */
-    public static LocalDateTime getYearsAgo(int years) {
-        return LocalDateTime.now().minusYears(years);
-    }
-
-    // ===== STATISTICS UTILITIES =====
-
-    /**
-     * Convert Object[] query results to Map for statistics
-     */
-    public static Map<String, Long> convertToStatisticsMap(List<Object[]> results) {
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> String.valueOf(row[0]),
-                        row -> ((Number) row[1]).longValue()
-                ));
-    }
-
-    /**
-     * Convert Object[] with date results to formatted statistics
-     */
-    public static Map<String, Long> convertDateStatistics(List<Object[]> results) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> ((LocalDateTime) row[0]).format(formatter),
-                        row -> ((Number) row[1]).longValue()
-                ));
-    }
-
-    /**
-     * Convert monthly statistics (year, month, count) to formatted map
-     */
-    public static Map<String, Long> convertMonthlyStatistics(List<Object[]> results) {
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> String.format("%04d-%02d",
-                                ((Number) row[0]).intValue(),
-                                ((Number) row[1]).intValue()),
-                        row -> ((Number) row[2]).longValue()
-                ));
-    }
-
-    /**
-     * Convert yearly statistics to map
-     */
-    public static Map<Integer, Long> convertYearlyStatistics(List<Object[]> results) {
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> ((Number) row[0]).intValue(),
-                        row -> ((Number) row[1]).longValue()
-                ));
-    }
-
-    // ===== SEARCH UTILITIES =====
-
-    /**
-     * Prepare search term for LIKE queries (add wildcards and escape special chars)
-     */
-    public static String prepareSearchTerm(String term) {
-        if (term == null || term.trim().isEmpty()) {
-            return "%";
-        }
-        return "%" + term.trim().toLowerCase()
-                .replace("%", "\\%")
-                .replace("_", "\\_")
-                .replace("'", "''") + "%";
-    }
-
-    /**
-     * Split search term into keywords for multi-word search
-     */
-    public static List<String> splitSearchTerm(String term) {
-        if (term == null || term.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        return List.of(term.trim().toLowerCase().split("\\s+"));
-    }
-
-    /**
-     * Clean search term (remove special characters, extra spaces)
-     */
-    public static String cleanSearchTerm(String term) {
-        if (term == null) {
-            return "";
-        }
-        return term.trim().replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("\\s+", " ");
-    }
-
-    // ===== VALIDATION UTILITIES =====
 
     /**
      * Validate page parameters
      */
     public static void validatePageParameters(int page, int size) {
         if (page < 0) {
-            throw new IllegalArgumentException("Page number cannot be negative");
+            throw new IllegalArgumentException("Page index cannot be negative");
         }
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must be positive");
         }
-        if (size > 1000) {
-            throw new IllegalArgumentException("Page size cannot exceed 1000 for performance reasons");
+        if (size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size cannot exceed " + MAX_PAGE_SIZE);
         }
     }
 
     /**
-     * Validate date range
+     * Create pageable with validation
      */
-    public static void validateDateRange(LocalDateTime start, LocalDateTime end) {
-        if (start != null && end != null && start.isAfter(end)) {
-            throw new IllegalArgumentException("Start date cannot be after end date");
-        }
-        // Check for reasonable date ranges (not too far in the past/future)
-        LocalDateTime minDate = LocalDateTime.now().minusYears(50);
-        LocalDateTime maxDate = LocalDateTime.now().plusYears(10);
+    public static Pageable createPageable(int page, int size) {
+        validatePageParameters(page, size);
+        return PageRequest.of(page, size);
+    }
 
-        if (start != null && start.isBefore(minDate)) {
-            throw new IllegalArgumentException("Start date is too far in the past");
+    /**
+     * Create pageable with default size
+     */
+    public static Pageable createPageable(int page) {
+        return createPageable(page, DEFAULT_PAGE_SIZE);
+    }
+
+    /**
+     * Create pageable with sorting
+     */
+    public static Pageable createPageable(int page, int size, String sortBy, String direction) {
+        validatePageParameters(page, size);
+        validateSortParameters(sortBy, direction);
+
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Sort sort = Sort.by(sortDirection, sortBy);
+        return PageRequest.of(page, size, sort);
+    }
+
+    /**
+     * Create pageable with multiple sort fields
+     */
+    public static Pageable createPageable(int page, int size, Sort sort) {
+        validatePageParameters(page, size);
+        if (sort == null) {
+            return PageRequest.of(page, size);
         }
-        if (end != null && end.isAfter(maxDate)) {
-            throw new IllegalArgumentException("End date is too far in the future");
+        return PageRequest.of(page, size, sort);
+    }
+
+    // ===== SORT UTILITIES =====
+
+    /**
+     * Validate sort parameters
+     */
+    public static void validateSortParameters(String sortBy, String direction) {
+        if (sortBy == null || sortBy.trim().isEmpty()) {
+            throw new IllegalArgumentException("Sort field cannot be null or empty");
+        }
+        if (direction == null || direction.trim().isEmpty()) {
+            throw new IllegalArgumentException("Sort direction cannot be null or empty");
+        }
+
+        String normalizedDirection = direction.toUpperCase();
+        if (!normalizedDirection.equals("ASC") && !normalizedDirection.equals("DESC")) {
+            throw new IllegalArgumentException("Sort direction must be 'ASC' or 'DESC'");
         }
     }
+
+    /**
+     * Create sort object from string parameters
+     */
+    public static Sort createSort(String sortBy, String direction) {
+        validateSortParameters(sortBy, direction);
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        return Sort.by(sortDirection, sortBy);
+    }
+
+    /**
+     * Create sort with multiple fields
+     */
+    public static Sort createSort(String... sortFields) {
+        if (sortFields == null || sortFields.length == 0) {
+            throw new IllegalArgumentException("Sort fields cannot be null or empty");
+        }
+        return Sort.by(sortFields);
+    }
+
+    // ===== ID VALIDATION UTILITIES =====
+
+    /**
+     * Validate single ID
+     */
+    public static void validateId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be positive");
+        }
+    }
+
+    /**
+     * Validate ID list
+     */
+    public static void validateIdList(List<Long> ids) {
+        if (ids == null) {
+            throw new IllegalArgumentException("ID list cannot be null");
+        }
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException("ID list cannot be empty");
+        }
+        if (ids.size() > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("ID list size cannot exceed " + MAX_PAGE_SIZE);
+        }
+
+        for (Long id : ids) {
+            validateId(id);
+        }
+    }
+
+    /**
+     * Validate personal ID (common validation)
+     */
+    public static void validatePersonalId(Long personalId) {
+        validateId(personalId);
+        // Add any additional personal ID specific validations here
+    }
+
+    // ===== SEARCH UTILITIES =====
+
+    /**
+     * Validate search term
+     */
+    public static void validateSearchTerm(String searchTerm) {
+        if (searchTerm == null) {
+            throw new IllegalArgumentException("Search term cannot be null");
+        }
+        if (searchTerm.trim().isEmpty()) {
+            throw new IllegalArgumentException("Search term cannot be empty");
+        }
+        if (searchTerm.length() < 2) {
+            throw new IllegalArgumentException("Search term must be at least 2 characters");
+        }
+        if (searchTerm.length() > 100) {
+            throw new IllegalArgumentException("Search term cannot exceed 100 characters");
+        }
+    }
+
+    /**
+     * Sanitize search term for SQL LIKE queries
+     */
+    public static String sanitizeSearchTerm(String searchTerm) {
+        if (searchTerm == null) {
+            return "";
+        }
+
+        // Remove SQL injection characters and trim
+        return searchTerm.trim()
+                .replaceAll("[%_\\\\]", "\\\\$0") // Escape SQL wildcards
+                .replaceAll("[';\"\\-\\-/\\*]", ""); // Remove potential SQL injection chars
+    }
+
+    /**
+     * Prepare search term for LIKE query (add wildcards)
+     */
+    public static String prepareSearchTerm(String searchTerm) {
+        validateSearchTerm(searchTerm);
+        String sanitized = sanitizeSearchTerm(searchTerm);
+        return "%" + sanitized + "%";
+    }
+
+    // ===== DATE UTILITIES =====
 
     /**
      * Validate year parameter
      */
     public static void validateYear(Integer year) {
         if (year == null) {
-            return;
+            throw new IllegalArgumentException("Year cannot be null");
         }
-        int currentYear = LocalDateTime.now().getYear();
-        if (year < 1900 || year > currentYear + 10) {
-            throw new IllegalArgumentException("Year must be between 1900 and " + (currentYear + 10));
-        }
-    }
-
-    // ===== ID UTILITIES =====
-
-    /**
-     * Validate ID list is not empty and not too large
-     */
-    public static <ID> void validateIdList(List<ID> ids) {
-        if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("ID list cannot be empty");
-        }
-        if (ids.size() > 1000) {
-            throw new IllegalArgumentException("Too many IDs provided (max 1000 for performance)");
-        }
-        // Remove null IDs
-        if (ids.contains(null)) {
-            throw new IllegalArgumentException("ID list cannot contain null values");
+        if (year < 1900 || year > 2100) {
+            throw new IllegalArgumentException("Year must be between 1900 and 2100");
         }
     }
 
+    // ===== LIMIT UTILITIES =====
+
     /**
-     * Split large ID list into chunks for batch processing
+     * Validate and adjust limit parameter
      */
-    public static <ID> List<List<ID>> chunkIdList(List<ID> ids, int chunkSize) {
-        if (chunkSize <= 0) {
-            throw new IllegalArgumentException("Chunk size must be positive");
+    public static int validateAndAdjustLimit(int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be positive");
         }
-
-        List<List<ID>> chunks = new ArrayList<>();
-        for (int i = 0; i < ids.size(); i += chunkSize) {
-            chunks.add(ids.subList(i, Math.min(ids.size(), i + chunkSize)));
+        if (limit > MAX_PAGE_SIZE) {
+            return MAX_PAGE_SIZE; // Cap at maximum
         }
-        return chunks;
-    }
-
-    // ===== PAGE UTILITIES =====
-
-    /**
-     * Check if page has content
-     */
-    public static <T> boolean hasContent(Page<T> page) {
-        return page != null && page.hasContent();
+        return limit;
     }
 
     /**
-     * Get total pages safely
+     * Validate limit with default
      */
-    public static <T> int getTotalPages(Page<T> page) {
-        return page != null ? page.getTotalPages() : 0;
-    }
-
-    /**
-     * Get total elements safely
-     */
-    public static <T> long getTotalElements(Page<T> page) {
-        return page != null ? page.getTotalElements() : 0L;
-    }
-
-    /**
-     * Check if page is valid
-     */
-    public static <T> boolean isValidPage(Page<T> page, int requestedPage) {
-        return page != null && requestedPage >= 0 && requestedPage < page.getTotalPages();
-    }
-
-    // ===== SORTING UTILITIES =====
-
-    /**
-     * Create sort by multiple fields with direction prefix (-field for DESC)
-     */
-    public static Sort createMultiFieldSort(String... fields) {
-        if (fields == null || fields.length == 0) {
-            return Sort.by("createdAt").descending();
+    public static int validateLimit(Integer limit, int defaultLimit) {
+        if (limit == null) {
+            return defaultLimit;
         }
+        return validateAndAdjustLimit(limit);
+    }
 
-        List<Sort.Order> orders = new ArrayList<>();
-        for (String field : fields) {
-            if (field.startsWith("-")) {
-                orders.add(Sort.Order.desc(field.substring(1)));
-            } else {
-                orders.add(Sort.Order.asc(field));
-            }
-        }
-        return Sort.by(orders);
+    // ===== CONSTANTS =====
+
+    /**
+     * Get maximum page size
+     */
+    public static int getMaxPageSize() {
+        return MAX_PAGE_SIZE;
     }
 
     /**
-     * Default sort for portfolio items (newest first)
+     * Get default page size
      */
-    public static Sort getDefaultSort() {
-        return Sort.by("createdAt").descending();
+    public static int getDefaultPageSize() {
+        return DEFAULT_PAGE_SIZE;
+    }
+
+    // ===== COMMON SORT CONFIGURATIONS =====
+
+    /**
+     * Sort by creation date descending (most recent first)
+     */
+    public static Sort sortByCreatedDateDesc() {
+        return Sort.by(Sort.Direction.DESC, "createdAt");
     }
 
     /**
-     * Sort for featured items (by importance and update date)
+     * Sort by update date descending
      */
-    public static Sort getFeaturedSort() {
-        return Sort.by(
-                Sort.Order.desc("importance"),
-                Sort.Order.desc("updatedAt")
-        );
+    public static Sort sortByUpdatedDateDesc() {
+        return Sort.by(Sort.Direction.DESC, "updatedAt");
     }
 
     /**
-     * Sort for timeline items (by date)
+     * Sort by name ascending
      */
-    public static Sort getTimelineSort() {
-        return Sort.by("createdAt").descending();
+    public static Sort sortByNameAsc() {
+        return Sort.by(Sort.Direction.ASC, "name");
     }
 
     /**
-     * Sort by popularity/usage (for skills, technologies)
+     * Sort by level descending (for skills, achievements, etc.)
      */
-    public static Sort getPopularitySort() {
-        return Sort.by(
-                Sort.Order.desc("level"),
-                Sort.Order.desc("projects"),
-                Sort.Order.desc("createdAt")
-        );
-    }
-
-    // ===== FILTERING UTILITIES =====
-
-    /**
-     * Create date filter for "recent" items (last 30 days)
-     */
-    public static LocalDateTime getRecentFilter() {
-        return getDaysAgo(30);
+    public static Sort sortByLevelDesc() {
+        return Sort.by(Sort.Direction.DESC, "level");
     }
 
     /**
-     * Create date filter for "this year" items
+     * Sort by date descending (for achievements, projects, etc.)
      */
-    public static LocalDateTime getThisYearFilter() {
-        return getCurrentYearStart();
-    }
-
-    /**
-     * Create date filter for "this month" items
-     */
-    public static LocalDateTime getThisMonthFilter() {
-        return getCurrentMonthStart();
-    }
-
-    // ===== PORTFOLIO-SPECIFIC UTILITIES =====
-
-    /**
-     * Get default page size for different entity types
-     */
-    public static int getDefaultPageSize(String entityType) {
-        return switch (entityType.toLowerCase()) {
-            case "project", "education", "volunteer" -> 10;
-            case "skill", "technology" -> 50;
-            case "achievement", "certificate" -> 20;
-            case "hobby", "interest" -> 15;
-            default -> 20;
-        };
-    }
-
-    /**
-     * Get max items for featured/highlight sections
-     */
-    public static int getFeaturedLimit(String entityType) {
-        return switch (entityType.toLowerCase()) {
-            case "project" -> 6;
-            case "skill" -> 8;
-            case "achievement" -> 4;
-            case "technology" -> 10;
-            default -> 5;
-        };
-    }
-
-    /**
-     * Validate entity type name
-     */
-    public static void validateEntityType(String entityType) {
-        List<String> validTypes = List.of(
-                "PROJECT", "SKILL", "TECHNOLOGY", "EDUCATION", "CERTIFICATE",
-                "ACHIEVEMENT", "VOLUNTEER", "HOBBY", "INTEREST", "FUTURE_GOAL"
-        );
-
-        if (entityType == null || !validTypes.contains(entityType.toUpperCase())) {
-            throw new IllegalArgumentException("Invalid entity type: " + entityType);
-        }
-    }
-
-    // ===== PERFORMANCE UTILITIES =====
-
-    /**
-     * Calculate optimal batch size based on list size
-     */
-    public static int calculateOptimalBatchSize(int totalSize) {
-        if (totalSize <= 100) return totalSize;
-        if (totalSize <= 1000) return 100;
-        return 500;
-    }
-
-    /**
-     * Check if operation should be cached based on result size
-     */
-    public static boolean shouldCache(int resultSize) {
-        return resultSize > 10; // Cache results with more than 10 items
-    }
-
-    /**
-     * Get cache TTL based on entity type (in seconds)
-     */
-    public static int getCacheTTL(String entityType) {
-        return switch (entityType.toLowerCase()) {
-            case "project", "education" -> 3600; // 1 hour - stable data
-            case "skill", "achievement" -> 1800; // 30 minutes - semi-stable
-            case "learning_progress" -> 300; // 5 minutes - frequently updated
-            default -> 1800; // 30 minutes default
-        };
+    public static Sort sortByDateDesc(String dateField) {
+        return Sort.by(Sort.Direction.DESC, dateField);
     }
 }

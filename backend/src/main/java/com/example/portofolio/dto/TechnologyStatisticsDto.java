@@ -1,3 +1,5 @@
+package com.example.portofolio.dto;
+
 import com.example.portofolio.service.base.ServiceUtils;
 
 import java.util.Map;
@@ -18,8 +20,7 @@ public class TechnologyStatisticsDto {
 
     public String getMostPopularCategory() {
         return ServiceUtils.findMostFrequent(
-                categoryDistribution.entrySet().stream()
-                        .map(Map.Entry::getKey)
+                categoryDistribution.keySet().stream()
                         .toList()
         ).orElse("Unknown");
     }

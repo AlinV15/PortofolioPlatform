@@ -27,6 +27,10 @@ public class RecentDiscovery extends BaseEntity {
     @JoinColumn(name = "interest_id", nullable = false)
     private Interest interest;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hobby_id")
+    private Hobby hobby;
+
     @Column(nullable = false, length = 200)
     private String title;
 

@@ -41,28 +41,28 @@
 
       <!-- Subtitle -->
       <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-        Computer Science Economics student with expertise in modern web technologies.
-        <span class="text-blue-400 font-semibold">{{ totalProjects }}+ projects</span> built,
-        <span class="text-purple-400 font-semibold">{{ totalTechnologies }}</span> technologies mastered.
+        {{ skillsStats.description }}<br>
+        <span class="text-blue-400 font-semibold">{{ skillsStats.projects }}+ projects</span> built,
+        <span class="text-purple-400 font-semibold">{{ skillsStats.technologiesText }}</span> technologies mastered.
       </p>
 
       <!-- Quick Stats -->
       <div class="flex flex-wrap justify-center gap-8 mb-12">
         <div class="text-center">
-          <div class="text-3xl font-bold text-blue-400 mb-1">{{ yearsExperience }}+</div>
-          <div class="text-sm text-gray-400 uppercase tracking-wide">Years Coding</div>
+          <div class="text-3xl font-bold text-blue-400 mb-1">{{ getTotalYearsExperience() }}+</div>
+          <div class="text-sm text-gray-400 uppercase tracking-wide">{{ skillsStats.yearsCodingLabel }}</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-purple-400 mb-1">{{ totalProjects }}</div>
-          <div class="text-sm text-gray-400 uppercase tracking-wide">Projects</div>
+          <div class="text-3xl font-bold text-purple-400 mb-1">{{ skillsStats.projects }}</div>
+          <div class="text-sm text-gray-400 uppercase tracking-wide">{{ skillsStats.projectsLabel }}</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-green-400 mb-1">{{ certificationCount }}</div>
-          <div class="text-sm text-gray-400 uppercase tracking-wide">Certifications</div>
+          <div class="text-3xl font-bold text-green-400 mb-1">{{ skillsStats.certifications }}</div>
+          <div class="text-sm text-gray-400 uppercase tracking-wide">{{ skillsStats.certificationsLabel }}</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-yellow-400 mb-1">{{ avgSkillLevel }}%</div>
-          <div class="text-sm text-gray-400 uppercase tracking-wide">Avg. Proficiency</div>
+          <div class="text-3xl font-bold text-yellow-400 mb-1">{{ skillsStats.avgProficiency }}</div>
+          <div class="text-sm text-gray-400 uppercase tracking-wide">{{ skillsStats.avgProficiencyLabel }}</div>
         </div>
       </div>
     </div>
@@ -78,29 +78,29 @@
         </h3>
 
         <div class="space-y-4">
-          <div *ngFor="let skill of coreSkills; trackBy: trackBySkill"
+          <div *ngFor="let tech of topTechnologiesForDisplay; trackBy: trackByTechnology"
             class="group bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-blue-400/50 transition-all duration-300 hover:bg-white/10">
 
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center">
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 shadow-lg"
-                  [style.background-color]="skill.color">
-                  <span class="text-white text-lg font-bold">{{ skill.name.charAt(0) }}</span>
+                  [style.background-color]="tech.color">
+                  <span class="text-white text-lg font-bold">{{ tech.name.charAt(0) }}</span>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-white">{{ skill.name }}</h4>
-                  <p class="text-sm text-gray-400">{{ skill.experience }} experience</p>
+                  <h4 class="text-lg font-semibold text-white">{{ tech.name }}</h4>
+                  <p class="text-sm text-gray-400">{{ tech.yearsOfExperience }} years experience</p>
                 </div>
               </div>
 
               <!-- Skill Level -->
               <div class="text-right">
-                <div class="text-2xl font-bold text-white mb-1">{{ skill.level }}%</div>
+                <div class="text-2xl font-bold text-white mb-1">{{ tech.level }}%</div>
                 <div class="flex items-center">
                   <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                    [ngClass]="getProficiencyBadgeColor(skill.proficiency)">
-                    <lucide-icon [img]="getProficiencyIcon(skill.proficiency)" class="w-3 h-3 mr-1"></lucide-icon>
-                    {{ skill.proficiency | titlecase }}
+                    [ngClass]="getProficiencyBadgeColor(tech.proficiency)">
+                    <lucide-icon [img]="getProficiencyIcon(tech.proficiency)" class="w-3 h-3 mr-1"></lucide-icon>
+                    {{ tech.proficiency | titlecase }}
                   </span>
                 </div>
               </div>
@@ -109,21 +109,14 @@
             <!-- Progress Bar -->
             <div class="w-full bg-gray-700 rounded-full h-2 mb-4 overflow-hidden">
               <div class="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r"
-                [style.width.%]="animateProgress ? skill.level : 0"
-                [style.background]="'linear-gradient(90deg, ' + skill.color + ', ' + skill.color + '80)'">
+                [style.width.%]="animateProgress ? tech.level : 0"
+                [style.background]="'linear-gradient(90deg, ' + tech.color + ', ' + tech.color + '80)'">
               </div>
             </div>
 
-            <!-- Tags -->
-            <div class="flex flex-wrap gap-2">
-              <span *ngFor="let tag of skill.tags.slice(0, 3); trackBy: trackByString"
-                class="inline-flex items-center px-2 py-1 bg-white/10 text-gray-300 rounded text-xs">
-                {{ tag }}
-              </span>
-              <span *ngIf="skill.tags.length > 3"
-                class="inline-flex items-center px-2 py-1 bg-white/10 text-gray-400 rounded text-xs">
-                +{{ skill.tags.length - 3 }}
-              </span>
+            <!-- Project Count -->
+            <div class="text-sm text-gray-400">
+              Used in {{ tech.projects }} projects
             </div>
           </div>
         </div>
@@ -143,18 +136,18 @@
 
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center">
-                <div [class]="'w-10 h-10 rounded-lg flex items-center justify-center mr-4 ' + category.bgColor">
-                  <lucide-icon [img]="category.icon" [class]="'w-5 h-5 ' + category.color"></lucide-icon>
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mr-4">
+                  <lucide-icon [img]="getCategoryIcon(category)" class="w-5 h-5 text-purple-400"></lucide-icon>
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-white">{{ category.name }}</h4>
-                  <p class="text-sm text-gray-400">{{ category.skillCount }} skills</p>
+                  <p class="text-sm text-gray-400">{{ getSkillsCountForCategory(category.name) }} skills</p>
                 </div>
               </div>
 
               <div class="text-right">
-                <div class="text-xl font-bold" [style.color]="category.color">
-                  {{ category.avgLevel }}%
+                <div class="text-xl font-bold text-purple-400">
+                  {{ calculateCategoryLevel(category.name) }}%
                 </div>
                 <div class="text-xs text-gray-400">Average</div>
               </div>
@@ -162,17 +155,14 @@
 
             <!-- Category Progress -->
             <div class="w-full bg-gray-700 rounded-full h-1.5 mb-3">
-              <div class="h-full rounded-full transition-all duration-1000 ease-out"
-                [style.width.%]="animateProgress ? category.avgLevel : 0" [style.background-color]="category.color">
+              <div class="h-full bg-purple-400 rounded-full transition-all duration-1000 ease-out"
+                [style.width.%]="animateProgress ? calculateCategoryLevel(category.name) : 0">
               </div>
             </div>
 
             <!-- Category Stats -->
             <div class="flex justify-between text-xs text-gray-400">
-              <span>{{ category.skillCount }} technologies</span>
-              <span *ngIf="category.trending > 0" class="text-orange-400">
-                {{ category.trending }} trending
-              </span>
+              <span class="text-purple-400">{{ category.description }}</span>
             </div>
           </div>
         </div>
@@ -210,11 +200,12 @@
       <!-- Chart Legend/Stats -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
         <div *ngFor="let category of skillCategories.slice(0, 6); trackBy: trackByCategory"
-          class="text-center p-3 bg-white/5 rounded-lg border border-white/10 hover:border-purple-400/30 transition-all duration-200 cursor-pointer"
-          (click)="onCategoryClick(category)">
-          <div class="w-8 h-8 rounded-full mx-auto mb-2" [style.background-color]="category.color"></div>
+          class="text-center p-3 bg-white/5 rounded-lg border border-white/10 hover:border-purple-400/30 transition-all duration-200 ">
+          <div class="w-8 h-8 bg-purple-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+            <lucide-icon [img]="getCategoryIcon(category)" class="w-4 h-4 text-white"></lucide-icon>
+          </div>
           <div class="text-white font-medium text-sm">{{ category.name }}</div>
-          <div class="text-gray-400 text-xs">{{ category.avgLevel }}%</div>
+          <div class="text-gray-400 text-xs">{{ calculateCategoryLevel(category.name) }}%</div>
         </div>
       </div>
     </div>
@@ -226,9 +217,6 @@
           <lucide-icon [img]="trendingUpIcon" class="w-6 h-6 mr-3 text-orange-400"></lucide-icon>
           Currently Learning
         </h3>
-        <!-- <button class="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg text-sm hover:bg-blue-500/30 transition-colors duration-200">
-          View All Progress
-        </button> -->
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -236,12 +224,11 @@
           class="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-orange-400/50 transition-all duration-300">
 
           <div class="flex items-center mb-4">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
-              [style.background-color]="learning.color">
-              <span class="text-white text-sm font-bold">{{ learning.name.charAt(0) }}</span>
+            <div class="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center mr-3">
+              <lucide-icon [img]="getLearningIcon(learning)" class="w-5 h-5 text-orange-400"></lucide-icon>
             </div>
             <div>
-              <h4 class="text-lg font-semibold text-white">{{ learning.name }}</h4>
+              <h4 class="text-lg font-semibold text-white">{{ learning.title }}</h4>
               <p class="text-sm text-orange-400">{{ learning.progress }}% complete</p>
             </div>
           </div>
@@ -254,8 +241,8 @@
           </div>
 
           <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-400">{{ learning.timeSpent }} hours</span>
-            <span class="text-gray-400">{{ learning.eta }} remaining</span>
+            <span class="text-gray-400">{{ formatLearningStatus(learning.status) }}</span>
+            <span class="text-gray-400">{{ learning.description }}</span>
           </div>
         </div>
       </div>

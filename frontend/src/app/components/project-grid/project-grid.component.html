@@ -4,33 +4,71 @@
         <!-- Projects Header -->
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Featured Projects
+                Project Portfolio
             </h2>
             <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Explore my portfolio of full-stack applications, from e-commerce platforms to management systems
+                Explore my collection of full-stack applications, from e-commerce platforms to management systems
             </p>
+
+            <!-- Project Count Info -->
+            <div *ngIf="totalProjectsCount > 0" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                <span *ngIf="filteredProjectsCount === totalProjectsCount">
+                    Showing all {{ totalProjectsCount }} projects
+                </span>
+                <span *ngIf="filteredProjectsCount < totalProjectsCount">
+                    Showing {{ filteredProjectsCount }} of {{ totalProjectsCount }} projects
+                </span>
+                <span *ngIf="activeFilter !== 'all' && searchTerm">
+                    • Filtered by {{ activeFilter }} and search: "{{ searchTerm }}"
+                </span>
+                <span *ngIf="activeFilter !== 'all' && !searchTerm">
+                    • Category: {{ activeFilter }}
+                </span>
+                <span *ngIf="activeFilter === 'all' && searchTerm">
+                    • Search: "{{ searchTerm }}"
+                </span>
+            </div>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-
-        <!-- No Projects Found -->
-        <div *ngIf="!isLoading && !hasProjects" class="text-center py-12">
+        <!-- No Projects Available -->
+        <div *ngIf="totalProjectsCount === 0" class="text-center py-16">
             <div class="max-w-md mx-auto">
-                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor"
+                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600 mb-6" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.137 0-4.146-.832-5.657-2.343m0 0L3.515 9.829A7.962 7.962 0 0112 7.5c2.137 0 4.146.832 5.657 2.343m0 0L20.485 12.67A7.962 7.962 0 0112 15z" />
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No projects found</h3>
-                <p class="text-gray-600 dark:text-gray-400">Try adjusting your search criteria or filters</p>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Projects Available</h3>
+                <p class="text-gray-600 dark:text-gray-400">Projects are currently being loaded or none are available.
+                </p>
+            </div>
+        </div>
+
+        <!-- No Projects Found (after filtering) -->
+        <div *ngIf="totalProjectsCount > 0 && !hasFilteredProjects" class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600 mb-6" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Projects Found</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ noProjectsMessage }}</p>
+
+                <!-- Filter Reset Suggestions -->
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <span *ngIf="activeFilter !== 'all'" class="text-sm text-blue-600 dark:text-blue-400">
+                        Try removing the category filter
+                    </span>
+                    <span *ngIf="searchTerm" class="text-sm text-blue-600 dark:text-blue-400">
+                        Try a different search term
+                    </span>
+                </div>
             </div>
         </div>
 
         <!-- Projects Grid View -->
-        <div *ngIf="!isLoading && hasProjects && viewMode === 'grid'"
+        <div *ngIf="hasProjects && viewMode === 'grid'"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
 
             <div *ngFor="let project of displayedProjects; trackBy: trackByProject"
@@ -42,7 +80,8 @@
                     class="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
                     <img *ngIf="project.images && project.images[0]" [src]="project.images[0]" [alt]="project.title"
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy">
+                        loading="lazy"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
 
                     <!-- Fallback gradient if no image -->
                     <div *ngIf="!project.images || !project.images[0]"
@@ -83,7 +122,6 @@
                             </svg>
                         </button>
 
-                        <!-- SSR Fallback Demo Link -->
                         <a *ngIf="project.demoUrl && !isInBrowser" [href]="project.demoUrl" target="_blank"
                             rel="noopener noreferrer"
                             class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:scale-110 transition-transform duration-200"
@@ -95,7 +133,7 @@
                             </svg>
                         </a>
 
-                        <button *ngIf="isInBrowser" (click)="onGithubClick($event, project)"
+                        <button *ngIf="project.githubUrl && isInBrowser" (click)="onGithubClick($event, project)"
                             class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:scale-110 transition-transform duration-200"
                             title="View Code">
                             <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="currentColor"
@@ -106,8 +144,8 @@
                             </svg>
                         </button>
 
-                        <!-- SSR Fallback GitHub Link -->
-                        <a *ngIf="!isInBrowser" [href]="project.githubUrl" target="_blank" rel="noopener noreferrer"
+                        <a *ngIf="project.githubUrl && !isInBrowser" [href]="project.githubUrl" target="_blank"
+                            rel="noopener noreferrer"
                             class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:scale-110 transition-transform duration-200"
                             title="View Code" (click)="$event.stopPropagation()">
                             <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="currentColor"
@@ -125,10 +163,11 @@
                     <!-- Title and Complexity -->
                     <div class="flex items-start justify-between mb-3">
                         <h3
-                            class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                            class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-1">
                             {{ project.title }}
                         </h3>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ml-2"
+                        <span
+                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ml-2 flex-shrink-0"
                             [ngClass]="getComplexityBadgeClass(project.complexity)">
                             {{ project.complexity | titlecase }}
                         </span>
@@ -162,12 +201,12 @@
                             </svg>
                             {{ project.year }}
                         </span>
-                        <span class="flex items-center">
+                        <span *ngIf="project.developmentTime" class="flex items-center">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {{ project.developmentTime }}
+                            {{ project.developmentTime }} months
                         </span>
                     </div>
                 </div>
@@ -175,7 +214,7 @@
         </div>
 
         <!-- Projects List View -->
-        <div *ngIf="!isLoading && hasProjects && viewMode === 'list'" class="space-y-6 mb-12">
+        <div *ngIf="hasProjects && viewMode === 'list'" class="space-y-6 mb-12">
 
             <div *ngFor="let project of displayedProjects; trackBy: trackByProject"
                 class="project-list-item bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group"
@@ -188,7 +227,8 @@
                         class="lg:w-80 h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-lg overflow-hidden flex-shrink-0 relative">
                         <img *ngIf="project.images && project.images[0]" [src]="project.images[0]" [alt]="project.title"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy">
+                            loading="lazy"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
 
                         <div *ngIf="!project.images || !project.images[0]"
                             class="w-full h-full flex items-center justify-center">
@@ -217,12 +257,12 @@
 
                         <!-- Header -->
                         <div class="flex items-start justify-between mb-4">
-                            <div>
+                            <div class="flex-1 min-w-0">
                                 <h3
-                                    class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mb-2">
+                                    class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mb-2 line-clamp-1">
                                     {{ project.title }}
                                 </h3>
-                                <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
                                     <span class="flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -230,12 +270,12 @@
                                         </svg>
                                         {{ project.year }}
                                     </span>
-                                    <span class="flex items-center">
+                                    <span *ngIf="project.developmentTime" class="flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        {{ project.developmentTime }}
+                                        {{ project.developmentTime }} months
                                     </span>
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                                         [ngClass]="getComplexityBadgeClass(project.complexity)">
@@ -245,7 +285,7 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 ml-4 flex-shrink-0">
                                 <button *ngIf="project.demoUrl && isInBrowser" (click)="onDemoClick($event, project)"
                                     class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +295,6 @@
                                     Demo
                                 </button>
 
-                                <!-- SSR Fallback Demo Link -->
                                 <a *ngIf="project.demoUrl && !isInBrowser" [href]="project.demoUrl" target="_blank"
                                     rel="noopener noreferrer"
                                     class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
@@ -266,22 +305,9 @@
                                     </svg>
                                     Demo
                                 </a>
-
-                                <button *ngIf="isInBrowser" (click)="onGithubClick($event, project)"
+                                <a *ngIf="project.githubUrl && !isInBrowser"
                                     class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                        <path fill-rule="evenodd"
-                                            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Code
-                                </button>
 
-                                <!-- SSR Fallback GitHub Link -->
-                                <a *ngIf="!isInBrowser" [href]="project.githubUrl" target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
-                                    (click)="$event.stopPropagation()">
                                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                                         <path fill-rule="evenodd"
                                             d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
@@ -307,7 +333,7 @@
                         </div>
 
                         <!-- Key Features -->
-                        <div>
+                        <div *ngIf="project.features && project.features.length > 0">
                             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Key Features:</h4>
                             <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                                 <li *ngFor="let feature of project.features.slice(0, 3); trackBy: trackByFeature"
@@ -321,34 +347,82 @@
                                 </li>
                             </ul>
                         </div>
+
+                        <!-- Tags -->
+                        <div *ngIf="project.tags && project.tags.length > 0" class="mt-4">
+                            <div class="flex flex-wrap gap-1">
+                                <span *ngFor="let tag of project.tags.slice(0, 5); trackBy: trackByTag"
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                    #{{ tag }}
+                                </span>
+                                <span *ngIf="project.tags.length > 5"
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs text-gray-500 dark:text-gray-400">
+                                    +{{ project.tags.length - 5 }} more
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Pagination -->
-        <div *ngIf="!isLoading && hasProjects && hasMultiplePages" class="flex justify-center items-center space-x-2">
+        <div *ngIf="showPagination" class="flex flex-col sm:flex-row justify-between items-center gap-4">
 
-            <!-- Previous Button -->
-            <button (click)="onPageChange(currentPage - 1)" [disabled]="isFirstPage"
-                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700">
-                Previous
-            </button>
+            <!-- Pagination Info -->
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Showing {{ (currentPage - 1) * projectsPerPage + 1 }} to
+                {{ getToProjectNumber() }}
+                of {{ filteredProjectsCount }} projects
+            </div>
 
-            <!-- Page Numbers -->
-            <button *ngFor="let page of getPaginationRange(); trackBy: trackByPage" (click)="onPageChange(page)"
-                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200" [ngClass]="{
-          'bg-blue-600 text-white': page === currentPage,
-          'text-gray-500 bg-white hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700': page !== currentPage
-        }">
-                {{ page }}
-            </button>
+            <!-- Pagination Controls -->
+            <div class="flex items-center space-x-2">
+                <!-- Previous Button -->
+                <button (click)="onPageChange(currentPage - 1)" [disabled]="isFirstPage"
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                </button>
 
-            <!-- Next Button -->
-            <button (click)="onPageChange(currentPage + 1)" [disabled]="isLastPage"
-                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700">
-                Next
-            </button>
+                <!-- Page Numbers -->
+                <div class="flex space-x-1">
+                    <button *ngFor="let page of getPaginationRange(); trackBy: trackByPage" (click)="onPageChange(page)"
+                        class="px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 min-w-[40px]"
+                        [ngClass]="{
+                                'bg-blue-600 text-white shadow-sm': page === currentPage,
+                                'text-gray-500 bg-white hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-700': page !== currentPage
+                            }">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <!-- Next Button -->
+                <button (click)="onPageChange(currentPage + 1)" [disabled]="isLastPage"
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200">
+                    Next
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div *ngIf="hasProjects" class="mt-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                <span *ngIf="filteredProjectsCount === totalProjectsCount">
+                    Displaying all {{ totalProjectsCount }} project{{ totalProjectsCount === 1 ? '' : 's' }}
+                </span>
+                <span *ngIf="filteredProjectsCount < totalProjectsCount">
+                    Displaying {{ filteredProjectsCount }} of {{ totalProjectsCount }} projects
+                    <span *ngIf="activeFilter !== 'all' || searchTerm">
+                        matching your criteria
+                    </span>
+                </span>
+            </p>
         </div>
 
     </div>

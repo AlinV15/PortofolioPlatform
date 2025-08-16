@@ -26,7 +26,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class EntityMetadata extends BaseEntity {
 
     @Enumerated(EnumType.STRING)

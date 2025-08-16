@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Project } from '../../../interfaces/project.interface';
+import { Project } from '../../shared/models/project.interface';
 
 @Component({
   selector: 'app-project-card',

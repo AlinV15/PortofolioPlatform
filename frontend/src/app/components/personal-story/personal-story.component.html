@@ -29,10 +29,10 @@
                 <!-- Basic Info -->
                 <div class="mb-8">
                     <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                        {{ personalInfo.name }}
+                        Ciobanu Alin-Viorel
                     </h1>
                     <p class="text-xl text-blue-600 dark:text-blue-400 font-medium mb-4">
-                        {{ personalInfo.title }}
+                        Full Stack Developer | Student at System Development and Business Information Systems
                     </p>
                     <div
                         class="flex items-center justify-center lg:justify-start text-gray-600 dark:text-gray-400 mb-6">
@@ -93,7 +93,8 @@
                 <div
                     class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 mb-8">
                     <blockquote class="text-lg italic text-gray-700 dark:text-gray-300 text-center">
-                        {{ personalInfo.quote }}
+                        I constantly develop an analytical and strategic mindset through the unique combination of
+                        studying specialized literature, practicing chess, and engaging in team sports.
                     </blockquote>
                 </div>
 
@@ -136,14 +137,9 @@
                     class="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-xl hover:shadow-lg transition-shadow duration-300">
 
                     <div class="text-4xl mb-4 flex justify-center">
-                        <!-- Lucide Icon -->
-                        <lucide-icon *ngIf="isLucideIcon(highlight)" [img]="highlight.icon"
-                            class="w-10 h-10 text-blue-600 dark:text-blue-400">
-                        </lucide-icon>
 
                         <!-- Font Awesome Icon -->
-                        <i *ngIf="isFontAwesome(highlight)" [class]="highlight.icon"
-                            class="text-blue-600 dark:text-blue-400">
+                        <i [class]="highlight.icon" class="text-blue-600 dark:text-blue-400">
                         </i>
                     </div>
 
@@ -167,14 +163,13 @@
                     class="flex items-start space-x-4 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
 
                     <div class="flex-shrink-0 text-2xl">
-                        <!-- Lucide Icon -->
-                        <lucide-icon *ngIf="isLucideIcon(value)" [img]="value.icon"
-                            class="w-6 h-6 text-blue-600 dark:text-blue-400">
-                        </lucide-icon>
+
+
 
                         <!-- Font Awesome Icon -->
-                        <i *ngIf="isFontAwesome(value)" [class]="value.icon" class="text-blue-600 dark:text-blue-400">
+                        <i [class]="value.icon" class="text-blue-600 dark:text-blue-400">
                         </i>
+
                     </div>
 
                     <div>
@@ -195,9 +190,10 @@
                 Current Focus Areas
             </h2>
             <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <span *ngFor="let focus of currentFocus; trackBy: trackByFocus"
+                <span *ngFor="let focus of currentFocus; "
                     class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
-                    {{ focus }}
+                    {{ focus.title }}
+
                 </span>
             </div>
 

@@ -8,7 +8,7 @@
                 Technical Skills & Expertise
             </h2>
             <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                A comprehensive overview of my technical skills, tools, and soft skills developed through hands-on
+                A comprehensive overview of my technical skills, tools, and expertise developed through hands-on
                 experience and continuous learning.
             </p>
         </div>
@@ -16,55 +16,53 @@
         <!-- Category Tabs -->
         <div class="mb-8">
             <div class="flex flex-wrap justify-center gap-2 md:gap-4">
-                <button *ngFor="let category of categories; trackBy: trackByCategory"
-                    (click)="setActiveCategory(category.id)"
+                <button *ngFor="let category of skillCategories; trackBy: trackByCategory"
+                    (click)="setActiveCategory(category.name)"
                     [class]="'relative group px-4 md:px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-all duration-300 ' + 
-                         (activeCategory === category.id ? 
-                          'text-white shadow-lg transform scale-105 ' + category.bgColor.replace('bg-', 'bg-').replace('/20', '') : 
+                         (activeCategory?.name === category.name ? 
+                          'bg-blue-600 text-white shadow-lg transform-gpu scale-105' : 
                           'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700')">
 
                     <!-- Category Icon -->
                     <div class="flex items-center justify-center">
-                        <lucide-icon [img]="category.icon" class="w-5 h-5 mr-2"></lucide-icon>
+                        <lucide-icon [img]="getCategoryIcon(category)" class="w-5 h-5 mr-2"></lucide-icon>
                         <span class="hidden sm:inline">{{ category.name }}</span>
                         <span class="sm:hidden">{{ category.name.split(' ')[0] }}</span>
                     </div>
 
                     <!-- Active Category Stats Badge -->
-                    <div *ngIf="activeCategory === category.id"
+                    <div *ngIf="activeCategory?.name === category.name"
                         class="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-gray-800 text-xs font-bold rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-lg">
-                        {{ getCategoryStats(category.id).total }}
+                        {{ getCategoryStats(category).total }}
                     </div>
 
                     <!-- Hover Effect -->
-                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r opacity-0 group-hover:opacity-10 transition-opacity duration-300"
-                        [style.background]="'linear-gradient(135deg, ' + (category.color.includes('blue') ? '#3B82F6' : 
-                                                                  category.color.includes('green') ? '#10B981' :
-                                                                  category.color.includes('purple') ? '#8B5CF6' :
-                                                                  category.color.includes('orange') ? '#F97316' : 
-                                                                  '#EC4899') + ', transparent)'"></div>
+                    <div
+                        class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
+                    </div>
                 </button>
             </div>
         </div>
 
         <!-- Active Category Info -->
-        <div class="mb-8 text-center">
-            <div [class]="'inline-flex items-center px-6 py-3 rounded-2xl ' + getActiveCategoryInfo().bgColor">
-                <lucide-icon [img]="getActiveCategoryInfo().icon"
-                    [class]="'w-6 h-6 mr-3 ' + getActiveCategoryInfo().color"></lucide-icon>
+        <div *ngIf="activeCategory" class="mb-8 text-center">
+            <div
+                class="inline-flex items-center px-6 py-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+                <lucide-icon [img]="getCategoryIcon(activeCategory)"
+                    class="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400"></lucide-icon>
                 <div class="text-left">
-                    <h3 [class]="'text-lg font-semibold ' + getActiveCategoryInfo().color">
-                        {{ getActiveCategoryInfo().name }}
+                    <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                        {{ activeCategory.name }}
                     </h3>
                     <p class="text-sm text-gray-600 dark:text-gray-300">
-                        {{ getActiveCategoryInfo().description }}
+                        {{ activeCategory.description }}
                     </p>
                 </div>
             </div>
         </div>
 
         <!-- Category Overview Stats -->
-        <div class="grid grid-cols-3 gap-4 mb-8 max-w-md mx-auto">
+        <div *ngIf="activeCategory" class="grid grid-cols-3 gap-4 mb-8 max-w-md mx-auto">
             <div class="text-center bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                     {{ getCategoryStats(activeCategory).total }}
@@ -95,14 +93,15 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
                         <!-- Skill Color Indicator -->
-                        <div class="w-4 h-4 rounded-full mr-3 shadow-lg" [style.background-color]="skill.color"></div>
+                        <div class="w-4 h-4 rounded-full mr-3 shadow-lg"
+                            [style.background-color]="getCategoryColor(skill.category)"></div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                 {{ skill.name }}
                             </h3>
                             <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
                                 [ngClass]="getProficiencyBadgeColor(skill.proficiency)">
-                                {{ skill.proficiency.charAt(0).toUpperCase() + skill.proficiency.slice(1) }}
+                                {{ skill.proficiency | titlecase }}
                             </span>
                         </div>
                     </div>
@@ -113,7 +112,7 @@
                             {{ skill.level }}%
                         </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ skill.yearsOfExperience }}+ years
+                            {{ formatExperience(skill.yearsOfExperience) }}
                         </div>
                     </div>
                 </div>
@@ -135,22 +134,23 @@
 
                 <!-- Skill Metrics -->
                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <div *ngIf="skill.projects" class="flex items-center">
+                    <div class="flex items-center">
                         <lucide-icon [img]="codeIcon" class="w-3 h-3 mr-1"></lucide-icon>
                         {{ skill.projects }} project{{ skill.projects !== 1 ? 's' : '' }}
                     </div>
 
                     <div class="flex items-center">
-                        <lucide-icon [img]="trendingUpIcon" class="w-3 h-3 mr-1"></lucide-icon>
-                        {{ skill.yearsOfExperience }} year{{ skill.yearsOfExperience !== 1 ? 's' : '' }}
+                        <lucide-icon [img]="getProficiencyIcon(skill.proficiency)" class="w-3 h-3 mr-1"></lucide-icon>
+                        {{ getSkillLevelLabel(skill.level) }}
                     </div>
                 </div>
 
                 <!-- Skill Level Visual Indicator -->
                 <div class="mt-4 flex justify-center">
                     <div class="flex space-x-1">
-                        <div *ngFor="let star of [1,2,3,4,5]; let starIndex = index" [class]="'w-3 h-3 rounded-full transition-all duration-300 ' + 
-                          (skill.level >= (starIndex + 1) * 20 ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600')">
+                        <div *ngFor="let star of [1,2,3,4,5]; let starIndex = index"
+                            [class]="'w-3 h-3 rounded-full transition-all duration-300 ' + 
+                              (skill.level >= (starIndex + 1) * 20 ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600')">
                         </div>
                     </div>
                 </div>
@@ -163,39 +163,81 @@
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="getActiveSkills().length === 0" class="text-center py-12">
+        <div *ngIf="getActiveSkills().length === 0 && categoriesLoaded" class="text-center py-12">
             <div
-                [class]="'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ' + getActiveCategoryInfo().bgColor">
-                <lucide-icon [img]="getActiveCategoryInfo().icon"
-                    [class]="'w-10 h-10 ' + getActiveCategoryInfo().color"></lucide-icon>
+                class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <lucide-icon [img]="codeIcon" class="w-10 h-10 text-gray-400"></lucide-icon>
             </div>
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No Skills Found
             </h3>
             <p class="text-gray-500 dark:text-gray-400">
-                Skills for {{ getActiveCategoryInfo().name.toLowerCase() }} will appear here.
+                Skills for {{ activeCategory?.name?.toLowerCase() || 'this category' }} will appear here.
+            </p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="!categoriesLoaded" class="text-center py-12">
+            <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <lucide-icon [img]="settingsIcon" class="w-8 h-8 text-white animate-spin"></lucide-icon>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Loading Skills...
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400">
+                Fetching technical expertise data
             </p>
         </div>
 
         <!-- Category Summary -->
-        <div class="mt-12 text-center">
+        <div *ngIf="categoriesLoaded" class="mt-12 text-center">
             <div
                 class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full border border-blue-200 dark:border-blue-700">
                 <lucide-icon [img]="starIcon" class="w-5 h-5 text-yellow-500 mr-2"></lucide-icon>
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Continuously learning and expanding skill set through hands-on projects and professional development
+                    {{ totalSkillsCount }} total skills across {{ skillCategories.length }} categories with {{
+                    overallAvgLevel }}% average proficiency
                 </span>
+            </div>
+        </div>
+
+        <!-- Advanced Category Stats -->
+        <div *ngIf="activeCategory && getCategoryStats(activeCategory).total > 0"
+            class="mt-8 bg-gray-50 dark:bg-gray-800 rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                {{ activeCategory.name }} Expertise Breakdown
+            </h4>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-xl font-bold text-purple-600 dark:text-purple-400">
+                        {{ getCategoryStats(activeCategory).expertCount }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Expert Level</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-green-600 dark:text-green-400">
+                        {{ getCategoryStats(activeCategory).advancedCount }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Advanced</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-orange-600 dark:text-orange-400">
+                        {{ getCategoryAvgExperience(activeCategory) }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Avg Years</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        {{ getCategoryCompletion(activeCategory) }}%
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Completion</div>
+                </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="mt-8 flex flex-wrap justify-center gap-4">
-            <!-- <button
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                <lucide-icon [img]="awardIcon" class="w-4 h-4 mr-2"></lucide-icon>
-                View Certifications
-            </button> -->
-
             <button
                 class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                 <lucide-icon [img]="targetIcon" class="w-4 h-4 mr-2"></lucide-icon>

@@ -23,7 +23,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class EntityTechnology extends BaseEntity {
 
     @Enumerated(EnumType.STRING)

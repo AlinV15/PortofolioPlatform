@@ -22,12 +22,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class Achievement extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personal_id", nullable = false)
     private Personal personal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "education_id")
+    private Education education;
 
     @Column(nullable = false, length = 200)
     private String title;

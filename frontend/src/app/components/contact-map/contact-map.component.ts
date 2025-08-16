@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, inject, PLATFORM_ID, input } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule, MapPin, Navigation, Clock, Globe, ExternalLink, Copy, Loader2, MapPinOff, RefreshCw, Focus, Info } from 'lucide-angular';
 import { environment } from '../../../../environments/environment';
+import { ContactLocation } from '../../shared/models/contact.interface';
 
 // Tipuri locale simple pentru a evita erorile TypeScript
 interface SimpleMap {
@@ -20,19 +21,6 @@ interface SimpleInfoWindow {
   open(options: { map: SimpleMap; anchor: SimpleMarker } | any, marker?: any): void;
   close(): void;
   setContent(content: string): void;
-}
-
-export interface ContactLocation {
-  name: string;
-  address: string;
-  city: string;
-  country: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-  timezone: string;
-  workingHours: string;
 }
 
 @Component({
@@ -62,6 +50,10 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   readonly focusIcon = Focus;
   readonly infoIcon = Info;
 
+  // Input signals for location data
+  readonly location = input.required<ContactLocation>();
+  readonly error = input<string | null>(null);
+
   // Angular Signals pentru state management
   private readonly isMapLoaded = signal(false);
   private readonly isMapError = signal(false);
@@ -70,28 +62,46 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   private readonly infoWindow = signal<SimpleInfoWindow | null>(null);
 
   // Computed signals pentru UI state
-  readonly showMap = computed(() => this.isMapLoaded() && !this.isMapError());
-  readonly showError = computed(() => this.isMapError());
-  readonly showLoader = computed(() => !this.isMapLoaded() && !this.isMapError());
+  readonly showMap = computed(() => this.isMapLoaded() && !this.isMapError() && this.hasValidCoordinates());
+  readonly showError = computed(() => this.isMapError() || this.error() !== null || !this.hasValidCoordinates());
+  readonly showLoader = computed(() => !this.isMapLoaded() && !this.isMapError() && this.hasValidCoordinates());
 
-  // Location data cu signal
-  readonly location = signal<ContactLocation>({
-    name: 'Iași, Romania',
-    address: 'Bulevardul Carol I',
-    city: 'Iași',
-    country: 'Romania',
-    coordinates: {
-      lat: 47.1585,
-      lng: 27.6014
-    },
-    timezone: 'Europe/Bucharest',
-    workingHours: 'Monday - Friday: 09:00 - 18:00'
+  // Computed pentru validarea coordonatelor
+  readonly hasValidCoordinates = computed(() => {
+    const loc = this.location();
+    return loc &&
+      loc.coordinates &&
+      typeof loc.coordinates.lat === 'number' &&
+      typeof loc.coordinates.lng === 'number' &&
+      loc.coordinates.lat !== 0 &&
+      loc.coordinates.lng !== 0 &&
+      loc.coordinates.lat >= -90 && loc.coordinates.lat <= 90 &&
+      loc.coordinates.lng >= -180 && loc.coordinates.lng <= 180;
+  });
+
+  // Computed pentru informații location formatate
+  readonly formattedLocation = computed(() => {
+    const loc = this.location();
+    return {
+      fullAddress: this.formatFullAddress(loc),
+      timeInfo: this.formatTimeInfo(loc),
+      mapUrl: this.generateMapUrl(loc),
+      isComplete: !!(loc.name && loc.address && loc.city && loc.country)
+    };
   });
 
   // Google Maps configuration din environment
   private readonly googleMapsConfig = environment.googleMaps;
 
   constructor() {
+    // Effect pentru reinițializarea hărții când se schimbă location
+    effect(() => {
+      const loc = this.location();
+      if (this.isMapLoaded() && this.hasValidCoordinates()) {
+        this.updateMapLocation(loc);
+      }
+    });
+
     effect(() => {
       if (this.isMapLoaded()) {
         console.log('Map loaded successfully');
@@ -108,8 +118,10 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
+    if (this.isBrowser && this.hasValidCoordinates()) {
       this.loadGoogleMaps();
+    } else if (!this.hasValidCoordinates()) {
+      console.warn('Invalid coordinates provided for map:', this.location().coordinates);
     }
   }
 
@@ -188,15 +200,22 @@ export class ContactMapComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.hasValidCoordinates()) {
+      console.error('Cannot initialize map: invalid coordinates');
+      this.isMapError.set(true);
+      return;
+    }
+
     try {
       // Curăță orice conținut existent
       mapElement.innerHTML = '';
 
       const googleMaps = (window as any).google.maps;
+      const coordinates = this.location().coordinates;
 
       // Creează instanța hărții cu Map ID pentru funcționalități avansate
       const map = new googleMaps.Map(mapElement, {
-        center: this.location().coordinates,
+        center: coordinates,
         zoom: 13,
         mapTypeId: 'roadmap',
         // Opțiuni moderne pentru hartă
@@ -228,7 +247,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
 
         marker = new googleMaps.marker.AdvancedMarkerElement({
           map: map,
-          position: this.location().coordinates,
+          position: coordinates,
           title: this.location().name,
           content: pin.element,
           gmpDraggable: false
@@ -240,7 +259,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
       } else {
         // Fallback la Marker clasic (deprecated dar încă funcțional)
         marker = new googleMaps.Marker({
-          position: this.location().coordinates,
+          position: coordinates,
           map: map,
           title: this.location().name,
           animation: googleMaps.Animation.DROP,
@@ -308,12 +327,40 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         console.log('✅ Google Maps loaded successfully');
         console.log('Map instance:', map);
         console.log('Marker instance:', marker);
+        console.log('Location:', this.location());
         console.log('Supports AdvancedMarkerElement:', !!(googleMaps.marker && googleMaps.marker.AdvancedMarkerElement));
       }
 
     } catch (error) {
       console.error('Error initializing map:', error);
       this.isMapError.set(true);
+    }
+  }
+
+  private updateMapLocation(newLocation: ContactLocation): void {
+    if (!this.hasValidCoordinates()) return;
+
+    const map = this.mapInstance();
+    const marker = this.marker();
+    const infoWindow = this.infoWindow();
+
+    if (map && marker) {
+      const coordinates = newLocation.coordinates;
+
+      // Update map center
+      map.setCenter(coordinates);
+
+      // Update marker position
+      if ('position' in marker) {
+        marker.position = coordinates;
+      }
+
+      // Update info window content
+      if (infoWindow) {
+        infoWindow.setContent(this.createInfoWindowContent());
+      }
+
+      console.log('Map location updated:', coordinates);
     }
   }
 
@@ -338,6 +385,8 @@ export class ContactMapComponent implements OnInit, OnDestroy {
 
   private createInfoWindowContent(): string {
     const loc = this.location();
+    const formatted = this.formattedLocation();
+
     return `
       <div style="padding: 16px; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
         <div style="display: flex; align-items: start; gap: 12px;">
@@ -347,15 +396,15 @@ export class ContactMapComponent implements OnInit, OnDestroy {
             </svg>
           </div>
           <div style="flex: 1; min-width: 0;">
-            <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 600; color: #111827;">${loc.name}</h3>
-            <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">${loc.address}, ${loc.city}</p>
-            <p style="margin: 0 0 12px 0; font-size: 12px; color: #9ca3af;">${loc.workingHours}</p>
+            <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 600; color: #111827;">${loc.name || 'Location'}</h3>
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">${formatted.fullAddress}</p>
+            ${loc.workingHours ? `<p style="margin: 0 0 12px 0; font-size: 12px; color: #9ca3af;">${loc.workingHours}</p>` : ''}
             <div style="display: flex; gap: 8px;">
               <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${loc.coordinates.lat},${loc.coordinates.lng}', '_blank')" 
                       style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;">
                 Directions
               </button>
-              <button onclick="navigator.clipboard.writeText('${loc.address}, ${loc.city}, ${loc.country}').then(() => console.log('Address copied!'))" 
+              <button onclick="navigator.clipboard.writeText('${formatted.fullAddress}').then(() => console.log('Address copied!'))" 
                       style="padding: 6px 12px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;">
                 Copy Address
               </button>
@@ -366,24 +415,52 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     `;
   }
 
+  // Utility methods pentru formatarea datelor
+  private formatFullAddress(location: ContactLocation): string {
+    if (!location) return '';
+
+    const parts = [location.address, location.city, location.country]
+      .filter(part => part && part.trim());
+    return parts.join(', ');
+  }
+
+  private formatTimeInfo(location: ContactLocation): string {
+    if (!location) return '';
+
+    const parts = [];
+    if (location.timezone) parts.push(`Timezone: ${location.timezone}`);
+    if (location.workingHours) parts.push(`Working Hours: ${location.workingHours}`);
+    return parts.join(' | ');
+  }
+
+  private generateMapUrl(location: ContactLocation): string {
+    if (!location || !this.hasValidCoordinates()) return '';
+
+    const { lat, lng } = location.coordinates;
+    return `https://www.google.com/maps?q=${lat},${lng}`;
+  }
+
   // Public methods pentru interacțiunea cu harta și UI helpers
   centerMap(): void {
     const map = this.mapInstance();
-    if (map) {
+    if (map && this.hasValidCoordinates()) {
       map.setCenter(this.location().coordinates);
       map.setZoom(13);
     }
   }
 
   openInGoogleMaps(): void {
-    if (!this.isBrowser) return;
-    const { lat, lng } = this.location().coordinates;
-    const url = `https://www.google.com/maps/@${lat},${lng},15z`;
-    window.open(url, '_blank');
+    if (!this.isBrowser || !this.hasValidCoordinates()) return;
+
+    const url = this.formattedLocation().mapUrl;
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   getDirections(): void {
-    if (!this.isBrowser) return;
+    if (!this.isBrowser || !this.hasValidCoordinates()) return;
+
     const { lat, lng } = this.location().coordinates;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
     window.open(url, '_blank');
@@ -391,29 +468,37 @@ export class ContactMapComponent implements OnInit, OnDestroy {
 
   copyLocation(): void {
     if (!this.isBrowser || !navigator.clipboard) return;
-    const locationText = `${this.location().address}, ${this.location().city}, ${this.location().country}`;
-    navigator.clipboard.writeText(locationText).then(() => {
-      console.log('Location copied to clipboard');
-      // Aici poți adăuga o notificare toast
-    }).catch(err => {
-      console.error('Failed to copy location:', err);
-    });
+
+    const locationText = this.formattedLocation().fullAddress;
+    if (locationText) {
+      navigator.clipboard.writeText(locationText).then(() => {
+        console.log('Location copied to clipboard');
+        // Aici poți adăuga o notificare toast
+      }).catch(err => {
+        console.error('Failed to copy location:', err);
+      });
+    }
   }
 
   retryLoadMap(): void {
     this.isMapError.set(false);
     this.isMapLoaded.set(false);
-    this.loadGoogleMaps();
+    if (this.hasValidCoordinates()) {
+      this.loadGoogleMaps();
+    }
   }
 
   // UI Helper methods pentru template
   getCurrentTime(): string {
     if (!this.isBrowser) return '';
 
+    const loc = this.location();
+    if (!loc.timezone) return '';
+
     try {
       const now = new Date();
       return now.toLocaleTimeString('en-US', {
-        timeZone: this.location().timezone,
+        timeZone: loc.timezone,
         hour: '2-digit',
         minute: '2-digit'
       });
@@ -497,5 +582,21 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         console.warn('Error during cleanup:', error);
       }
     }
+  }
+
+  // Debug helper methods
+  getLocationDebugInfo(): any {
+    return {
+      location: this.location(),
+      hasValidCoordinates: this.hasValidCoordinates(),
+      formattedLocation: this.formattedLocation(),
+      error: this.error()
+    };
+  }
+
+  getCoordinatesStatus(): string {
+    if (!this.hasValidCoordinates()) return '❌ Invalid coordinates';
+    const coords = this.location().coordinates;
+    return `✅ ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
   }
 }

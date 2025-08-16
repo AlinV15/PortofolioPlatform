@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class Certificate extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

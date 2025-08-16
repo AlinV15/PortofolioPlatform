@@ -1,0 +1,7 @@
+export enum RecognitionLevel {
+    LOCAL = 'LOCAL',
+    REGIONAL = 'REGIONAL',
+    NATIONAL = 'NATIONAL',
+    INTERNATIONAL = 'INTERNATIONAL',
+    INSTITUTIONAL = 'INSTITUTIONAL'
+}

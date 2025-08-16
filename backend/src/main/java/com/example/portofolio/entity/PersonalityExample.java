@@ -15,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true,onlyExplicitlyIncluded = true)
 public class PersonalityExample extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

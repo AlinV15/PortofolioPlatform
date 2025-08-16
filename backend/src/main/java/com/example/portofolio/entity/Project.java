@@ -5,9 +5,12 @@ import com.example.portofolio.entity.enums.ProjectStatus;
 import com.example.portofolio.entity.enums.ComplexityLevel;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.mapping.Array;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -60,6 +63,11 @@ public class Project extends BaseEntity {
 
     @Column(name = "completion_date")
     private LocalDate completionDate;
+    @Column(name = "development_time")
+    private Double developmentTime;
+
+    @Column(nullable = false, length = 200)
+    private List<String> tags = new ArrayList<>();
 
     // Relationships
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

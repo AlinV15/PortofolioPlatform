@@ -1,0 +1,13 @@
+export enum HobbyCategory {
+    LEARNING = 'LEARNING',
+    SPORTS = 'SPORTS',
+    CREATIVE = 'CREATIVE',
+    SOCIAL = 'SOCIAL',
+    TECHNOLOGY = 'TECHNOLOGY',
+    MUSIC = 'MUSIC',
+    TRAVEL = 'TRAVEL',
+    COOKING = 'COOKING',
+    GARDENING = 'GARDENING',
+    READING = 'READING',
+    GAMING = 'GAMING'
+}

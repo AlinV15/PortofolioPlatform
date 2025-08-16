@@ -1,0 +1,244 @@
+# ===== application.yml (configurația principală) =====
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: portfolio-api
+
+  profiles:
+    active: dev  # 🔥 SCHIMBAT LA DEV pentru development activ
+  #     ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:portfolio_db}
+    username: ${DB_USER:portfolio_user}
+    password: ${DB_PASSWORD:portfolio_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+          lob.non_contextual_creation: true
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  cache:
+    type: simple
+
+  # 🔥 ADĂUGAT: DevTools configuration globală
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java,src/main/resources
+      exclude: static/**,public/**
+      poll-interval: 1000
+      quiet-period: 400
+    livereload:
+      enabled: true
+      port: 35729
+
+# ===== Actuator Configuration =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,refresh  # 🔥 ADĂUGAT refresh endpoint
+  endpoint:
+    health:
+      show-details: when-authorized
+    refresh:
+      enabled: true
+
+# ===== OpenAPI/Swagger Configuration =====
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# ===== Logging Configuration =====
+logging:
+  level:
+    com.example.portfolio: DEBUG  # 🔥 SCHIMBAT LA DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: INFO
+    org.springframework.boot.devtools: DEBUG  # 🔥 ADĂUGAT pentru DevTools logging
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# ===== application-dev.yml (pentru development) =====
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # 🔥 PĂSTREAZĂ PostgreSQL și în dev pentru consistență
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:portfolio_db}
+    username: ${DB_USER:portfolio_user}
+    password: ${DB_PASSWORD:portfolio_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10  # Mai puține conexiuni în dev
+      minimum-idle: 2
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # 🔥 CONFIGURAȚIE OPTIMIZATĂ DevTools pentru development
+  devtools:
+    restart:
+      enabled: true
+      additional-paths:
+        - src/main/java
+        - src/main/resources
+      exclude:
+        - static/**
+        - public/**
+        - templates/**
+        - META-INF/maven/**
+        - META-INF/resources/**
+      poll-interval: 500      # Verifică la fiecare 500ms
+      quiet-period: 200       # Așteaptă 200ms înainte de restart
+      trigger-file: .reloadtrigger  # Fișier trigger opțional
+    livereload:
+      enabled: true
+      port: 35729
+    add-properties: false     # Nu adaugă proprietăți extra
+
+  # 🔥 CACHE DISABLED în development
+  cache:
+    type: none
+    cache-names: []
+
+  flyway:
+    enabled: true  # 🔥 ACTIVAT din nou pentru migrații
+
+logging:
+  level:
+    com.example.portfolio: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.devtools: DEBUG
+    org.springframework.boot.autoconfigure: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web.servlet.DispatcherServlet: DEBUG  # 🔥 Pentru routing
+
+---
+# ===== application-prod.yml (pentru production) =====
+spring:
+  config:
+    activate:
+      on-profile: prod  # 🔥 CORECTAT (era dev)
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  # 🔥 DevTools DISABLED în production
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  flyway:
+    enabled: true
+
+  cache:
+    type: simple  # Cache activat în prod
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics  # Fără refresh în prod
+
+logging:
+  level:
+    com.example.portfolio: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.boot.devtools: OFF
+  file:
+    name: logs/portfolio-api.log
+
+---
+# ===== application-test.yml (pentru testing) =====
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: test
+    password: test
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  cache:
+    type: none
+
+  flyway:
+    enabled: false
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    com.example.portfolio: DEBUG

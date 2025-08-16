@@ -5,7 +5,7 @@ import {
   Star, ExternalLink, Github, Eye, ChevronLeft, ChevronRight,
   Rocket, Wrench, Lightbulb, Calendar, Clock, Users, Code, Zap, Award
 } from 'lucide-angular';
-import { Project } from '../../../interfaces/project.interface';
+import { Project } from '../../shared/models/project.interface';
 
 @Component({
   selector: 'app-project-showcase',
@@ -18,6 +18,7 @@ export class ProjectShowcaseComponent implements OnInit, OnDestroy {
   @Input() projects: Project[] = [];
   @Input() autoSlide: boolean = true;
   @Input() slideInterval: number = 5000; // 5 seconds
+
   @Output() projectSelect = new EventEmitter<Project>();
   @Output() demoClick = new EventEmitter<Project>();
   @Output() githubClick = new EventEmitter<Project>();
@@ -129,9 +130,13 @@ export class ProjectShowcaseComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Event handlers
-  onProjectSelect(project: Project): void {
+  onProjectClick(project: Project): void {
+    // Emit project selection to parent
     this.projectSelect.emit(project);
+
+    if (this.isBrowser) {
+      console.log('Project selected:', project.title);
+    }
   }
 
   onDemoClick(project: Project, event: Event): void {
@@ -246,7 +251,7 @@ export class ProjectShowcaseComponent implements OnInit, OnDestroy {
       case 'Enter':
         if (this.currentProject) {
           event.preventDefault();
-          this.onProjectSelect(this.currentProject);
+          this.onProjectClick(this.currentProject);
         }
         break;
     }

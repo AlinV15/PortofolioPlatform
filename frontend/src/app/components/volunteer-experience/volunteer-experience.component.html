@@ -16,7 +16,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
             <div
                 class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-xl">
-                <div class="text-3xl font-bold text-purple-600 dark:text-purple-300 mb-2">{{ volunteerStats.total_years
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-300 mb-2">{{ volunteerStats.totalYears
                     }}+</div>
                 <div class="text-sm text-purple-700 dark:text-purple-300">Years Active</div>
             </div>
@@ -29,13 +29,13 @@
             <div
                 class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-xl">
                 <div class="text-3xl font-bold text-green-600 dark:text-green-300 mb-2">{{
-                    volunteerStats.projects_coordinated }}</div>
+                    volunteerStats.projectsCoordinated }}</div>
                 <div class="text-sm text-green-700 dark:text-green-300">Projects Led</div>
             </div>
             <div
                 class="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 rounded-xl">
                 <div class="text-3xl font-bold text-orange-600 dark:text-orange-300 mb-2">{{
-                    volunteerStats.events_organized }}</div>
+                    volunteerStats.eventsOrganized }}</div>
                 <div class="text-sm text-orange-700 dark:text-orange-300">Events Organized</div>
             </div>
         </div>
@@ -48,8 +48,7 @@
 
             <div class="space-y-8">
                 <div *ngFor="let experience of volunteerExperiences; trackBy: trackByExperience"
-                    class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 hover:shadow-lg transition-all duration-300"
-                    [class.cursor-pointer]="experience.website" (click)="onOrganizationClick(experience)">
+                    class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 hover:shadow-lg transition-all duration-300">
 
                     <!-- Header -->
                     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6">
@@ -57,10 +56,10 @@
                             <div class="flex items-center mb-3">
                                 <!-- Icon/Logo -->
                                 <div class="mr-4">
-                                    <img *ngIf="isImageIcon(experience.icon)" [src]="experience.icon"
+                                    <img *ngIf="havingWebsite(experience.website)" [src]="`${experience.website}`"
                                         [alt]="experience.organization + ' logo'"
                                         class="w-12 h-12 rounded-lg object-cover">
-                                    <div *ngIf="!isImageIcon(experience.icon)"
+                                    <div *ngIf="!havingWebsite(experience.website)"
                                         class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                                         <lucide-icon [name]="experience.icon"
                                             class="w-6 h-6 text-blue-600 dark:text-blue-400"></lucide-icon>
@@ -85,7 +84,7 @@
                                     {{ experience.type | titlecase }}
                                 </span>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                    [class]="experience.status === 'ongoing' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'">
+                                    [class]="experience.status === 'ONGOING' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'">
                                     <lucide-icon [name]="getStatusIcon(experience.status)"
                                         class="w-3 h-3 mr-1"></lucide-icon>
                                     {{ experience.status | titlecase }}
@@ -113,11 +112,12 @@
                                     Key Responsibilities
                                 </h5>
                                 <ul class="space-y-2">
-                                    <li *ngFor="let responsibility of experience.responsibilities; trackBy: trackByString"
+                                    <li *ngFor="let responsibility of experience.responsibilities; trackBy: trackByResponsibility"
                                         class="flex items-start">
                                         <lucide-icon [name]="dot"
                                             class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0"></lucide-icon>
-                                        <span class="text-gray-600 dark:text-gray-300 text-sm">{{ responsibility
+                                        <span class="text-gray-600 dark:text-gray-300 text-sm">{{
+                                            responsibility.description
                                             }}</span>
                                     </li>
                                 </ul>
@@ -140,21 +140,9 @@
                             </div>
                         </div>
 
-                        <!-- Right Column: Projects & Skills -->
+                        <!-- Right Column:  Skills -->
                         <div class="space-y-6">
-                            <!-- Projects -->
-                            <div>
-                                <h5 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                                    <lucide-icon [name]="rocket" class="w-5 h-5 text-purple-500 mr-2"></lucide-icon>
-                                    Projects & Activities
-                                </h5>
-                                <div class="space-y-2">
-                                    <div *ngFor="let project of experience.projects; trackBy: trackByString"
-                                        class="px-3 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                        <span class="text-gray-700 dark:text-gray-300 text-sm">{{ project }}</span>
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <!-- Skills Gained -->
                             <div>
@@ -163,7 +151,7 @@
                                     Skills Developed
                                 </h5>
                                 <div class="flex flex-wrap gap-2">
-                                    <span *ngFor="let skill of experience.skills_gained; trackBy: trackByString"
+                                    <span *ngFor="let skill of experience.skillsGained; trackBy: trackByString"
                                         class="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 text-xs rounded-full">
                                         {{ skill }}
                                     </span>
@@ -172,15 +160,6 @@
                         </div>
                     </div>
 
-                    <!-- Impact Section -->
-                    <div
-                        class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
-                        <h5 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
-                            <lucide-icon [name]="lightbulb" class="w-5 h-5 text-indigo-500 mr-2"></lucide-icon>
-                            Impact & Learning
-                        </h5>
-                        <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{{ experience.impact }}</p>
-                    </div>
                 </div>
             </div>
         </div>

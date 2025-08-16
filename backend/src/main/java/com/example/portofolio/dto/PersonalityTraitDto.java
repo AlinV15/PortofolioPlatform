@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PersonalityTraitDto {
-    private Long id;
+    private String id;
     private String trait;
     private String description;
     private String icon;

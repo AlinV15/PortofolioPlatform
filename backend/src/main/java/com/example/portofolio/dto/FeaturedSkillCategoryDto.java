@@ -1,6 +1,5 @@
 package com.example.portofolio.dto;
 
-import com.example.portofolio.entity.Icon;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +16,6 @@ import java.util.List;
 public class FeaturedSkillCategoryDto {
     private String name;
     private List<FeaturedSkillDto> skills;
-    private Icon icon;
+    private String icon;
     private String description;
 }

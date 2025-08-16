@@ -24,27 +24,21 @@
             </p>
 
             <!-- Quick Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 <div class="text-center">
-                    <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">{{ totalCertifications }}
+                    <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">{{
+                        certificateStats.totalCertificates }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total Certifications</div>
                 </div>
+
                 <div class="text-center">
-                    <div class="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{{ activeCertifications }}
+                    <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{{
+                        certificateStats.verificationRate }}
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Active</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Verification rate</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{{ certificationProviders }}
-                    </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Providers</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">{{ upcomingCertifications
-                        }}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">In Progress</div>
-                </div>
+
             </div>
         </div>
 
@@ -61,13 +55,13 @@
                     All Certifications
                 </button>
 
-                <button *ngFor="let category of certificationCategories; trackBy: trackByCategory"
+                <button *ngFor="let category of certificateCategories; trackBy: trackByCategory"
                     (click)="setActiveFilter(category.id)"
                     [class]="'flex items-center px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ' + 
                          (activeFilter === category.id ? 
                           'text-white shadow-lg transform scale-105 ' + category.activeClass : 
                           'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:shadow-md ' + category.hoverClass)">
-                    <lucide-icon [img]="category.icon" class="w-4 h-4 mr-2"></lucide-icon>
+                    <lucide-icon [name]="category.icon" class="w-4 h-4 mr-2"></lucide-icon>
                     {{ category.name }}
                 </button>
             </div>
@@ -100,9 +94,9 @@
         <!-- Certifications Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-16">
 
-            <div *ngFor="let cert of filteredCertifications; let i = index; trackBy: trackByCertification"
+            <div *ngFor="let cert of filteredCertificates; let i = index; trackBy: trackByCertification"
                 class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-105"
-                [attr.data-cert-id]="cert.id" (click)="onCertificationClick(cert)">
+                [attr.data-cert-id]="cert.id">
 
                 <!-- Certification Header -->
                 <div class="relative p-8 pb-6"
@@ -113,9 +107,9 @@
                         <div class="flex items-center">
                             <div class="w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center"
                                 [style.background]="'linear-gradient(135deg, ' + cert.primaryColor + ', ' + cert.secondaryColor + ')'">
-                                <lucide-icon *ngIf="cert.icon" [img]="cert.icon"
+                                <lucide-icon *ngIf="cert.icon" [name]="cert.icon"
                                     class="w-8 h-8 text-white"></lucide-icon>
-                                <span *ngIf="!cert.icon" class="text-white text-xl font-bold">{{ cert.provider.charAt(0)
+                                <span *ngIf="!cert.icon" class="text-white text-xl font-bold">{{ cert.issuer.charAt(0)
                                     }}</span>
                             </div>
 
@@ -134,36 +128,25 @@
                             </div>
                         </div>
 
-                        <!-- Expiry Status -->
-                        <div *ngIf="cert.expiryDate" class="text-right">
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ cert.hasExpiry ? (isExpired(cert.expiryDate) ? 'Expired' : 'Valid until') : 'No
-                                expiry' }}
-                            </div>
-                            <div class="text-sm font-medium"
-                                [class]="isExpired(cert.expiryDate) ? 'text-red-500' : isExpiringSoon(cert.expiryDate) ? 'text-yellow-500' : 'text-green-500'">
-                                {{ cert.expiryDate | date:'MMM yyyy' }}
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Certification Title -->
                     <h3
                         class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 group-hover:bg-clip-text dark:group-hover:from-white dark:group-hover:to-gray-300 transition-all duration-300">
-                        {{ cert.title }}
+                        {{ cert.name }}
                     </h3>
 
                     <!-- Provider & Date -->
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ cert.provider }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ cert.issueDate | date:'MMMM yyyy' }}
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ cert.issuer }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ cert.date| date:'MMMM yyyy' }}
                             </p>
                         </div>
                         <div class="text-right">
                             <div class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium"
                                 [style.background-color]="cert.primaryColor + '20'" [style.color]="cert.primaryColor">
-                                {{ cert.category | titlecase }}
+                                {{ cert.categoryName| titlecase }}
                             </div>
                         </div>
                     </div>
@@ -183,53 +166,28 @@
                             Skills Covered
                         </h4>
                         <div class="flex flex-wrap gap-2">
-                            <span *ngFor="let skill of cert.skills.slice(0, 5); trackBy: trackByString"
+                            <span *ngFor="let skill of cert.skillsGained.slice(0, 5); trackBy: trackByString"
                                 class="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium">
                                 {{ skill }}
                             </span>
-                            <span *ngIf="cert.skills.length > 5"
+                            <span *ngIf="cert.skillsGained.length > 5"
                                 class="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-xs">
-                                +{{ cert.skills.length - 5 }} more
+                                +{{ cert.skillsGained.length - 5 }} more
                             </span>
                         </div>
                     </div>
 
                     <!-- Certification Details -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="grid grid-cols-1 gap-4 mb-6">
                         <div class="text-center bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">{{ cert.credentialId || 'N/A'
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">{{ cert.certificateId
                                 }}</div>
                             <div class="text-xs text-gray-500 dark:text-gray-400">Credential ID</div>
                         </div>
-                        <div class="text-center bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
-                            <div class="text-lg font-bold" [style.color]="cert.primaryColor">{{ cert.score || 'Pass' }}
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Score</div>
-                        </div>
+
                     </div>
                 </div>
 
-                <!-- Certification Actions -->
-                <div class="px-8 pb-8">
-                    <div class="flex items-center justify-between">
-
-                        <!-- View Certificate Button -->
-                        <button (click)="viewCertificate(cert, $event)"
-                            class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                            <lucide-icon [img]="externalLinkIcon" class="w-4 h-4 mr-2"></lucide-icon>
-                            View Certificate
-                        </button>
-
-                        <!-- Verify Button -->
-                        <button *ngIf="cert.verificationUrl" (click)="verifyCertificate(cert, $event)"
-                            class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200"
-                            [style.background-color]="cert.primaryColor + '20'" [style.color]="cert.primaryColor"
-                            [style.border]="'1px solid ' + cert.primaryColor + '40'">
-                            <lucide-icon [img]="shieldCheckIcon" class="w-4 h-4 mr-2"></lucide-icon>
-                            Verify
-                        </button>
-                    </div>
-                </div>
 
                 <!-- Hover Effect Overlay -->
                 <div
@@ -245,7 +203,7 @@
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="filteredCertifications.length === 0" class="text-center py-16">
+        <div *ngIf="filteredCertificates.length === 0" class="text-center py-16">
             <div
                 class="w-24 h-24 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
                 <lucide-icon [img]="searchIcon" class="w-12 h-12 text-yellow-600 dark:text-yellow-400"></lucide-icon>
@@ -279,7 +237,7 @@
                         Click on the "Verify" button to check the authenticity of any certification.
                     </p>
                     <div class="flex flex-wrap gap-4">
-                        <div *ngFor="let provider of certificationProvidersList; trackBy: trackByString"
+                        <div *ngFor="let provider of certificatesProviders; trackBy: trackByString"
                             class="flex items-center text-sm text-blue-600 dark:text-blue-400">
                             <lucide-icon [img]="checkIcon" class="w-4 h-4 mr-2"></lucide-icon>
                             {{ provider }}
@@ -288,21 +246,5 @@
                 </div>
             </div>
         </div>
-
-        <!-- Call to Action for next update when I ll have more certifications-->
-
-        <!--  <div class="text-center mt-16">
-            <button (click)="onViewAllCertifications()"
-                class="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 hover:scale-105">
-                <lucide-icon [img]="graduationCapIcon" class="w-6 h-6 mr-3 group-hover:animate-bounce"></lucide-icon>
-                View Complete Certification Portfolio
-                <lucide-icon [img]="arrowRightIcon"
-                    class="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200"></lucide-icon>
-            </button>
-
-            <p class="text-gray-500 dark:text-gray-400 mt-4">
-                Explore detailed information about all my professional certifications
-            </p>
-        </div> -->
     </div>
 </div>
