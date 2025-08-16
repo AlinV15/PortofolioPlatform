@@ -52,7 +52,7 @@ frontend/typings/
 Thumbs.db
 
 # Environment variables
-frontend/src/environments
+frontend/environments
 
 
 # Backend (Spring Boot)
