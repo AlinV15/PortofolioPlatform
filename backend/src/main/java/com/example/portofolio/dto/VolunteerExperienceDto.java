@@ -13,21 +13,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class VolunteerExperienceDto {           // Renamed
-    private String id;                          // Long → String
+public class VolunteerExperienceDto {
+    private String id;
     private String organization;
     private String role;
     private String period;
     private String location;
-    private String type;                        // VolunteerType → String
-    private String status;                      // VolunteerStatus → String
+    private String type;
+    private String status;
     private String description;
-    private List<ResponsibilityDto> responsibilities; // List<VolunteerResponsibility> → DTO
-    private List<AchievementDto> achievements;  // List<Achievement> → DTO
-    private List<String> skillsGained;          // List<Skill> → List<String>
-    private List<FeaturedProjectDto> projects;          // List<Project> → DTO
-    private String impactLevel;                 // ImpactLevel → String
-    private String icon;                        // Icon → String
+    private List<ResponsibilityDto> responsibilities;
+    private List<AchievementDto> achievements;
+    private List<String> skillsGained;
+    private List<FeaturedProjectDto> projects;
+    private String impactLevel;
+    private String icon;
     private String website;
     private String primaryColor;
     private String secondaryColor;

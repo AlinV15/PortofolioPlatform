@@ -1,17 +1,16 @@
-// Declare gtag as a global variable for TypeScript
 declare var gtag: (...args: any[]) => void;
 import { Component, OnInit, OnDestroy, signal, computed, effect, viewChild, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { LucideAngularModule, Mail, Phone, PhoneCall, MapPin, Navigation, Clock, Globe, Send, Copy, ExternalLink, RefreshCw, User, Tag, MessageSquare, Loader2, CheckCircle, XCircle, Menu, X, Share2, Download, Linkedin, Github, ArrowUp, Focus, Info, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, Mail, Phone, MapPin, User, Menu, X, Share2, Download, Linkedin, Github, ArrowUp, LucideIconData } from 'lucide-angular';
 import { Meta, Title } from '@angular/platform-browser';
 import { ContactInfoComponent } from '../../components/contact-info/contact-info.component';
 import { ContactFormComponent } from '../../components/contact-form/contact-form.component';
 import { ContactMapComponent } from '../../components/contact-map/contact-map.component';
 import { PdfDownloadService } from '../../services/pdf-download.service';
 
-// UPDATED: Replace ContactService with DataService
+
 import { DataService } from '../../services/data.service';
 
 import { ContactInfo, ContactLocation } from '../../shared/models/contact.interface';
@@ -19,7 +18,6 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 
-// Interface pentru secțiunile de contact - keep existing
 export interface ContactSection {
   id: string;
   title: string;
@@ -44,7 +42,7 @@ export interface ContactSection {
   styleUrls: ['./contact.component.css']
 })
 export class ContactComponent implements OnInit, OnDestroy {
-  // Icon variables for template - keep existing
+  // Icon variables for template
   readonly mailIcon = Mail;
   readonly phoneIcon = Phone;
   readonly shareIcon = Share2;
@@ -57,10 +55,10 @@ export class ContactComponent implements OnInit, OnDestroy {
   readonly userIcon = User;
   readonly mapPinIcon = MapPin;
 
-  // Subjects for cleanup - keep existing
+  // Subjects for cleanup 
   private readonly destroy$ = new Subject<void>();
 
-  // Contact data signals - keep existing structure
+  // Contact data signals 
   readonly contactInfo = signal<ContactInfo>({
     email: "",
     phone: "",
@@ -82,28 +80,27 @@ export class ContactComponent implements OnInit, OnDestroy {
     workingHours: ""
   });
 
-  // Error handling signals - keep existing
+
   readonly contactDataError = signal<string | null>(null);
   readonly locationDataError = signal<string | null>(null);
 
-  // Angular 19 dependency injection - UPDATED: Replace ContactService with DataService
+
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly dataService = inject(DataService); // UPDATED: Replace contactService
+  private readonly dataService = inject(DataService);
   private readonly downloadPdf = inject(PdfDownloadService);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
-  // Angular 19 viewChild pentru referințe la componente - keep existing
   private readonly contactForm = viewChild(ContactFormComponent, { read: ContactFormComponent });
   private readonly contactMap = viewChild(ContactMapComponent, { read: ContactMapComponent });
 
-  // Signals pentru state management - keep existing
+  // Signals for state management 
   readonly activeSection = signal<string>('info');
   readonly isScrolled = signal<boolean>(false);
   readonly isMobileMenuOpen = signal<boolean>(false);
 
-  // Computed signals pentru UI state - keep existing
+  // Computed signals for UI state
   readonly showBackToTop = computed(() => this.isScrolled());
   readonly sections = signal<ContactSection[]>([
     {
@@ -129,18 +126,18 @@ export class ContactComponent implements OnInit, OnDestroy {
     }
   ]);
 
-  // Computed pentru secțiunea activă - keep existing
+  // Computed for active section data 
   readonly activeSectionData = computed(() =>
     this.sections().find(section => section.id === this.activeSection())
   );
 
-  // Analytics și tracking - keep existing
+  // Analytics and trackin
   private readonly pageViewTime = signal<number>(Date.now());
 
   constructor(
     private router: Router
   ) {
-    // Angular 19 effect pentru scroll monitoring - doar în browser - keep existing
+
     if (this.isBrowser) {
       effect(() => {
         const handleScroll = () => {
@@ -152,7 +149,7 @@ export class ContactComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Effect pentru tracking secțiunea activă - keep existing
+
     effect(() => {
       this.trackSectionView(this.activeSection());
     });
@@ -178,7 +175,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
 
-    // Cleanup și tracking - keep existing
+    // Cleanup and tracking
     if (this.isBrowser) {
       const timeOnPage = Date.now() - this.pageViewTime();
 
@@ -192,32 +189,28 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * UPDATED: Load contact data from DataService instead of ContactService
+   * Load contact data from DataService instead of ContactService
    */
   private loadContactData(): void {
-    // UPDATED: Single call to DataService instead of separate contact service calls
     this.dataService.loadAllData()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (allData) => {
-          // UPDATED: Extract contact data from complete portfolio data
+
           this.contactInfo.set(allData.contact.info);
           this.contactLocation.set(allData.contact.location);
 
-          // Clear any previous errors
+
           this.contactDataError.set(null);
           this.locationDataError.set(null);
 
-          console.log('✅ Contact data loaded from DataService');
         },
         error: (error) => {
           console.error('❌ Error loading contact data from DataService:', error);
 
-          // Keep existing error handling
           this.contactDataError.set('Failed to load contact information');
           this.locationDataError.set('Failed to load location information');
 
-          // Keep default empty values in case of error
           this.contactInfo.set({
             email: "",
             phone: "",
@@ -240,18 +233,17 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * UPDATED: Retry loading contact data using DataService
+   * Retry loading contact data using DataService
    */
   retryLoadContactData(): void {
     this.contactDataError.set(null);
     this.locationDataError.set(null);
 
-    // UPDATED: Force refresh contact data through DataService
+
     this.dataService.refreshSection('contact').subscribe({
       next: (contactData) => {
         this.contactInfo.set(contactData.info);
         this.contactLocation.set(contactData.location);
-        console.log('✅ Contact data refreshed successfully');
       },
       error: (error) => {
         console.error('❌ Error refreshing contact data:', error);
@@ -261,9 +253,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Keep all existing methods unchanged - UNCHANGED from here on
-
-  // Method to get icon variable from icon string - UNCHANGED
+  // Method to get icon variable from icon string 
   getIconForSection(iconName: string): any {
     const iconMap: { [key: string]: any } = {
       'user': this.userIcon,
@@ -282,7 +272,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   private setupSEO(): void {
-    // SEO optimization pentru pagina de contact - UNCHANGED
+    // SEO optimization pentru pagina de contact 
     this.title.setTitle('Contact - Alin Viorel Ciobanu | Full Stack Developer');
 
     this.meta.updateTag({
@@ -299,7 +289,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: 'Contact me for collaborations and web development projects' });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
 
-    // Schema.org structured data - doar în browser - UNCHANGED
+    // Schema.org structured data - doar în browser
     if (this.isBrowser) {
       const structuredData = {
         "@context": "https://schema.org",
@@ -328,7 +318,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   private trackPageView(): void {
-    // Analytics tracking pentru vizualizare pagină - doar în browser - UNCHANGED
+    // Analytics tracking for viewing the page 
     if (this.isBrowser && typeof gtag !== 'undefined') {
       gtag('event', 'page_view', {
         page_title: 'Contact Page',
@@ -339,7 +329,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   private trackSectionView(sectionId: string): void {
-    // Analytics tracking pentru vizualizare secțiuni - UNCHANGED
+    // Analytics tracking for viewing a section
     if (typeof gtag !== 'undefined') {
       gtag('event', 'section_view', {
         section_name: sectionId,
@@ -349,13 +339,13 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   private setupKeyboardNavigation(): void {
-    // Keyboard navigation pentru accessibility - doar în browser - UNCHANGED
+    // Keyboard navigation for accessibility
     if (this.isBrowser) {
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Tab' && event.shiftKey) {
-          // Shift+Tab pentru navigare înapoi
+
         } else if (event.key === 'Tab') {
-          // Tab pentru navigare înainte
+
         } else if (event.key === 'Escape') {
           this.isMobileMenuOpen.set(false);
         }
@@ -363,9 +353,9 @@ export class ContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navigation methods - UNCHANGED
+  // Navigation methods
   setActiveSection(sectionId: string): void {
-    // Actualizează secțiunea activă
+
     this.sections.update(sections =>
       sections.map(section => ({
         ...section,
@@ -374,7 +364,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     );
     this.activeSection.set(sectionId);
 
-    // Smooth scroll către secțiune - doar în browser
+    // Smooth scroll to section - just in browser
     if (this.isBrowser) {
       const element = document.getElementById(`section-${sectionId}`);
       if (element) {
@@ -405,7 +395,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.isMobileMenuOpen.update(isOpen => !isOpen);
   }
 
-  // Quick actions - now using dynamic contact info - UNCHANGED
+  // Quick actions
   sendQuickEmail(): void {
     const email = this.contactInfo().email;
     if (this.isBrowser && email) {
@@ -434,7 +424,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Utility methods - UNCHANGED
+  // Utility methods
   shareContact(): void {
     if (this.isBrowser) {
       if (navigator.share) {
@@ -444,7 +434,6 @@ export class ContactComponent implements OnInit, OnDestroy {
           url: window.location.href
         }).catch(err => console.log('Error sharing:', err));
       } else {
-        // Fallback pentru browsere care nu suportă Web Share API
         this.copyPageUrl();
       }
     }
@@ -454,7 +443,6 @@ export class ContactComponent implements OnInit, OnDestroy {
     if (this.isBrowser && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href).then(() => {
         console.log('URL copied to clipboard');
-        // Aici poți adăuga o notificare toast
       }).catch(err => {
         console.error('Failed to copy URL:', err);
       });
@@ -465,7 +453,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.downloadPdf.downloadPDF("CV_English.pdf", "CV_Alin-Viorel-Ciobanu")
   }
 
-  // Form interaction methods - UNCHANGED
+  // Form interaction methods
   focusContactForm(): void {
     this.setActiveSection('form');
     if (this.isBrowser) {
@@ -483,7 +471,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.contactForm()?.resetForm();
   }
 
-  // Map interaction methods - UNCHANGED
+  // Map interaction methods
   centerMap(): void {
     this.contactMap()?.centerMap();
   }
@@ -493,7 +481,7 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.contactMap()?.openInGoogleMaps();
   }
 
-  // Error handling - UNCHANGED
+  // Error handling 
   onComponentError(error: any, componentName: string): void {
     console.error(`Error in ${componentName}:`, error);
 

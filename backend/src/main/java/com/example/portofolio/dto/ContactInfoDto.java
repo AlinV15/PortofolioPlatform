@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContactInfoDto {
 
-    private String email;                       // ContactInfo.email
-    private String phone;                       // ContactInfo.phone
-    private String location;                    // ContactLocation.city + ", " + country
-    private String github;                      // ContactInfo.github
-    private String linkedin;                    // ContactInfo.linkedin
+    private String email;
+    private String phone;
+    private String location;
+    private String github;
+    private String linkedin;                    
 }

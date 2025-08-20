@@ -1,6 +1,4 @@
 package com.example.portofolio.dto;
-// ===== SUPPORTING CLASSES =====
-
 import com.example.portofolio.entity.enums.EducationLevel;
 
 import java.util.Map;

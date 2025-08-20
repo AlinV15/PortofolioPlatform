@@ -13,16 +13,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FeaturedSkillDto {                 // Renamed
-    private String id;                          // Long → String
+public class FeaturedSkillDto {
+    private String id;
     private String name;
-    private Integer level;                      // Double → Integer (0-100)
-    private String categoryName;                // SkillCategory cateogory → String
-    private String icon;                        // Icon → String
+    private Integer level;
+    private String categoryName;
+    private String icon;
     private String description;
-    private Double yearsOfExperience;           // Integer → Double
+    private Double yearsOfExperience;
     private String color;
-    private List<String> projects;              // List<Project> → List<String> project names
+    private List<String> projects;              
     private String proficiency;
     private Boolean trending;
     private Boolean learning;

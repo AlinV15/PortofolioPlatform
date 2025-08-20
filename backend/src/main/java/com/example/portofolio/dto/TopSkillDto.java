@@ -14,12 +14,10 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopSkillDto {
     private String name;
-    private Integer level;  // sau Double dacă level-ul poate avea zecimale
+    private Integer level;
     private String color;
-
-    // Optional fields pentru mai multe detalii (nu afectează interfața)
     private String category;
     private String proficiency;
-    private Integer projects;  // numărul de proiecte care folosesc skill-ul
+    private Integer projects;
 }
 

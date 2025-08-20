@@ -16,20 +16,20 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TechnologyDto {
 
-    private String id;                      // Technology.id.toString()
-    private String name;                    // Technology.name
-    private String category;                // Mapped din TechnologyCategory.name la enum
-    private String proficiency;             // Din EntityTechnology.proficiency.toLowerCase()
-    private Integer level;                  // Calculat din proficiency (beginner=25, intermediate=50, etc.)
-    private Double yearsOfExperience;       // Calculat din relații și date
-    private Integer projects;               // Count din EntityTechnology pentru PROJECT
-    private String description;             // Technology.description
-    private String icon;                    // Icon.name din EntityMetadata
-    private String color;                   // EntityMetadata.primaryColor
-    private String backgroundColor;         // EntityMetadata.secondaryColor
-    private List<String> features;          // TechnologyFeature.title list
-    private String lastUsed;                // Ultimul proiect folosit (calculat)
-    private Boolean trending;               // Technology.trending
-    private Boolean certification;          // Technology.certification (din entitatea ta)
-    private Boolean learning;               // Status din LearningProgress
+    private String id;
+    private String name;
+    private String category;
+    private String proficiency;
+    private Integer level;
+    private Double yearsOfExperience;
+    private Integer projects;
+    private String description;
+    private String icon;
+    private String color;
+    private String backgroundColor;
+    private List<String> features;
+    private String lastUsed;
+    private Boolean trending;
+    private Boolean certification;
+    private Boolean learning;
 }

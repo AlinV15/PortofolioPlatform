@@ -13,8 +13,7 @@
         <!-- Projects Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             <div *ngFor="let project of featuredProjects; trackBy: trackByProject"
-                class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
-                (click)="onProjectClick(project)">
+                class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2">
                 <!-- Project Image -->
                 <div class="relative overflow-hidden h-48 bg-gradient-to-br from-blue-400 to-purple-600">
                     <img [src]="project.image" [alt]="project.title + ' preview'"

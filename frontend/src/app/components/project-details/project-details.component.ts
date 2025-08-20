@@ -9,8 +9,7 @@ import {
   Play, Eye, Download, Share2, Bookmark, Hash
 } from 'lucide-angular';
 import { Project } from '../../shared/models/project.interface';
-import { ProjectStatus } from '../../shared/enums/ProjectStatus';
-import { ComplexityLevel } from '../../shared/enums/ComplexityLevel';
+
 
 type TabType = 'overview' | 'technical' | 'gallery' | 'details';
 
@@ -249,9 +248,6 @@ export class ProjectDetailsComponent implements OnDestroy, AfterViewInit, OnChan
 
   private setupFocusTrap(): void {
     if (!this.isBrowser) return;
-
-    // This would implement focus trapping within the modal
-    // For production, consider using a library like focus-trap
   }
 
   private cleanup(): void {

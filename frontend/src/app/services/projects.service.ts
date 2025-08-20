@@ -23,13 +23,13 @@ export class ProjectService extends GlobalService {
 
     // Cache configuration specific to Projects
     protected override readonly cacheConfig: CacheConfig = {
-        defaultTTL: 600000, // 10 minutes for projects
+        defaultTTL: 600000,
         maxCacheSize: 20,
         enablePrefetch: true,
-        cleanupInterval: 180000, // 3 minutes
-        prefetchDelay: 2000, // 2 seconds
-        avgEntrySize: 3072, // 3KB per entry (projects have more data)
-        expectedHitRate: 0.82 // 82% hit rate
+        cleanupInterval: 180000,
+        prefetchDelay: 2000,
+        avgEntrySize: 3072,
+        expectedHitRate: 0.82
     };
 
     constructor(
@@ -98,7 +98,7 @@ export class ProjectService extends GlobalService {
         return this.makeRequest<ProjectCategoryDistribution[]>(
             EndpointType.CATEGORY_DISTRIBUTION,
             `${this.serviceApiUrl}/category-distribution`,
-            [], // Valoare implicită
+            [],
             true
         ).pipe(
             tap(data => console.log('Raw category data:', data)),

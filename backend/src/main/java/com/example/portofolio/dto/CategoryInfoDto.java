@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryInfoDto {
 
-    private String id;                  // SkillCategory enum string
-    private String name;                // Display name
-    private String description;         // Category description
-    private String icon;                // Icon name
-    private String color;               // Primary color
-    private String bgColor;             // Background color
+    private String id;
+    private String name;
+    private String description;
+    private String icon;
+    private String color;
+    private String bgColor;             
 }

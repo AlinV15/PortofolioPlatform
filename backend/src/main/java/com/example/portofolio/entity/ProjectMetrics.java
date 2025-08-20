@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Metrici pentru proiecte
+ * Project metrics
  */
 @Entity
 @Table(name = "project_metrics")

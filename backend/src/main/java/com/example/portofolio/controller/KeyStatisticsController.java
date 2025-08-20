@@ -33,8 +33,8 @@ public class KeyStatisticsController {
 
        Long projects  = statisticsService.getProjectStatistics(1L).getTotalProjects();
        Long educationYears = statisticsService.getEducationStatistics(1L).getTotalEducation();
-       Long technologies = (long) technologyService.count();
-       Long certificates = (long) certificateService.count();
+       Long technologies = technologyService.count();
+       Long certificates = certificateService.count();
 
         body.put(KEY_PROJECTS, projects);
         body.put(KEY_EDUCATION_YEARS, educationYears);

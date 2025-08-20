@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FutureGoalDto {
 
-    private String id;                          // FutureGoal.id.toString()
-    private String title;                       // FutureGoal.title
-    private String description;                 // FutureGoal.description
-    private String color;                       // EntityMetadata.primaryColor
-    private String icon;                        // Icon.name din EntityMetadata
-    private String targetDate;                  // FutureGoal.targetDate formatted
-    private String priority;                    // FutureGoal.priority.toString().toLowerCase()
-    private String gradient;                    // EntityMetadata.gradient
+    private String id;
+    private String title;
+    private String description;
+    private String color;
+    private String icon;
+    private String targetDate;
+    private String priority;
+    private String gradient;                    
 }

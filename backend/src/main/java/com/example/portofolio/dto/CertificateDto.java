@@ -13,17 +13,17 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CertificateDto {      // Renamed pentru consistență
-    private String id;              // Long → String
+public class CertificateDto {
+    private String id;
     private String name;
     private String issuer;
-    private String date;            // LocalDate → String (formatted)
+    private String date;
     private String certificateId;
     private String description;
-    private List<String> skillsGained;  // List<Skill> → List<String>
-    private String categoryName;    // CertificationCategory type → String
+    private List<String> skillsGained;
+    private String categoryName;
     private String link;
-    private String icon;            // Icon → String
+    private String icon;            
     private String primaryColor;
     private String secondaryColor;
     private Boolean verified;

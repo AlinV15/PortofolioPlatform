@@ -1,5 +1,3 @@
-// call-to-action.component.ts
-
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -42,7 +40,7 @@ export class CallToActionComponent {
   readonly Eye = Eye;
   readonly Send = Send;
 
-  // EmailJS Configuration - ÎNLOCUIEȘTE CU VALORILE TALE
+  // EmailJS Configuration
   private readonly emailjsConfig = {
     serviceId: environment.emailJs.serviceId,
     templateId: environment.emailJs.templateId2,
@@ -64,7 +62,7 @@ export class CallToActionComponent {
       label: 'LinkedIn',
       value: '/in/alin-v-ciobanu-84b06b269',
       icon: 'Linkedin',
-      href: 'https://www.linkedin.com/in/alin-v-ciobanu-84b06b269/',
+      href: 'https://www.linkedin.com/in/alin-viorel-ciobanu-84b06b269/',
       description: 'Let\'s connect professionally'
     },
     {
@@ -119,7 +117,7 @@ export class CallToActionComponent {
   ];
 
   constructor() {
-    // Inițializează EmailJS
+    // Initialize EmailJS
     this.initializeEmailJS();
   }
 
@@ -157,7 +155,7 @@ export class CallToActionComponent {
     this.submitError = '';
 
     try {
-      // Pregătește datele pentru EmailJS template
+      // Prepare data for EmailJS template
       const templateParams = {
         from_name: this.quickMessage.name,
         from_email: this.quickMessage.email,
@@ -172,11 +170,11 @@ export class CallToActionComponent {
           hour: '2-digit',
           minute: '2-digit'
         }),
-        // Context pentru a diferenția de mesajele din modal
+        // Context to differentiate from messages in modal
         source: 'Call-to-Action Section'
       };
 
-      // Trimite email prin EmailJS
+      // Send email using EmailJS
       const response = await emailjs.send(
         this.emailjsConfig.serviceId,
         this.emailjsConfig.templateId,
@@ -188,7 +186,7 @@ export class CallToActionComponent {
       this.isSubmitting = false;
       this.isSubmitted = true;
 
-      // Reset form după 5 secunde
+      // Reset form after 5 seconds
       setTimeout(() => {
         this.resetForm();
       }, 5000);
@@ -245,8 +243,7 @@ export class CallToActionComponent {
   // Handle contact method click
   onContactMethodClick(method: ContactMethod): void {
     console.log(`Contact via ${method.label}:`, method.value);
-    // Analytics tracking could go here
-    // Example: this.analytics.track('contact_method_clicked', { method: method.label });
+
   }
 
   // Copy contact info to clipboard

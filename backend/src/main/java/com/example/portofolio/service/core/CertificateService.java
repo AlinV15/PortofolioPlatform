@@ -9,7 +9,6 @@ import com.example.portofolio.service.base.ServiceUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.validation.Valid;
@@ -67,20 +66,6 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
         return result;
     }
 
-    public List<CertificateDto> findByPersonalIdAndCategory(@Valid @NotNull @Positive Long personalId,
-                                                            @Valid @NotNull @Positive Long categoryId) {
-        ServiceUtils.logMethodEntry("findByPersonalIdAndCategory", personalId, categoryId);
-        ServiceUtils.validatePersonalId(personalId);
-        ServiceUtils.validateEntityId(categoryId);
-
-        List<Certificate> certificates = repository.findByPersonalIdAndCategoryId(personalId, categoryId);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByPersonalIdAndCategory", result.size());
-        return result;
-    }
 
     @Cacheable(value = "featuredCertificates", key = "#personalId")
     public List<CertificateDto> findFeaturedCertificates(@Valid @NotNull @Positive Long personalId) {
@@ -93,34 +78,6 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
                 .toList();
 
         ServiceUtils.logMethodExit("findFeaturedCertificates", result.size());
-        return result;
-    }
-
-    // ===== VERIFICATION STATUS QUERIES =====
-
-    public List<CertificateDto> findVerifiedCertificates(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findVerifiedCertificates", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Certificate> certificates = repository.findByPersonalIdAndVerifiedTrue(personalId);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findVerifiedCertificates", result.size());
-        return result;
-    }
-
-    public List<CertificateDto> findUnverifiedCertificates(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findUnverifiedCertificates", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Certificate> certificates = repository.findByPersonalIdAndVerifiedFalse(personalId);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findUnverifiedCertificates", result.size());
         return result;
     }
 
@@ -145,39 +102,9 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
         return result;
     }
 
-    public List<CertificateDto> findValidCertificates(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findValidCertificates", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        LocalDate currentDate = LocalDate.now();
-        List<Certificate> certificates = repository.findValidByPersonalId(personalId, currentDate);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findValidCertificates", result.size());
-        return result;
-    }
 
     // ===== PROVIDER QUERIES =====
 
-    public List<CertificateDto> findByProvider(@Valid @NotNull @Positive Long personalId,
-                                               @Valid @NotNull String provider) {
-        ServiceUtils.logMethodEntry("findByProvider", personalId, provider);
-        ServiceUtils.validatePersonalId(personalId);
-
-        if (provider == null || provider.trim().isEmpty()) {
-            throw new IllegalArgumentException("Provider cannot be empty");
-        }
-
-        List<Certificate> certificates = repository.findByPersonalIdAndProvider(personalId, provider);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByProvider", result.size());
-        return result;
-    }
 
     @Cacheable(value = "certificatesByProvider", key = "#personalId")
     public Map<String, Long> getCertificatesByProvider(@Valid @NotNull @Positive Long personalId) {
@@ -222,43 +149,6 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
         return findByMinRelevanceScore(personalId, 80);
     }
 
-    // ===== RECENT CERTIFICATES =====
-
-    public List<CertificateDto> findRecentCertificates(@Valid @NotNull @Positive Long personalId,
-                                                       int limit) {
-        ServiceUtils.logMethodEntry("findRecentCertificates", personalId, limit);
-        ServiceUtils.validatePersonalId(personalId);
-
-        if (limit <= 0 || limit > 50) {
-            throw new IllegalArgumentException("Limit must be between 1 and 50");
-        }
-
-        Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
-        List<Certificate> certificates = repository.findRecentByPersonalId(personalId, pageable);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findRecentCertificates", result.size());
-        return result;
-    }
-
-    // ===== SEARCH =====
-
-    public List<CertificateDto> searchCertificates(@Valid @NotNull @Positive Long personalId,
-                                                   @Valid @NotNull String searchTerm) {
-        ServiceUtils.logMethodEntry("searchCertificates", personalId, searchTerm);
-        ServiceUtils.validatePersonalId(personalId);
-        ServiceUtils.validateSearchTerm(searchTerm);
-
-        List<Certificate> certificates = repository.findByPersonalIdAndSearchTerm(personalId, searchTerm);
-        List<CertificateDto> result = certificates.stream()
-                .map(this::toCertificateDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("searchCertificates", result.size());
-        return result;
-    }
 
     // ===== STATISTICS =====
 
@@ -293,57 +183,6 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
         return result;
     }
 
-    // ===== UTILITY METHODS =====
-
-    public List<String> getAvailableProviders(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getAvailableProviders", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Certificate> certificates = repository.findByPersonalId(personalId);
-        List<String> providers = certificates.stream()
-                .map(Certificate::getProvider)
-                .filter(Objects::nonNull)
-                .filter(provider -> !provider.trim().isEmpty())
-                .distinct()
-                .sorted()
-                .toList();
-
-        ServiceUtils.logMethodExit("getAvailableProviders", providers.size());
-        return providers;
-    }
-
-    public List<Integer> getAvailableYears(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getAvailableYears", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Certificate> certificates = repository.findByPersonalId(personalId);
-        List<Integer> years = certificates.stream()
-                .map(Certificate::getIssueDate)
-                .filter(Objects::nonNull)
-                .map(LocalDate::getYear)
-                .distinct()
-                .sorted((a, b) -> b.compareTo(a))
-                .toList();
-
-        ServiceUtils.logMethodExit("getAvailableYears", years.size());
-        return years;
-    }
-
-    // ===== VALIDATION METHODS =====
-
-    public boolean isCredentialIdUnique(@Valid @NotNull @Positive Long personalId,
-                                        @Valid @NotNull String credentialId) {
-        ServiceUtils.logMethodEntry("isCredentialIdUnique", personalId, credentialId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        if (credentialId == null || credentialId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Credential ID cannot be empty");
-        }
-
-        boolean isUnique = !repository.existsByPersonalIdAndCredentialId(personalId, credentialId);
-        ServiceUtils.logMethodExit("isCredentialIdUnique", isUnique);
-        return isUnique;
-    }
 
     // ===== DTO CONVERSION =====
 
@@ -450,17 +289,10 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
                 .toList();
     }
 
-    @Override
-    public boolean hasMetadata(Long id) {
-        return entityMetadataRepository
-                .findByEntityTypeAndEntityId(EntityType.CERTIFICATE, id)
-                .isPresent();
-    }
 
-    // Adaugă în CertificationService (sau creează service-ul dacă nu există)
 
     /**
-     * Returnează toate categoriile de certificate disponibile
+     * Return all available certification categories
      */
     @Cacheable(value = "certificationCategories")
     public List<CertificationCategoryDto> getCertificationCategories() {
@@ -478,7 +310,7 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
     }
 
     /**
-     * Helper method pentru conversia la DTO
+     * Helper method for DTO conversion
      */
     private CertificationCategoryDto toCertificationCategoryDto(CertificationCategory category) {
         return CertificationCategoryDto.builder()
@@ -493,7 +325,7 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
     }
 
     /**
-     * Generează CSS class pentru active state bazat pe numele categoriei
+     * Generate all CSS classes for categories
      */
     private String generateActiveClass(String categoryName) {
         if (categoryName == null) return "bg-blue-500 text-white";
@@ -512,7 +344,7 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
     }
 
     /**
-     * Generează CSS class pentru hover state
+     * Generate all CSS classes for hover state
      */
     private String generateHoverClass(String categoryName) {
         if (categoryName == null) return "hover:bg-blue-600";
@@ -531,7 +363,7 @@ public class CertificateService extends BaseService<Certificate, Long, Certifica
     }
 
     /**
-     * Icon default bazat pe numele categoriei
+     * Icon default based on name of the certification category
      */
     private String getDefaultCertificationIcon(String categoryName) {
         if (categoryName == null) return "certificate";

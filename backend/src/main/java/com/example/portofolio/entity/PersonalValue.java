@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Valorile personale
+ * Personal values
  */
 @Entity
 @Table(name = "personal_value", indexes = {

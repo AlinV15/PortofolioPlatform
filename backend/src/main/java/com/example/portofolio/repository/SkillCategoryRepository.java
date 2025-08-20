@@ -7,50 +7,15 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface SkillCategoryRepository extends JpaRepository<SkillCategory, Long> {
-
-    // Basic queries
-    Optional<SkillCategory> findByName(String name);
-
-    Optional<SkillCategory> findByNameIgnoreCase(String name);
-
-    List<SkillCategory> findByParentId(Long parentId);
-
-    List<SkillCategory> findByParentIsNull(); // Root categories
-
-    // Optimized queries
-    @Query("SELECT sc FROM SkillCategory sc " +
-            "LEFT JOIN FETCH sc.children " +
-            "WHERE sc.parent IS NULL " +
-            "ORDER BY sc.sortOrder, sc.name")
-    List<SkillCategory> findRootCategoriesWithChildren();
 
     @Query("SELECT sc FROM SkillCategory sc " +
             "LEFT JOIN FETCH sc.parent " +
             "LEFT JOIN FETCH sc.icon " +
             "ORDER BY sc.sortOrder, sc.name")
     List<SkillCategory> findAllWithParentAndIcon();
-
-    // Statistics with skills
-    @Query("SELECT sc, COUNT(s) FROM SkillCategory sc " +
-            "LEFT JOIN Skill s ON s.category.id = sc.id AND s.personal.id = :personalId " +
-            "GROUP BY sc " +
-            "ORDER BY sc.sortOrder, sc.name")
-    List<Object[]> findAllWithSkillStats(@Param("personalId") Long personalId);
-
-    @Query("SELECT sc FROM SkillCategory sc " +
-            "WHERE EXISTS (SELECT 1 FROM Skill s WHERE s.category.id = sc.id AND s.personal.id = :personalId) " +
-            "ORDER BY sc.sortOrder, sc.name")
-    List<SkillCategory> findUsedByPersonalId(@Param("personalId") Long personalId);
-
-    // Hierarchy navigation
-    @Query("SELECT sc FROM SkillCategory sc " +
-            "WHERE sc.parent.id = :parentId " +
-            "ORDER BY sc.sortOrder, sc.name")
-    List<SkillCategory> findChildrenByParentId(@Param("parentId") Long parentId);
 
     @Query(value = "WITH RECURSIVE CategoryHierarchy AS (" +
             "  SELECT id, name, parent_id, 0 as level FROM skill_category WHERE id = :categoryId " +

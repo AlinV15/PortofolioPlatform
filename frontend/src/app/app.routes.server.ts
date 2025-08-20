@@ -2,14 +2,13 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
-  // 🔥 CRITICAL FIX: Force SSR for ALL routes to ensure fresh data
   {
     path: '',
-    renderMode: RenderMode.Server  // ⚠️ Changed from Prerender to Server
+    renderMode: RenderMode.Server
   },
   {
     path: 'about',
-    renderMode: RenderMode.Server  // ⚠️ Force server rendering for fresh data
+    renderMode: RenderMode.Server
   },
   {
     path: 'projects',
@@ -39,7 +38,7 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'hire-me',
-    renderMode: RenderMode.Server  // ⚠️ Changed to Server for dynamic content
+    renderMode: RenderMode.Server
   },
 
   // Default for all other routes

@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Trăsăturile de personalitate
+ * Personality Trait
  */
 @Entity
 @Table(name = "personality_trait", indexes = {

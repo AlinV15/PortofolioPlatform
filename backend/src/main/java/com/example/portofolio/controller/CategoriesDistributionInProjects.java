@@ -18,7 +18,7 @@ public class CategoriesDistributionInProjects {
     private ProjectService projectService;
 
     @GetMapping("/category-distribution")
-    public ResponseEntity<List<ProjectCategoryDistributionDto>> getCategoryDestribution(){
+    public ResponseEntity<List<ProjectCategoryDistributionDto>> getCategoryDistribution(){
 
         List<ProjectCategoryDistributionDto> body = projectService.getProjectCategoryDistribution(1L);
 

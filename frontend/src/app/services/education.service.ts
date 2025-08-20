@@ -22,15 +22,15 @@ export class EducationService extends GlobalService {
     protected readonly serviceName = 'EducationService';
     protected readonly serviceApiUrl = `${this.apiUrl}/education`;
 
-    // Configurări cache specifice pentru Education
+    // Specific cache configuration for education data
     protected readonly cacheConfig: CacheConfig = {
-        defaultTTL: 600000, // 10 minute pentru educație (date mai stabile)
+        defaultTTL: 600000,
         maxCacheSize: 15,
         enablePrefetch: true,
-        cleanupInterval: 240000, // 4 minute
-        prefetchDelay: 3000, // 3 secunde - delay mai mare pentru educație
-        avgEntrySize: 1536, // 1.5KB per entry (educație are date mai complexe)
-        expectedHitRate: 0.88 // 88% hit rate pentru date stabile
+        cleanupInterval: 240000,
+        prefetchDelay: 3000,
+        avgEntrySize: 1536,
+        expectedHitRate: 0.88
     };
 
     constructor(
@@ -124,7 +124,7 @@ export class EducationService extends GlobalService {
     }
 
     /**
-     * Refreshează toate datele educaționale
+     * Refresh all education-related data
      */
     refreshAllEducationData(): Observable<{
         education: Education[];
@@ -201,17 +201,11 @@ export class EducationService extends GlobalService {
     }
 
     // ========================
-    // UTILITY METHODS SPECIFICE EDUCATION
-    // ========================
-
-
-
-    // ========================
     // ABSTRACT METHODS IMPLEMENTATION
     // ========================
 
     /**
-     * Warmup cache cu date esențiale (optimizat pentru SSR)
+     * Warmup cache with essential data
      */
     warmupCache(): void {
         if (!this.isBrowser) {
@@ -220,7 +214,7 @@ export class EducationService extends GlobalService {
     }
 
     /**
-     * Prefetch pentru datele esențiale de educație
+     * Prefetch for essential education data
      */
     protected prefetchEssentialData(): void {
         if (!this.cacheConfig.enablePrefetch) return;
@@ -249,7 +243,7 @@ export class EducationService extends GlobalService {
     }
 
     /**
-     * Validare și transformare specifică pentru datele educaționale
+     * Validate and transform data received from the API
      */
     protected validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {

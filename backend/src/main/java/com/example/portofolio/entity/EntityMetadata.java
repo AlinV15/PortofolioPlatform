@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Metadata centralizată pentru toate entitățile
+ * Centralized Metadata for all entities
  */
 @Entity
 @Table(name = "entity_metadata",
@@ -61,7 +61,7 @@ public class EntityMetadata extends BaseEntity {
     @Builder.Default
     private Boolean featured = false;
 
-    // JSON field pentru proprietăți custom
+    // JSON field with custom props
     @Type(JsonType.class)
     @Column(name = "custom_properties", columnDefinition = "jsonb")
     @Builder.Default

@@ -18,28 +18,28 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CertificationDto {
 
-    private String id;                          // Certificate.id.toString()
-    private String title;                       // Certificate.name
-    private String provider;                    // Certificate.provider
-    private String category;                    // Mapped din CertificationCategory.name
+    private String id;
+    private String title;
+    private String provider;
+    private String category;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate issueDate;                // Certificate.issueDate
+    private LocalDate issueDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate expiryDate;               // Certificate.expiryDate
+    private LocalDate expiryDate;
 
-    private Boolean hasExpiry;                  // Certificate.hasExpiry
-    private String credentialId;                // Certificate.credentialId
-    private String verificationUrl;             // Certificate.certificateUrl (poate fi verification)
-    private String certificateUrl;              // Certificate.certificateUrl
-    private String description;                 // Certificate.description
-    private List<String> skills;                // Din EntitySkill pentru CERTIFICATE
-    private String primaryColor;                // EntityMetadata.primaryColor
-    private String secondaryColor;              // EntityMetadata.secondaryColor
-    private String icon;                        // Icon.name din EntityMetadata
-    private Boolean verified;                   // Certificate.verified
-    private Boolean featured;                   // EntityMetadata.featured
-    private String score;                       // Certificate.score
-    private Integer relevanceScore;             // Certificate.relevanceScore
+    private Boolean hasExpiry;
+    private String credentialId;
+    private String verificationUrl;
+    private String certificateUrl;
+    private String description;
+    private List<String> skills;
+    private String primaryColor;
+    private String secondaryColor;
+    private String icon;
+    private Boolean verified;
+    private Boolean featured;
+    private String score;
+    private Integer relevanceScore;             
 }

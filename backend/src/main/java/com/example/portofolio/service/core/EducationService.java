@@ -16,8 +16,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,211 +79,6 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         return result;
     }
 
-    public List<EducationDto> findByPersonalIdAndLevel(@Valid @NotNull @Positive Long personalId,
-                                                       @Valid @NotNull EducationLevel level) {
-        ServiceUtils.logMethodEntry("findByPersonalIdAndLevel", personalId, level);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findByPersonalIdAndLevel(personalId, level);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByPersonalIdAndLevel", result.size());
-        return result;
-    }
-
-    public List<EducationDto> findByPersonalIdAndStatus(@Valid @NotNull @Positive Long personalId,
-                                                        @Valid @NotNull EducationStatus status) {
-        ServiceUtils.logMethodEntry("findByPersonalIdAndStatus", personalId, status);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findByPersonalIdAndStatus(personalId, status);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByPersonalIdAndStatus", result.size());
-        return result;
-    }
-
-    @Cacheable(value = "featuredEducation", key = "#personalId")
-    public List<EducationDto> findFeaturedEducation(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findFeaturedEducation", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findFeaturedByPersonalId(personalId);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findFeaturedEducation", result.size());
-        return result;
-    }
-
-    public List<EducationDto> findOngoingEducation(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findOngoingEducation", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findOngoingByPersonalId(personalId);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findOngoingEducation", result.size());
-        return result;
-    }
-
-    public List<EducationDto> findCompletedEducation(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findCompletedEducation", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findCompletedByPersonalId(personalId);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findCompletedEducation", result.size());
-        return result;
-    }
-
-    // ===== SEARCH & FILTERING =====
-
-    public List<EducationDto> searchEducation(@Valid @NotNull @Positive Long personalId,
-                                              @Valid @NotNull String searchTerm) {
-        ServiceUtils.logMethodEntry("searchEducation", personalId, searchTerm);
-        ServiceUtils.validatePersonalId(personalId);
-        ServiceUtils.validateSearchTerm(searchTerm);
-
-        List<Education> educations = repository.findByPersonalIdAndSearchTerm(personalId, searchTerm);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("searchEducation", result.size());
-        return result;
-    }
-
-    public List<EducationDto> findByInstitution(@Valid @NotNull @Positive Long personalId,
-                                                @Valid @NotNull String institution) {
-        ServiceUtils.logMethodEntry("findByInstitution", personalId, institution);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findByPersonalIdAndInstitution(personalId, institution);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByInstitution", result.size());
-        return result;
-    }
-
-    public List<EducationDto> findByFieldOfStudy(@Valid @NotNull @Positive Long personalId,
-                                                 @Valid @NotNull String fieldOfStudy) {
-        ServiceUtils.logMethodEntry("findByFieldOfStudy", personalId, fieldOfStudy);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findByPersonalIdAndFieldOfStudy(personalId, fieldOfStudy);
-        List<EducationDto> result = educations.stream()
-                .map(this::toEducationDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByFieldOfStudy", result.size());
-        return result;
-    }
-
-    // ===== STATISTICS =====
-
-    @Cacheable(value = "educationStatsByInstitution", key = "#personalId")
-    public Map<String, Long> getEducationStatsByInstitution(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getEducationStatsByInstitution", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Object[]> results = repository.countEducationByInstitution(personalId);
-        Map<String, Long> stats = results.stream().collect(Collectors.toMap(
-                row -> (String) row[0],
-                row -> ((Number) row[1]).longValue()
-        ));
-
-        ServiceUtils.logMethodExit("getEducationStatsByInstitution", stats.size());
-        return stats;
-    }
-
-    @Cacheable(value = "educationStatsByField", key = "#personalId")
-    public Map<String, Long> getEducationStatsByField(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getEducationStatsByField", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Object[]> results = repository.countEducationByField(personalId);
-        Map<String, Long> stats = results.stream().collect(Collectors.toMap(
-                row -> (String) row[0],
-                row -> ((Number) row[1]).longValue()
-        ));
-
-        ServiceUtils.logMethodExit("getEducationStatsByField", stats.size());
-        return stats;
-    }
-
-    public Map<EducationLevel, Long> getEducationStatsByLevel(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getEducationStatsByLevel", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Object[]> results = repository.countEducationByLevel(personalId);
-        Map<EducationLevel, Long> stats = results.stream().collect(Collectors.toMap(
-                row -> (EducationLevel) row[0],
-                row -> ((Number) row[1]).longValue()
-        ));
-
-        ServiceUtils.logMethodExit("getEducationStatsByLevel", stats.size());
-        return stats;
-    }
-
-    @Cacheable(value = "educationStats", key = "#personalId")
-    public EducationStatisticsDto getEducationStatistics(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getEducationStatistics", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        Long totalEducation = repository.countByPersonalId(personalId);
-        Long ongoingCount = repository.countByPersonalIdAndStatus(personalId, EducationStatus.ONGOING);
-        Long completedCount = repository.countByPersonalIdAndStatus(personalId, EducationStatus.COMPLETED);
-
-        Map<String, Long> institutionStats = getEducationStatsByInstitution(personalId);
-        Map<String, Long> fieldStats = getEducationStatsByField(personalId);
-        Map<EducationLevel, Long> levelStats = getEducationStatsByLevel(personalId);
-
-        EducationStatisticsDto result = EducationStatisticsDto.builder()
-                .totalEducation(totalEducation)
-                .ongoingCount(ongoingCount)
-                .completedCount(completedCount)
-                .institutionDistribution(institutionStats)
-                .fieldDistribution(fieldStats)
-                .levelDistribution(levelStats)
-                .featuredCount((long) findFeaturedEducation(personalId).size())
-                .build();
-
-        ServiceUtils.logMethodExit("getEducationStatistics", result);
-        return result;
-    }
-
-    @Cacheable(value = "educationTimeline", key = "#personalId")
-    public List<TimelineDataDto> getEducationTimeline(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getEducationTimeline", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Object[]> results = repository.getEducationTimelineByPersonalId(personalId);
-        List<TimelineDataDto> timeline = results.stream()
-                .map(row -> TimelineDataDto.builder()
-                        .year(((Number) row[0]).intValue())
-                        .count(((Number) row[1]).longValue())
-                        .entityType("EDUCATION")
-                        .build())
-                .sorted((a, b) -> b.getYear().compareTo(a.getYear()))
-                .toList();
-
-        ServiceUtils.logMethodExit("getEducationTimeline", timeline.size());
-        return timeline;
-    }
-
     // ===== COURSE MANAGEMENT =====
 
     public List<CourseDto> findRelevantCourses(@Valid @NotNull @Positive Long educationId) {
@@ -301,32 +94,6 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         return result;
     }
 
-    public List<CourseDto> findAllCourses(@Valid @NotNull @Positive Long educationId) {
-        ServiceUtils.logMethodEntry("findAllCourses", educationId);
-        ServiceUtils.validateEntityId(educationId);
-
-        List<Course> courses = courseRepository.findByEducationIdOrderByYearDescSemesterDesc(educationId);
-        List<CourseDto> result = courses.stream()
-                .map(this::toCourseDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findAllCourses", result.size());
-        return result;
-    }
-
-    public List<CourseDto> findCoursesByYear(@Valid @NotNull @Positive Long educationId,
-                                             @Valid @NotNull Integer year) {
-        ServiceUtils.logMethodEntry("findCoursesByYear", educationId, year);
-        ServiceUtils.validateEntityId(educationId);
-
-        List<Course> courses = courseRepository.findByEducationIdAndYear(educationId, year);
-        List<CourseDto> result = courses.stream()
-                .map(this::toCourseDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findCoursesByYear", result.size());
-        return result;
-    }
 
     // ===== ACHIEVEMENTS =====
 
@@ -358,7 +125,6 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         List<CourseDto> relevantCourses = findRelevantCourses(education.getId());
 
         String period = ServiceUtils.formatPeriod(education.getStartDate(), education.getEndDate());
-        String duration = ServiceUtils.calculateDuration(education.getStartDate(), education.getEndDate());
 
         return EducationDto.builder()
                 .id(education.getId().toString())
@@ -373,7 +139,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
                 .relevantCourses(relevantCourses)
                 .status(ServiceUtils.enumToLowerString(education.getStatus()))
                 .gpa(education.getGpa())
-                .highlights(getEducationHighlights(education))
+                .highlights(getEducationHighlights())
                 .icon(ServiceUtils.getIconFromMetadata(metadata, "graduation-cap"))
                 .primaryColor(ServiceUtils.getColorFromMetadata(metadata, "#10B981"))
                 .secondaryColor(ServiceUtils.getColorFromMetadata(metadata, "#A7F3D0"))
@@ -412,13 +178,8 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
                 .build();
     }
 
-// Adaugă în EducationService
-
     /**
-     * Returnează toate proiectele academice pentru o persoană din toate etapele de educație
-     */
-    /**
-     * Returnează toate proiectele academice pentru o persoană din toate etapele de educație
+     * Returns all academic projects for a person from all stages of education
      */
     @Cacheable(value = "academicProjects", key = "#personalId")
     public List<AcademicProjectDto> getAcademicProjects(@Valid @NotNull @Positive Long personalId) {
@@ -438,7 +199,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Helper method pentru conversia la DTO
+     * Helper method for DTO conversion
      */
     private AcademicProjectDto toAcademicProjectDto(CourseProject courseProject) {
         Project project = courseProject.getProject();
@@ -529,27 +290,11 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
 
     // ===== HELPER METHODS =====
 
-    private List<HighlightDto> getEducationHighlights(Education education) {
+    private List<HighlightDto> getEducationHighlights() {
         // For now, return empty list - implement based on actual Highlight entity structure
         return List.of();
     }
 
-    public List<Integer> getAvailableYears(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getAvailableYears", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Education> educations = repository.findByPersonalId(personalId);
-        List<Integer> years = educations.stream()
-                .map(Education::getStartDate)
-                .filter(Objects::nonNull)
-                .map(LocalDate::getYear)
-                .distinct()
-                .sorted((a, b) -> b.compareTo(a))
-                .toList();
-
-        ServiceUtils.logMethodExit("getAvailableYears", years.size());
-        return years;
-    }
 
     // ===== METADATA SUPPORT =====
 
@@ -564,18 +309,10 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
                 .toList();
     }
 
-    @Override
-    public boolean hasMetadata(Long id) {
-        return entityMetadataRepository
-                .findByEntityTypeAndEntityId(EntityType.EDUCATION, id)
-                .isPresent();
-    }
-
-
 
     /**
-     * Returnează anul curent de studiu pentru educația în desfășurare
-     * Pentru educația finalizată returnează null
+     * Returns the current year of study for ongoing education
+     * For completed education returns null
      */
     public String getCurrentYearOfStudy(@Valid @NotNull @Positive Long personalId) {
         ServiceUtils.logMethodEntry("getCurrentYearOfStudy", personalId);
@@ -594,38 +331,32 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         log.debug("Found ongoing education: id={}, startDate={}, endDate={}, status={}",
                 education.getId(), education.getStartDate(), education.getEndDate(), education.getStatus());
 
-        // PENTRU EDUCAȚIA ONGOING, IGNORĂM END_DATE
-        // end_date pentru ONGOING este doar o estimare/planificare, nu înseamnă că e completă
+        // For ONGOING education, We ignore END_DATE
+        // end_date for ONGOING is just an estimation/planning, doesn't mean that is completed
 
-        // Calculează anul curent de studiu
         LocalDate startDate = education.getStartDate();
         LocalDate currentDate = LocalDate.now();
 
         if (startDate == null) {
             log.warn("Start date is null for education id: {}", education.getId());
-            return "1"; // Default la primul an
+            return "1";
         }
 
-        // Calculează diferența în ani (din septembrie 2022 până acum)
+
         int yearsDifference = currentDate.getYear() - startDate.getYear();
 
-        // Ajustează pentru că anul academic începe în septembrie
-        // Dacă suntem înainte de septembrie în anul curent, scădem un an
         if (currentDate.getMonthValue() < startDate.getMonthValue() ||
                 (currentDate.getMonthValue() == startDate.getMonthValue() &&
                         currentDate.getDayOfMonth() < startDate.getDayOfMonth())) {
             yearsDifference--;
         }
 
-        // Anul de studiu este diferența + 1 (primul an = 1, nu 0)
         int currentYear = yearsDifference + 1;
 
-        // Validare pentru a evita valori negative sau prea mari
         if (currentYear < 1) {
             currentYear = 1;
         }
 
-        // Pentru siguranță, limitează la maxim 6 ani (pentru studii universitare)
         if (currentYear > 6) {
             currentYear = 6;
         }
@@ -649,7 +380,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         Optional<Education> currentEducation = ongoingEducations.stream().findFirst();
 
         if (currentEducation.isEmpty()) {
-            log.debug("No ongoing education found for personalId: {}", personalId);
+            log.debug("No ongoing education (in the stats case) found for personalId: {}", personalId );
             return AcademicStatsDto.builder()
                     .totalCourses(0)
                     .currentYear("0")
@@ -660,22 +391,12 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
         }
 
         Education education = currentEducation.get();
-
-        // 2. Calculează totalul de cursuri
         Integer totalCourses = getTotalCoursesForEducation(education.getId());
-
-        // 3. Anul curent din metoda existentă
         String currentYear = getCurrentYearOfStudy(personalId);
-
-        // 4. Specializarea din fieldOfStudy sau degree
         String specialization = education.getFieldOfStudy() != null ?
                 education.getFieldOfStudy() :
                 education.getDegree();
-
-        // 5. Focus Areas - top 4 categorii de proiecte
-        List<String> focusAreas = getTopProjectCategories(personalId, 4);
-
-        // 6. Limbile străine din skills
+        List<String> focusAreas = getTopProjectCategories(personalId);
         List<AcademicLanguageDto> languages = getForeignLanguages(personalId);
 
         AcademicStatsDto result = AcademicStatsDto.builder()
@@ -694,7 +415,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Obține numărul total de cursuri pentru o educație
+     * Get the total number of courses for an education
      */
     private Integer getTotalCoursesForEducation(Long educationId) {
         log.debug("Getting total courses for educationId: {}", educationId);
@@ -706,23 +427,22 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Obține top N categorii de proiecte ca focus areas
+     * Get top N categories of projects as focus areas
      */
-    private List<String> getTopProjectCategories(Long personalId, int limit) {
+    private List<String> getTopProjectCategories(Long personalId) {
         List<Object[]> categoryDistribution = projectRepository.findProjectCategoryDistribution(personalId);
 
         return categoryDistribution.stream()
-                .limit(limit)
+                .limit(4)
                 .map(row -> (String) row[0])
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Obține limbile străine din skills cu categoria "Foreign Languages"
+     * Get foreign languages from skills with the category "Foreign Languages"
      */
     private List<AcademicLanguageDto> getForeignLanguages(Long personalId) {
-        // Caută skills cu categoria Foreign Languages
         List<Skill> languageSkills = skillRepository.findByPersonalIdAndCategoryName(personalId, "Foreign Languages");
 
         return languageSkills.stream()
@@ -731,12 +451,11 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Mapează un skill de limbă la AcademicLanguageDto
+     * Map a language skill at AcademicLanguageDto
      */
     private AcademicLanguageDto mapSkillToLanguage(Skill skill) {
         String skillName = skill.getName().toLowerCase();
 
-        // Determină emoji-ul și nivelul
         String emoji = getLanguageEmoji(skillName);
         String level = extractLanguageLevel(skill);
 
@@ -749,7 +468,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Obține emoji-ul pentru o limbă
+     * Get the emoji for a language
      */
     private String getLanguageEmoji(String languageName) {
         return switch (languageName.toLowerCase()) {
@@ -771,10 +490,10 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
     }
 
     /**
-     * Extrage nivelul de limbă din skill (description sau proficiency)
+     * Extract the language level from the skill (description or proficiency)
      */
     private String extractLanguageLevel(Skill skill) {
-        // 1. Încearcă din description
+
         if (skill.getDescription() != null) {
             String desc = skill.getDescription().toUpperCase();
             if (desc.contains("A1")) return "A1";
@@ -787,7 +506,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
             if (desc.contains("FLUENT")) return "C2";
         }
 
-        // 2. Mapează din proficiency
+
         if (skill.getProficiency() != null) {
             return switch (skill.getProficiency()) {
                 case BEGINNER -> "A1-A2";
@@ -797,7 +516,7 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
             };
         }
 
-        // 3. Estimează din level (0-100)
+
         if (skill.getLevel() != null) {
             int level = skill.getLevel();
             if (level >= 90) return "C2";
@@ -810,46 +529,4 @@ public class EducationService extends BaseService<Education, Long, EducationRepo
 
         return "Unknown";
     }
-}
-
-// ===== SUPPORTING CLASSES =====
-
-@lombok.Data
-@lombok.Builder
-class EducationStatisticsDto {
-    private Long totalEducation;
-    private Long ongoingCount;
-    private Long completedCount;
-    private Map<String, Long> institutionDistribution;
-    private Map<String, Long> fieldDistribution;
-    private Map<EducationLevel, Long> levelDistribution;
-    private Long featuredCount;
-
-    public Double getCompletionRate() {
-        if (totalEducation == 0) return 0.0;
-        return ServiceUtils.calculatePercentage(completedCount, totalEducation);
-    }
-
-    public String getMostCommonLevel() {
-        return levelDistribution.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(entry -> entry.getKey().toString().toLowerCase())
-                .orElse("unknown");
-    }
-
-    public String getTopInstitution() {
-        return ServiceUtils.findMostFrequent(
-                institutionDistribution.entrySet().stream()
-                        .map(Map.Entry::getKey)
-                        .toList()
-        ).orElse("Unknown");
-    }
-}
-
-@lombok.Data
-@lombok.Builder
-class TimelineDataDto {
-    private Integer year;
-    private Long count;
-    private String entityType;
 }

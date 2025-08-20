@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Informații de contact
+ * Contact info
  */
 @Entity
 @Table(name = "contact_info")

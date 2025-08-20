@@ -20,15 +20,15 @@ export class VolunteerService extends GlobalService {
     protected readonly serviceName = 'VolunteerService';
     protected readonly serviceApiUrl = `${this.apiUrl}/volunteer`;
 
-    // Configurări cache specifice pentru Volunteer
+    // Specific cache configuration for volunteer data
     protected readonly cacheConfig: CacheConfig = {
-        defaultTTL: 900000, // 15 minute pentru volunteer (date relativ stabile)
+        defaultTTL: 900000,
         maxCacheSize: 10,
         enablePrefetch: true,
-        cleanupInterval: 180000, // 3 minute
-        prefetchDelay: 4000, // 4 secunde delay
-        avgEntrySize: 1280, // 1.25KB per entry
-        expectedHitRate: 0.87 // 87% hit rate
+        cleanupInterval: 180000,
+        prefetchDelay: 4000,
+        avgEntrySize: 1280,
+        expectedHitRate: 0.87
     };
 
     constructor(
@@ -81,7 +81,7 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Refreshează toate datele volunteer
+     * Refresh all volunteer data (experiences, skills, stats)
      */
     refreshAllVolunteerData(): Observable<{
         experiences: VolunteerExperience[];
@@ -135,7 +135,7 @@ export class VolunteerService extends GlobalService {
     // ========================
 
     /**
-     * Filtrează experiențele volunteer după criterii
+     * Filters volunteer experiences based on status, type, and organization
      */
     getFilteredExperiences(
         status?: string,
@@ -155,7 +155,7 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Obține skill-urile active volunteer
+     * Get active volunteer skills
      */
     getActiveVolunteerSkills(): Observable<VolunteerSkill[]> {
         return this.getVolunteerSkills().pipe(
@@ -164,7 +164,7 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Obține skill-urile după categorie
+     * Get skills by category
      */
     getSkillsByCategory(category: string): Observable<VolunteerSkill[]> {
         return this.getVolunteerSkills().pipe(
@@ -175,7 +175,7 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Calculează statistici avansate
+     * Calculate advanced volunteer statistics
      */
     getAdvancedStats(): Observable<{
         basic: VolunteerStats;
@@ -190,12 +190,12 @@ export class VolunteerService extends GlobalService {
             experiences: this.getVolunteerExperiences()
         }).pipe(
             map(({ stats, skills, experiences }) => {
-                // Calculează media skill-urilor
+
                 const averageSkillLevel = skills.length > 0
                     ? skills.reduce((sum, skill) => sum + skill.level, 0) / skills.length
                     : 0;
 
-                // Grupează skill-urile după categorie
+
                 const categoryMap = new Map<string, { count: number; totalLevel: number }>();
                 skills.forEach(skill => {
                     const existing = categoryMap.get(skill.category) || { count: 0, totalLevel: 0 };
@@ -211,7 +211,6 @@ export class VolunteerService extends GlobalService {
                     avgLevel: data.totalLevel / data.count
                 })).sort((a, b) => b.count - a.count);
 
-                // Grupează experiențele după tip
                 const typeMap = new Map<string, number>();
                 experiences.forEach(exp => {
                     typeMap.set(exp.type, (typeMap.get(exp.type) || 0) + 1);
@@ -222,7 +221,6 @@ export class VolunteerService extends GlobalService {
                     count
                 })).sort((a, b) => b.count - a.count);
 
-                // Distribuția skill-urilor
                 const activeSkills = skills.filter(skill => skill.isActive).length;
                 const inactiveSkills = skills.length - activeSkills;
 
@@ -242,7 +240,7 @@ export class VolunteerService extends GlobalService {
     // ========================
 
     /**
-     * Warmup cache cu date esențiale (optimizat pentru SSR)
+     * Warmup cache with essential volunteer data
      */
     warmupCache(): void {
         if (!this.isBrowser) {
@@ -251,7 +249,7 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Prefetch pentru datele esențiale de volunteer
+     * Prefetch for essential volunteer data
      */
     protected prefetchEssentialData(): void {
         if (!this.cacheConfig.enablePrefetch) return;
@@ -276,14 +274,14 @@ export class VolunteerService extends GlobalService {
     }
 
     /**
-     * Validare și transformare specifică pentru datele volunteer
+     * Validate and transform data for specific endpoints
      */
     protected validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {
             throw new Error(`No data received for ${endpoint}`);
         }
 
-        // Validări specifice per endpoint
+
         switch (endpoint) {
             case EndpointType.VOLUNTEER_STATS:
                 return this.validateVolunteerStats(data) as T;

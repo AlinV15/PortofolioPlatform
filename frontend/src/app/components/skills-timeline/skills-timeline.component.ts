@@ -119,7 +119,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
   animationState = 'in';
   currentYear = new Date().getFullYear();
 
-  // FIXED: Use component state for animation instead of modifying milestone objects
+  // Use component state for animation instead of modifying milestone objects
   activeTimelineIndex: number = -1;
   private animationInterval?: ReturnType<typeof setInterval>;
 
@@ -141,7 +141,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
 
-    // FIXED: Proper cleanup
+    // Proper cleanup
     this.stopAutoAnimation();
   }
 
@@ -155,7 +155,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     }
   }
 
-  // FIXED: Complete animation logic rewrite
+  // Complete animation logic rewrite
   toggleAnimation(): void {
     this.isAnimating = !this.isAnimating;
 
@@ -166,7 +166,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     }
   }
 
-  // FIXED: Use activeTimelineIndex instead of modifying milestone objects
+  // Use activeTimelineIndex instead of modifying milestone objects
   private startAutoAnimation(): void {
     if (!this.isBrowser) return;
 
@@ -184,7 +184,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     }, 2000);
   }
 
-  // FIXED: Proper cleanup
+  // Proper cleanup
   private stopAutoAnimation(): void {
     if (this.animationInterval) {
       clearInterval(this.animationInterval);
@@ -211,7 +211,7 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     });
   }
 
-  // FIXED: Check if milestone is active using component state
+  // Check if milestone is active using component state
   isMilestoneActive(milestone: TimelineMilestone, index: number): boolean {
     if (!this.isAnimating) {
       // When not animating, check if manually selected

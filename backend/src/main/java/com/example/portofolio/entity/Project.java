@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Proiectele unei persoane
+ * Projects
  */
 @Entity
 @Table(name = "project", indexes = {
@@ -85,7 +85,7 @@ public class Project extends BaseEntity {
     @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ProjectMetrics metrics;
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "project";
     }

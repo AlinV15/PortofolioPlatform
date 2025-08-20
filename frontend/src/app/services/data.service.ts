@@ -1,7 +1,7 @@
 // services/data.service.ts
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, forkJoin, BehaviorSubject, combineLatest } from 'rxjs';
+import { Observable, forkJoin, BehaviorSubject } from 'rxjs';
 import { map, tap, shareReplay, catchError } from 'rxjs/operators';
 
 // Import all existing services
@@ -550,11 +550,10 @@ export class DataService {
             return this.allData$.asObservable().pipe(map(data => data!));
         }
 
-        // Setăm stările de încărcare și ștergem erorile
         this.setAllLoadingStates(true);
         this.clearAllErrors();
 
-        // Folosim forkJoin pentru a aștepta toate fluxurile de date
+
         return forkJoin({
             personal: this.loadPersonalData(),
             projects: this.loadProjectData(),
@@ -671,7 +670,6 @@ export class DataService {
     private loadPersonalData(): Observable<PersonalData> {
         return this.personalService.refreshAllPersonalData().pipe(
             map(data => ({
-                // FIXED: Personal data uses FontAwesome icons
                 highlights: this.processPersonalIcons(data.highlights),
                 achievements: this.processPersonalIcons(data.achievements),
                 values: this.processPersonalIcons(data.values),
@@ -722,7 +720,6 @@ export class DataService {
                 skills: data.skills,
                 topSkills: data.topSkills,
                 featuredSkills: data.featuredSkills,
-                // FIXED: Skills categories use Lucide icons
                 skillsCategories: this.processLucideIcons(data.skillsCategories),
                 skillsStats: data.skillsStats
             })),
@@ -736,7 +733,6 @@ export class DataService {
     private loadTechnologyData(): Observable<TechnologyData> {
         return this.technologiesService.refreshAllTechData().pipe(
             map(data => ({
-                // FIXED: Technologies use Lucide icons
                 technologies: this.processLucideIcons(data.technologies),
                 techCategories: this.processLucideIcons(data.technologiesCategories),
                 techStats: data.techStats
@@ -755,7 +751,6 @@ export class DataService {
             timelineStats: this.timelineService.getTimelineStats()
         }).pipe(
             map(data => ({
-                // FIXED: Timeline data uses Lucide icons
                 timelineItems: this.processLucideIcons(data.timelineItems),
                 timelineMilestones: this.processLucideIcons(data.timelineMilestones),
                 timelineStats: data.timelineStats
@@ -770,7 +765,6 @@ export class DataService {
     private loadVolunteerData(): Observable<VolunteerData> {
         return this.volunteerService.refreshAllVolunteerData().pipe(
             map(data => ({
-                // FIXED: Volunteer experiences use Lucide icons
                 experiences: this.processLucideIcons(data.experiences),
                 skills: data.skills,
                 stats: data.stats
@@ -794,7 +788,6 @@ export class DataService {
     private loadCertificateData(): Observable<CertificateData> {
         return this.certificateService.refreshAllCertificateData().pipe(
             map(data => ({
-                // FIXED: Certificates use Lucide icons
                 certificates: this.processLucideIcons(data.certificates),
                 categories: this.processLucideIcons(data.categories),
                 stats: data.stats
@@ -832,13 +825,6 @@ export class DataService {
                 ? this.iconHelperService.stringToLucide(item.icon)
                 : item.icon
         }));
-    }
-
-    /**
-     * Legacy method - kept for backward compatibility
-     */
-    private processIcons<T extends { icon?: any }>(items: T[]): T[] {
-        return this.processLucideIcons(items);
     }
 
     private setLoadingState(section: keyof LoadingStates, loading: boolean): void {

@@ -19,15 +19,15 @@ export class CertificateService extends GlobalService {
     protected readonly serviceName = 'CertificateService';
     protected readonly serviceApiUrl = `${this.apiUrl}/certificates`;
 
-    // Configurări cache specifice pentru Certificate
+    // Certificate-specific cache settings
     protected readonly cacheConfig: CacheConfig = {
-        defaultTTL: 1800000, // 30 minute pentru certificate (date semi-stabile)
+        defaultTTL: 1800000,
         maxCacheSize: 10,
         enablePrefetch: true,
-        cleanupInterval: 240000, // 4 minute
-        prefetchDelay: 2500, // 2.5 secunde delay
-        avgEntrySize: 2048, // 2KB per entry (certificate au date mari)
-        expectedHitRate: 0.90 // 90% hit rate pentru certificate
+        cleanupInterval: 240000,
+        prefetchDelay: 2500,
+        avgEntrySize: 2048,
+        expectedHitRate: 0.90
     };
 
     constructor(
@@ -86,7 +86,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Refreshează toate datele de certificate
+     * Refresh all certificate data
      */
     refreshAllCertificateData(): Observable<{
         certificates: Certificate[];
@@ -157,7 +157,7 @@ export class CertificateService extends GlobalService {
     // ========================
 
     /**
-     * Filtrează certificatele după criterii
+     * Filter certificates based on various criteria
      */
     getFilteredCertificates(filters: {
         category?: string;
@@ -188,7 +188,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Obține certificatele featured
+     * Get featured certificates
      */
     getFeaturedCertificates(): Observable<Certificate[]> {
         return this.getCertificates().pipe(
@@ -197,7 +197,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Obține certificatele verificate
+     * Get verified certificates
      */
     getVerifiedCertificates(): Observable<Certificate[]> {
         return this.getCertificates().pipe(
@@ -206,7 +206,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Grupează certificatele după categorie
+     * Group certificates by category
      */
     getCertificatesByCategory(): Observable<Map<string, Certificate[]>> {
         return this.getCertificates().pipe(
@@ -225,7 +225,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Grupează certificatele după issuer
+     * Group certificates by issuer
      */
     getCertificatesByIssuer(): Observable<Map<string, Certificate[]>> {
         return this.getCertificates().pipe(
@@ -244,7 +244,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Obține toate skill-urile unice din certificate
+     * Get all unique skills gained from certificates
      */
     getAllUniqueSkills(): Observable<string[]> {
         return this.getCertificates().pipe(
@@ -259,7 +259,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Caută certificate după text
+     * Search certificates by various fields
      */
     searchCertificates(searchTerm: string): Observable<Certificate[]> {
         if (!searchTerm || searchTerm.trim().length === 0) {
@@ -284,7 +284,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Calculează statistici avansate pentru certificate
+     * Calculate advanced certificate analytics
      */
     getAdvancedCertificateAnalytics(): Observable<{
         basic: CertificateStats;
@@ -299,7 +299,7 @@ export class CertificateService extends GlobalService {
             stats: this.getCertificateStats()
         }).pipe(
             map(({ certificates, stats }) => {
-                // Analiza skill-urilor
+
                 const skillMap = new Map<string, number>();
                 certificates.forEach(cert => {
                     cert.skillsGained.forEach(skill => {
@@ -315,7 +315,7 @@ export class CertificateService extends GlobalService {
                     }))
                     .sort((a, b) => b.count - a.count);
 
-                // Distribuția pe categorii
+
                 const categoryMap = new Map<string, number>();
                 certificates.forEach(cert => {
                     categoryMap.set(cert.categoryName, (categoryMap.get(cert.categoryName) || 0) + 1);
@@ -329,16 +329,16 @@ export class CertificateService extends GlobalService {
                     }))
                     .sort((a, b) => b.count - a.count);
 
-                // Analiza verificării
+
                 const verifiedCount = certificates.filter(cert => cert.verified).length;
                 const unverifiedCount = certificates.length - verifiedCount;
 
-                // Analiza featured
+
                 const featuredCount = certificates.filter(cert => cert.featured).length;
                 const regularCount = certificates.length - featuredCount;
                 const featuredRate = Math.round((featuredCount / certificates.length) * 100 * 10) / 10;
 
-                // Ranking issuer-i
+
                 const issuerMap = new Map<string, { total: number; verified: number }>();
                 certificates.forEach(cert => {
                     const existing = issuerMap.get(cert.issuer) || { total: 0, verified: 0 };
@@ -374,7 +374,7 @@ export class CertificateService extends GlobalService {
     // ========================
 
     /**
-     * Warmup cache cu date esențiale (optimizat pentru SSR)
+     * Warmup cache with essential data (optimized for SSR)
      */
     warmupCache(): void {
         if (!this.isBrowser) {
@@ -383,7 +383,7 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Prefetch pentru datele esențiale de certificate
+     * Prefetch for essential certificate data
      */
     protected prefetchEssentialData(): void {
         if (!this.cacheConfig.enablePrefetch) return;
@@ -412,14 +412,14 @@ export class CertificateService extends GlobalService {
     }
 
     /**
-     * Validare și transformare specifică pentru datele de certificate
+     * Validation and transformation specific to certificate data
      */
     protected validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {
             throw new Error(`No data received for ${endpoint}`);
         }
 
-        // Validări specifice per endpoint
+
         switch (endpoint) {
             case EndpointType.CERTIFICATES:
                 return this.validateCertificates(data) as T;
@@ -485,7 +485,7 @@ export class CertificateService extends GlobalService {
             topProvider: ''
         };
 
-        // Transformă providerDistribution din obiect în Map dacă este necesar
+
         let providerDistribution = defaults.providerDistribution;
         if (data.providerDistribution) {
             if (data.providerDistribution instanceof Map) {

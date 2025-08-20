@@ -1,1 +1,29 @@
-<p>not-found works!</p>
+<div class="not-found-container">
+    <div class="not-found-content">
+        <div class="error-code">404</div>
+        <h1>Page Not Found</h1>
+        <p class="error-message">
+            The page you're looking for doesn't exist or has been moved.
+        </p>
+
+        <div class="suggested-links">
+            <h3>Try these instead:</h3>
+            <ul>
+                <li><a (click)="navigateTo('/')" class="nav-link">🏠 Home</a></li>
+                <li><a (click)="navigateTo('/projects')" class="nav-link">💼 Projects</a></li>
+                <li><a (click)="navigateTo('/about')" class="nav-link">👨‍💻 About Me</a></li>
+                <li><a (click)="navigateTo('/skills')" class="nav-link">🛠️ Skills</a></li>
+                <li><a (click)="navigateTo('/contact')" class="nav-link">📧 Contact</a></li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button (click)="goBack()" class="btn btn-secondary" [disabled]="!canInteract">
+                ← Go Back
+            </button>
+            <button (click)="navigateTo('/')" class="btn btn-primary">
+                🏠 Home Page
+            </button>
+        </div>
+    </div>
+</div>

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Responsabilitățile în cadrul voluntariatului
+ * Volunteer responsibilities
  */
 @Entity
 @Table(name = "volunteer_responsibility", indexes = {

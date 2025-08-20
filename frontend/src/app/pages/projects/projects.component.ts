@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, AfterViewInit, Chang
 import { isPlatformBrowser } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subject, takeUntil, timer } from 'rxjs';
-import { finalize, filter, take, tap, catchError } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
 // Components
 import { ProjectsHeroComponent } from '../../components/projects-hero/projects-hero.component';
@@ -14,43 +14,43 @@ import { CommonModule } from '@angular/common';
 
 // Models & Services
 import { Project, ViewMode, ProjectsStats, ProjectCategoryDistribution, ProjectExperience } from '../../shared/models/project.interface';
-// UPDATED: Replace ProjectService and RoutingService with DataService
+// Replace ProjectService and RoutingService with DataService
 import { DataService } from '../../services/data.service';
 import { RoutingService } from '../../services/routing.service';
 import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-projects',
-  standalone: true,
-  imports: [
-    ProjectsHeroComponent,
-    ProjectGridComponent,
-    ProjectDetailsComponent,
-    ProjectStatsComponent,
-    ProjectShowcaseComponent,
-    CommonModule
-  ],
-  templateUrl: './projects.component.html',
-  styleUrl: './projects.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('fadeInOut', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0.95)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
-      ]),
-      transition(':leave', [
-        animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' }))
-      ])
-    ])
-  ]
+    selector: 'app-projects',
+    standalone: true,
+    imports: [
+        ProjectsHeroComponent,
+        ProjectGridComponent,
+        ProjectDetailsComponent,
+        ProjectStatsComponent,
+        ProjectShowcaseComponent,
+        CommonModule
+    ],
+    templateUrl: './projects.component.html',
+    styleUrl: './projects.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [
+        trigger('fadeInOut', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'scale(0.95)' }),
+                animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+            ]),
+            transition(':leave', [
+                animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' }))
+            ])
+        ])
+    ]
 })
 export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly destroy$ = new Subject<void>();
     private readonly isBrowser: boolean;
     private isHydrated = false;
 
-    // SIMPLU: Proprietăți publice ca în Skills (fără private + getters)
+    // Public properties as in Skills (without private + getters)
     allProjects: Project[] = [];
     projectStats: ProjectsStats = {
         technologies: 0,
@@ -73,12 +73,12 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         experienceLevel: ''
     };
 
-    // SIMPLU: Basic loading/error flags (fără complex objects)
+    // Basic loading/error flags
     isLoading = false;
     hasError = false;
     errorMessage = '';
 
-    // SIMPLU: UI state
+    // UI state
     activeFilter = 'all';
     viewMode: ViewMode = 'grid';
     searchTerm = '';
@@ -95,16 +95,15 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     ngOnInit(): void {
-        // EXACT CA SKILLS: Simplu și direct
         this.loadAllDataFromDataService();
-        
+
         if (this.isBrowser) {
             this.router.events.pipe(
                 filter(event => event instanceof NavigationEnd),
                 takeUntil(this.destroy$)
             ).subscribe(() => {
                 console.log('🔄 Route changed - reloading data');
-                this.loadAllDataFromDataService(); // DIRECT CALL ca în Skills
+                this.loadAllDataFromDataService();
             });
         }
     }
@@ -120,24 +119,21 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         this.destroy$.complete();
     }
 
-    // SIMPLU: Exact ca în Skills - fără complicații
     private loadAllDataFromDataService(): void {
         this.isLoading = true;
         this.hasError = false;
-        
+
         this.dataService.loadAllData()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (allData) => {
-                    // DIRECT ASSIGNMENT ca în Skills - fără Object.freeze
                     this.allProjects = allData.projects.projects;
                     this.projectStats = allData.projects.projectStats;
                     this.categoryDistribution = allData.projects.categories;
                     this.topTechnologies = allData.projects.technologies;
                     this.projectExperience = allData.projects.projectExperience;
-                    
+
                     this.isLoading = false;
-                    console.log('✅ All projects page data loaded from DataService');
                 },
                 error: (error) => {
                     console.error('❌ Error loading projects data from DataService:', error);
@@ -148,12 +144,11 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
             });
     }
 
-    // SIMPLU: Retry fără complicații
     retryLoadAllData(): void {
         this.loadAllDataFromDataService();
     }
 
-    // COMPUTED PROPERTIES: Simple getters fără cache manual
+    //  Simple getters without manual cache 
     get hasProjects(): boolean {
         return this.allProjects.length > 0;
     }
@@ -183,13 +178,13 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.currentProjectIndex === this.allProjects.length - 1;
     }
 
-    // HYDRATION: Simplu
+    // HYDRATION
     private completeHydration(): void {
         this.isHydrated = true;
         this.cdr.markForCheck();
     }
 
-    // EVENT HANDLERS: Păstrează la fel
+    // EVENT HANDLERS
     async onFilterChange(filter: string): Promise<void> {
         if (!this.isBrowser || this.activeFilter === filter) return;
         this.activeFilter = filter;

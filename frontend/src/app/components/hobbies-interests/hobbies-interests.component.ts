@@ -80,8 +80,6 @@ export class HobbiesInterestsComponent {
   }
 
   // Track by functions
-
-
   trackByTrait(index: number, trait: PersonalityTrait): string {
     return trait.trait;
   }

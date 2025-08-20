@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 /**
- * Relația universală între entități și tehnologii
+ * Universal relation between entities and technology class
  */
 @Entity
 @Table(name = "entity_technology",

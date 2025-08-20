@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Experiența de voluntariat
+ * Volunteer exp
  */
 @Entity
 @Table(name = "volunteer_experience", indexes = {
@@ -74,7 +74,7 @@ public class VolunteerExperience extends BaseEntity {
     @Builder.Default
     private Set<VolunteerResponsibility> responsibilities = new HashSet<>();
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "volunteer";
     }

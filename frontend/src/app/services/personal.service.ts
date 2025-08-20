@@ -4,7 +4,7 @@ import { Observable, of, forkJoin } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 import { GlobalService } from './global.service';
-import { CacheConfig, RequestConfig } from '../shared/models/request.interface';
+import { CacheConfig } from '../shared/models/request.interface';
 import { EndpointType } from '../shared/enums/EndpointType';
 import {
     Achievement,
@@ -24,15 +24,15 @@ export class PersonalService extends GlobalService {
     protected readonly serviceName = 'PersonalService';
     protected readonly serviceApiUrl = `${this.apiUrl}/personal`;
 
-    // Configurări cache specifice pentru Personal
+    // Specific cache configuration for personal data
     protected override readonly cacheConfig: CacheConfig = {
-        defaultTTL: 300000, // 5 minute
+        defaultTTL: 300000,
         maxCacheSize: 20,
         enablePrefetch: true,
-        cleanupInterval: 120000, // 2 minute
-        prefetchDelay: 2000, // 2 secunde
-        avgEntrySize: 1024, // 1KB per entry
-        expectedHitRate: 0.85 // 85%
+        cleanupInterval: 120000,
+        prefetchDelay: 2000,
+        avgEntrySize: 1024,
+        expectedHitRate: 0.85
     };
 
 
@@ -122,7 +122,7 @@ export class PersonalService extends GlobalService {
     }
 
     /**
-     * Refreshează toate datele personale
+     * Refresh all personal data by invalidating cache and fetching fresh data
      */
     refreshAllPersonalData(): Observable<{
         highlights: Highlight[];
@@ -213,7 +213,7 @@ export class PersonalService extends GlobalService {
     // ========================
 
     /**
-     * Warmup cache cu date esențiale (optimizat pentru SSR)
+     * Warmup cache with essential personal data
      */
     warmupCache(): void {
         if (!this.isBrowser) {
@@ -222,7 +222,7 @@ export class PersonalService extends GlobalService {
     }
 
     /**
-     * Prefetch pentru datele esențiale de personal
+     * Prefetch for essential personal data
      */
     protected prefetchEssentialData(): void {
         if (!this.cacheConfig.enablePrefetch) return;
@@ -251,14 +251,14 @@ export class PersonalService extends GlobalService {
     }
 
     /**
-     * Validare și transformare specifică pentru datele personale
+     * Validate and transform data received from the API
      */
     protected validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {
             throw new Error(`No data received for ${endpoint}`);
         }
 
-        // Validări specifice per endpoint
+        // Validate based on endpoint type
         switch (endpoint) {
             case EndpointType.KEY_STATS:
                 return this.validateKeyStats(data) as T;

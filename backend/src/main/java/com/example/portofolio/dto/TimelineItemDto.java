@@ -13,18 +13,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TimelineItemDto {              // Renamed
-    private String id;                      // Long → String
-    private String year;                    // Integer → String
+public class TimelineItemDto {
+    private String id;
+    private String year;
     private String title;
     private String subtitle;
     private String description;
-    private String type;                    // AchievementType → String
-    private String icon;                    // Icon → String
+    private String type;
+    private String icon;
     private String color;
     private String details;
-    private Boolean current;                // boolean → Boolean
-    private List<AchievementDto> achievements; // List<Achievement> → DTO
+    private Boolean current;
+    private List<AchievementDto> achievements;
     private String link;
     private String primaryColor;
     private String secondaryColor;

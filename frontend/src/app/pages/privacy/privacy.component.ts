@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 interface TableOfContentsItem {
@@ -362,10 +361,9 @@ export class PrivacyComponent implements OnInit, OnDestroy {
     }
   ];
 
-  constructor(private router: Router) { }
+  constructor() { }
 
   ngOnInit(): void {
-    this.setupScrollListener();
     this.setupIntersectionObserver();
   }
 
@@ -400,9 +398,6 @@ export class PrivacyComponent implements OnInit, OnDestroy {
     });
   }
 
-  private setupScrollListener(): void {
-    // Additional scroll setup if needed
-  }
 
   private setupIntersectionObserver(): void {
     const options = {

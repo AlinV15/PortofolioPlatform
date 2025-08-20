@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, Mail, User, Phone, MessageSquare, Send, CheckCircle, AlertCircle, X } from 'lucide-angular';
 import emailjs from '@emailjs/browser';
-import { env } from 'process';
 import { environment } from '../../../../environments/environment';
 
 interface ContactForm {
@@ -87,9 +86,9 @@ export class HeaderComponent {
   constructor(private fb: FormBuilder) {
     this.hireForm = this.createForm();
 
-    // Rulează după ce componenta e render-ată în browser
+
     afterNextRender(() => {
-      // Folosește setTimeout pentru a evita eroarea de change detection
+
       setTimeout(() => {
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -99,7 +98,7 @@ export class HeaderComponent {
           document.documentElement.classList.add('dark');
         }
 
-        // Inițializează EmailJS
+
         this.initializeEmailJS();
       }, 0);
     });
@@ -140,7 +139,7 @@ export class HeaderComponent {
   // Hire Me Modal methods
   openHireMeModal(): void {
     this.showHireMeModal = true;
-    this.isMobileMenuOpen = false; // Închide meniul mobil dacă e deschis
+    this.isMobileMenuOpen = false;
     this.resetForm();
   }
 
@@ -197,7 +196,7 @@ export class HeaderComponent {
       console.log('Email sent successfully:', response);
       this.submitStatus = 'success';
 
-      // Auto-închide modalul după 3 secunde în caz de succes
+
       setTimeout(() => {
         this.closeHireMeModal();
       }, 3000);

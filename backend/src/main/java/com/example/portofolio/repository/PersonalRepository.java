@@ -25,16 +25,6 @@ public interface PersonalRepository extends JpaRepository<Personal, Long> {
             "WHERE p.id = :id")
     Optional<Personal> findByIdWithSkills(@Param("id") Long id);
 
-    @Query("SELECT p FROM Personal p " +
-            "LEFT JOIN FETCH p.projects pr " +
-            "WHERE p.id = :id")
-    Optional<Personal> findByIdWithProjects(@Param("id") Long id);
-
-    @Query("SELECT p FROM Personal p " +
-            "LEFT JOIN FETCH p.certificates " +
-            "WHERE p.id = :id")
-    Optional<Personal> findByIdWithCertificates(@Param("id") Long id);
-
     // Pentru dashboard/statistics
     @Query("SELECT COUNT(p) FROM Personal p")
     Long countTotalPersonals();

@@ -1,9 +1,6 @@
 package com.example.portofolio.controller;
 import com.example.portofolio.dto.HighlightDto;
-import com.example.portofolio.dto.LearningProgressDto;
-import com.example.portofolio.dto.PersonalHighlightDto;
 import com.example.portofolio.dto.PersonalValueDto;
-import com.example.portofolio.entity.Personal;
 import com.example.portofolio.service.personal.PersonalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,14 +40,4 @@ public class PersonalController {
                 .body(body);
     }
 
-//    @GetMapping("/")
-//    public ResponseEntity<List<Personal>> getPersonalInfo(
-//    ) {
-//
-//        List<Personal> body = personalService.findAll();
-//
-//        return ResponseEntity.ok()
-//                .header("PersonalInfo", "prs-info")
-//                .body(body);
-//    }
 }

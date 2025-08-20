@@ -12,7 +12,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 /**
- * Obiectivele de viitor
+ * Future goals for somebody
  */
 @Entity
 @Table(name = "future_goal", indexes = {
@@ -59,7 +59,7 @@ public class FutureGoal extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "skill_id")
-    private Skill skill; // optional, dacă obiectivul e legat de o skill
+    private Skill skill; // optional, if the objective is linked with a skill
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "icon_id")

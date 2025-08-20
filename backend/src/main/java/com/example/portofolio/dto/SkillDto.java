@@ -14,14 +14,14 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SkillDto {
 
-    private String id;                  // Skill.id.toString()
-    private String name;                // Skill.name
-    private Integer level;              // Skill.level (0-100)
-    private String proficiency;         // Skill.proficiency.toString().toLowerCase()
-    private String description;         // Skill.description
-    private Double yearsOfExperience;   // Skill.yearsOfExperience.doubleValue()
-    private Integer projects;           // Count din EntitySkill pentru PROJECT
-    private String icon;                // Icon.name din EntityMetadata
-    private String color;               // EntityMetadata.primaryColor
-    private String category;            // Mapped din SkillCategory.name la enum string
+    private String id;
+    private String name;
+    private Integer level;
+    private String proficiency;
+    private String description;
+    private Double yearsOfExperience;
+    private Integer projects;
+    private String icon;
+    private String color;
+    private String category;
 }

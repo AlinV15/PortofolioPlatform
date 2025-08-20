@@ -13,24 +13,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProjectExportDto {                 // Renamed
-    private String id;                          // Long → String
+public class ProjectExportDto {
+    private String id;
     private String title;
     private String description;
     private String longDescription;
-    private List<String> technologies;          // List<Technology> → List<String>
+    private List<String> technologies;
     private String category;
-    private String status;                      // ProjectStatus → String
-    private Boolean featured;                   // boolean → Boolean
-    private List<String> images;                // String[] → List<String>
+    private String status;
+    private Boolean featured;
+    private List<String> images;
     private String demoUrl;
     private String githubUrl;
-    private List<String> features;   // List<ProjectFeature> → DTO
-    private List<String> challenges; // List<ProjectChallenge> → DTO
+    private List<String> features;
+    private List<String> challenges;
     private Double developmentTime;
-    private String complexity;                  // ComplexityLevel → String
-    private ProjectMetricsDto metrics;          // ProjectMetrics → DTO
-    private List<String> tags;                  // String tags → List<String>
+    private String complexity;
+    private ProjectMetricsDto metrics;
+    private List<String> tags;
     private Integer year;
     private String primaryColor;
     private String secondaryColor;

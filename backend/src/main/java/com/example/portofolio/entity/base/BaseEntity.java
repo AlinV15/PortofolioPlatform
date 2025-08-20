@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 /**
- * Base entity class cu audit fields comune
+ * Base entity class with common fields
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)

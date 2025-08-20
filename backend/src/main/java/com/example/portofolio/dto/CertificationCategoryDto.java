@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CertificationCategoryDto {
 
-    private String id;                          // CertificationCategory.id.toString()
-    private String name;                        // CertificationCategory.name
-    private String icon;                        // Icon.name
-    private String activeClass;                 // CSS class pentru active state
-    private String hoverClass;                  // CSS class pentru hover state
+    private String id;
+    private String name;
+    private String icon;
+    private String activeClass;
+    private String hoverClass;                  
 }

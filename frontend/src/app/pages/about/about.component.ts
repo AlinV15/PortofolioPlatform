@@ -5,7 +5,6 @@ import { VolunteerExperienceComponent } from '../../components/volunteer-experie
 import { HobbiesInterestsComponent } from '../../components/hobbies-interests/hobbies-interests.component';
 import { PersonalTimelineComponent } from '../../components/personal-timeline/personal-timeline.component';
 
-// Keep existing interface imports
 import { ContactInfo } from '../../shared/models/contact.interface';
 import { Highlight, Hobby, Interest, PersonalityTrait, Value } from '../../shared/models/personal.interface';
 import { AcademicProject, CurrentLearning, Education, EducationStats } from '../../shared/models/education.interface';
@@ -13,7 +12,6 @@ import { Certificate } from '../../shared/models/certificate.interface';
 import { VolunteerExperience, VolunteerSkill, VolunteerStats } from '../../shared/models/volunteer.interface';
 import { TimelineItem } from '../../shared/models/timeline.interface';
 
-// UPDATED: Replace individual services with DataService
 import { DataService } from '../../services/data.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
@@ -26,7 +24,7 @@ import { filter, Subject, takeUntil } from 'rxjs';
 })
 export class AboutComponent {
 
-  // Keep existing data structure - UNCHANGED
+
   personalStoryData = {
     contactData: {
 
@@ -61,7 +59,6 @@ export class AboutComponent {
   private destroy$ = new Subject<void>();
 
   constructor(
-    // UPDATED: Replace all individual services with DataService
     private router: Router,
     private dataService: DataService,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -80,12 +77,9 @@ export class AboutComponent {
     });
   }
 
-  // UPDATED: Replace complex forkJoin with single DataService call
   private loadAllData(): void {
-    // UPDATED: Single call to DataService instead of multiple service calls
     this.dataService.loadAllData().subscribe({
       next: (allData) => {
-        // UPDATED: Extract and assign data from centralized source
 
         // Personal story data
         this.personalStoryData = {
@@ -121,8 +115,6 @@ export class AboutComponent {
         this.timelineData = {
           timelineItems: allData.timeline.timelineItems
         };
-
-        console.log('✅ All about page data loaded from DataService');
       },
       error: (error) => {
         console.error('❌ Error loading about data from DataService:', error);

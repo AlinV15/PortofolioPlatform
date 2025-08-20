@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Imagini pentru proiecte
+ * Project images
  */
 @Entity
 @Table(name = "project_image", indexes = {

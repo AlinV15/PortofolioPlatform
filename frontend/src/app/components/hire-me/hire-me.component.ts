@@ -42,11 +42,11 @@ export class HireMeComponent implements OnInit {
   submitStatus: 'idle' | 'success' | 'error' = 'idle';
   errorMessage = '';
 
-  // EmailJS Configuration - ÎN PRODUCȚIE, PUNE ACESTEA ÎN ENVIRONMENT FILES
+  // EmailJS Configuration
   private readonly emailjsConfig = {
-    serviceId: 'YOUR_SERVICE_ID',        // Din EmailJS dashboard
-    templateId: 'YOUR_TEMPLATE_ID',      // Template-ul creat în EmailJS
-    publicKey: 'YOUR_PUBLIC_KEY'         // Public key din EmailJS
+    serviceId: 'YOUR_SERVICE_ID',
+    templateId: 'YOUR_TEMPLATE_ID',
+    publicKey: 'YOUR_PUBLIC_KEY'
   };
 
   // Form options
@@ -100,11 +100,11 @@ export class HireMeComponent implements OnInit {
   }
 
   private initializeEmailJS(): void {
-    // Inițializează EmailJS cu public key
+
     emailjs.init(this.emailjsConfig.publicKey);
   }
 
-  // Getters pentru validare
+  // Getters for validation
   get name() { return this.hireForm.get('name'); }
   get email() { return this.hireForm.get('email'); }
   get projectType() { return this.hireForm.get('projectType'); }
@@ -141,7 +141,6 @@ export class HireMeComponent implements OnInit {
     try {
       const formData = this.hireForm.value as ContactForm;
 
-      // Pregătește datele pentru EmailJS template
       const templateParams = {
         from_name: formData.name,
         from_email: formData.email,
@@ -152,7 +151,6 @@ export class HireMeComponent implements OnInit {
         timeline: this.getTimelineLabel(formData.timeline),
         message: formData.message,
         reply_to: formData.email,
-        // Adaugă timestamp
         submission_date: new Date().toLocaleString('en-US', {
           timeZone: 'Europe/Bucharest',
           year: 'numeric',
@@ -163,7 +161,6 @@ export class HireMeComponent implements OnInit {
         })
       };
 
-      // Trimite email prin EmailJS
       const response = await emailjs.send(
         this.emailjsConfig.serviceId,
         this.emailjsConfig.templateId,
@@ -173,7 +170,6 @@ export class HireMeComponent implements OnInit {
       console.log('Email sent successfully:', response);
       this.submitStatus = 'success';
 
-      // Auto-închide modalul după 3 secunde în caz de succes
       setTimeout(() => {
         this.closeModal();
       }, 3000);
@@ -215,26 +211,9 @@ export class HireMeComponent implements OnInit {
     return 'An unexpected error occurred. Please try again or contact me directly.';
   }
 
-  // Utility methods pentru template
   hasError(controlName: string): boolean {
     const control = this.hireForm.get(controlName);
     return !!(control && control.invalid && control.touched);
-  }
-
-
-
-
-
-  private getFieldLabel(controlName: string): string {
-    const labels: { [key: string]: string } = {
-      name: 'Name',
-      email: 'Email',
-      projectType: 'Project Type',
-      budget: 'Budget',
-      timeline: 'Timeline',
-      message: 'Message'
-    };
-    return labels[controlName] || controlName;
   }
 
   // Track by functions pentru *ngFor

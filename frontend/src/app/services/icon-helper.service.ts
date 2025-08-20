@@ -1,5 +1,3 @@
-// services/icon-helper.service.ts
-
 import { Injectable } from '@angular/core';
 import {
     Activity, Award, Book, BookOpen, Brain, Briefcase, Building, Building2,
@@ -32,7 +30,7 @@ import {
 })
 export class IconHelperService {
 
-    // Comprehensive icon mapping pentru aplicații portfolio
+    // Comprehensive icon mapping for portofolio app
     private readonly iconMap: Map<string, LucideIconData> = new Map([
         // === EDUCATION & LEARNING ===
         ['graduation-cap', GraduationCap],
@@ -128,7 +126,7 @@ export class IconHelperService {
         ['pause-circle', PauseCircle],
         ['puzzle', Puzzle],
 
-        // === E-COMMERCE (pentru proiectele de e-commerce) ===
+        // === E-COMMERCE  ===
         ['package', Package],
         ['shopping-cart', ShoppingCart],
         ['credit-card', CreditCard],
@@ -156,7 +154,7 @@ export class IconHelperService {
 
         // === LOCATION & TRAVEL ===
         ['compass', Compass],
-        ['map', MapIcon], // Removed: Map is not a LucideIconData, causes type error
+        ['map', MapIcon],
         ['navigation', Navigation],
         ['anchor', Anchor],
 
@@ -196,9 +194,9 @@ export class IconHelperService {
         ['printer', Printer]
     ]);
 
-    // Font Awesome class mapping - doar pentru iconuri care nu există în Lucide
+    // Font Awesome class mapping - just for specific cases
     private readonly fontAwesomeMap: Map<string, string> = new Map([
-        // Specific Font Awesome icons care nu au echivalent direct în Lucide
+        // Specific Font Awesome icons that are not in Lucide
         ['wordpress', 'fa-solid fa-wordpress'],
         ['microsoft', 'fa-solid fa-microsoft'],
         ['apple', 'fa-solid fa-apple'],
@@ -239,16 +237,16 @@ export class IconHelperService {
         ['playstation', 'fa-solid fa-playstation'],
         ['xbox', 'fa-solid fa-xbox'],
         ['unity', 'fa-solid fa-unity'],
-        ['unreal-engine', 'fa-solid fa-unity'], // Nu există unreal în FA, folosim unity
+        ['unreal-engine', 'fa-solid fa-unity'],
         ['stripe', 'fa-solid fa-stripe'],
         ['paypal', 'fa-solid fa-paypal'],
         ['aws', 'fa-solid fa-aws'],
         ['digital-ocean', 'fa-solid fa-digital-ocean'],
         ['cloudflare', 'fa-solid fa-cloudflare'],
         ['heroku', 'fa-solid fa-heroku'],
-        ['netlify', 'fa-solid fa-cloud'], // Netlify nu există în FA
-        ['vercel', 'fa-solid fa-bolt'], // Vercel nu există în FA
-        ['mongodb', 'fa-solid fa-database'], // MongoDB nu are icon specific
+        ['netlify', 'fa-solid fa-cloud'],
+        ['vercel', 'fa-solid fa-bolt'],
+        ['mongodb', 'fa-solid fa-database'],
         ['postgresql', 'fa-solid fa-database'],
         ['mysql', 'fa-solid fa-database'],
         ['redis', 'fa-solid fa-database'],
@@ -270,12 +268,12 @@ export class IconHelperService {
     ]);
 
     /**
-     * Convertește un string la clasa Font Awesome
+     * Convert a string to FontAwesome class
      */
     stringToFontAwesome(iconString: string): string {
         if (!iconString) return 'fa-solid fa-circle';
 
-        // Normalizează string-ul
+
         const normalizedString = iconString
             .toLowerCase()
             .replace(/[_\s]+/g, '-')
@@ -285,7 +283,7 @@ export class IconHelperService {
 
 
 
-        // Încearcă să găsească în mapping
+
         if (this.fontAwesomeMap.has(normalizedString)) {
             return this.fontAwesomeMap.get(normalizedString)!;
         }
@@ -294,12 +292,12 @@ export class IconHelperService {
             return `fa-solid fa-${normalizedString}`
         }
 
-        // Dacă nu găsește, returnează un icon generic
+
         return 'fa-solid fa-circle';
     }
 
     /**
-     * Convertește un string la LucideIconData
+     * Convert a string to Lucide icon data
      */
     stringToLucide(iconString: string): LucideIconData {
         try {
@@ -322,7 +320,7 @@ export class IconHelperService {
     }
 
     /**
-     * Utility: Verifică dacă un icon există în Lucide mapping
+     * Verify if an icon exists in Lucide mapping
      */
     hasLucideIcon(iconString: string): boolean {
         const normalizedString = iconString
@@ -336,7 +334,7 @@ export class IconHelperService {
     }
 
     /**
-     * Utility: Verifică dacă un icon există în FontAwesome mapping
+     * Verify if an icon exists in FontAwesome mapping
      */
     hasFontAwesomeIcon(iconString: string): boolean {
         const normalizedString = iconString
@@ -350,21 +348,21 @@ export class IconHelperService {
     }
 
     /**
-     * Utility: Obține toate iconurile disponibile pentru Lucide
+     * Get all Lucide icons available in the mapping
      */
     getAllLucideIcons(): string[] {
         return Array.from(this.iconMap.keys()).sort();
     }
 
     /**
-     * Utility: Obține toate iconurile disponibile pentru FontAwesome
+     * Get all FontAwesome icons available in the mapping
      */
     getAllFontAwesomeIcons(): string[] {
         return Array.from(this.fontAwesomeMap.keys()).sort();
     }
 
     /**
-     * Utility: Obține iconuri sugerate pentru o categorie
+     * Get icon suggestions based on category
      */
     getIconSuggestions(category: 'education' | 'work' | 'tech' | 'projects' | 'contact' | 'hobbies'): string[] {
         const suggestions = {

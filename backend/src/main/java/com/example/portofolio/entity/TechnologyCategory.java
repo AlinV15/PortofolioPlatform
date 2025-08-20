@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Categorii de tehnologii
+ * Tech categories
  */
 @Entity
 @Table(name = "technology_category", indexes = {

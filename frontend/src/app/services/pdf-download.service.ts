@@ -1,4 +1,3 @@
-// services/pdf-download.service.ts
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
@@ -14,28 +13,23 @@ export class PdfDownloadService {
 
     async downloadPDF(fileName: string, displayName?: string): Promise<boolean> {
         if (!isPlatformBrowser(this.platformId)) {
-            this.setError('Descărcarea nu este disponibilă pe server');
+            this.setError('The download is not supported on the server');
             return false;
         }
 
         try {
             this.clearError();
             const url = `/assets/files/${fileName}`;
-
-            console.log('Încercare descărcare:', url); // Debug
-
             const response = await fetch(url);
-            console.log('Response status:', response.status); // Debug
 
             if (!response.ok) {
-                throw new Error(`Fișierul nu a fost găsit (${response.status})`);
+                throw new Error(`The file was not found (${response.status})`);
             }
 
             const blob = await response.blob();
-            console.log('Blob size:', blob.size); // Debug
 
             if (blob.size === 0) {
-                throw new Error('Fișierul este gol');
+                throw new Error('The file is empty');
             }
 
             const downloadUrl = window.URL.createObjectURL(blob);
@@ -50,12 +44,11 @@ export class PdfDownloadService {
 
             setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 100);
 
-            console.log('Descărcare reușită'); // Debug
             return true;
 
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută la descărcare';
-            console.error('Eroare descărcare:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unexpected error occurred during download';
+            console.error('Download error:', error);
             this.setError(errorMessage);
             return false;
         }

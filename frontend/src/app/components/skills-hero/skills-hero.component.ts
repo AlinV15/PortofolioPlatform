@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import * as Chart from 'chart.js';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import {
   LucideAngularModule,

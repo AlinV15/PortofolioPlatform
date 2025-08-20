@@ -13,12 +13,9 @@ import org.springframework.stereotype.Service;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,18 +29,27 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
     private final EntityTechnologyRepository entityTechnologyRepository;
     private final TechnologyCategoryRepository technologyCategoryRepository;
     private final ProjectRepository projectRepository;
+    private final LearningProgressRepository learningProgressRepository;
+    private final SkillRepository skillRepository;
+    private final CertificateRepository certificateRepository;
 
     @Autowired
     public TechnologyService(TechnologyRepository technologyRepository,
                              EntityMetadataRepository entityMetadataRepository,
                              EntityTechnologyRepository entityTechnologyRepository,
                              TechnologyCategoryRepository technologyCategoryRepository,
-                             ProjectRepository projectRepository) {
+                             ProjectRepository projectRepository,
+                             CertificateRepository certificateRepository,
+                             LearningProgressRepository learningProgressRepository,
+                             SkillRepository skillRepository) {
         super(technologyRepository);
         this.entityMetadataRepository = entityMetadataRepository;
         this.entityTechnologyRepository = entityTechnologyRepository;
         this.technologyCategoryRepository = technologyCategoryRepository;
         this.projectRepository = projectRepository;
+        this.learningProgressRepository = learningProgressRepository;
+        this.skillRepository = skillRepository;
+        this.certificateRepository = certificateRepository;
     }
 
     @Override
@@ -71,50 +77,6 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return result;
     }
 
-    @Cacheable(value = "technologiesByPersonal", key = "#personalId")
-    public List<TechnologyDto> findUsedByPersonalId(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("findUsedByPersonalId", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Technology> technologies = repository.findUsedByPersonalId(personalId);
-        List<TechnologyDto> result = technologies.stream()
-                .map(tech -> toTechnologyDtoForPersonal(tech, personalId))
-                .toList();
-
-        ServiceUtils.logMethodExit("findUsedByPersonalId", result.size());
-        return result;
-    }
-
-    @Cacheable(value = "technologiesByCategory", key = "#personalId + '_' + #categoryId")
-    public List<TechnologyDto> findUsedByPersonalIdAndCategory(@Valid @NotNull @Positive Long personalId,
-                                                               @Valid @NotNull @Positive Long categoryId) {
-        ServiceUtils.logMethodEntry("findUsedByPersonalIdAndCategory", personalId, categoryId);
-        ServiceUtils.validatePersonalId(personalId);
-        ServiceUtils.validateEntityId(categoryId);
-
-        List<Technology> technologies = repository.findUsedByPersonalIdAndCategoryId(personalId, categoryId);
-        List<TechnologyDto> result = technologies.stream()
-                .map(tech -> toTechnologyDtoForPersonal(tech, personalId))
-                .toList();
-
-        ServiceUtils.logMethodExit("findUsedByPersonalIdAndCategory", result.size());
-        return result;
-    }
-
-    @Cacheable(value = "technologiesByCategory", key = "#categoryId")
-    public List<TechnologyDto> findByCategory(@Valid @NotNull @Positive Long categoryId) {
-        ServiceUtils.logMethodEntry("findByCategory", categoryId);
-        ServiceUtils.validateEntityId(categoryId);
-
-        List<Technology> technologies = repository.findByCategoryIdWithCategory(categoryId);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByCategory", result.size());
-        return result;
-    }
-
     // ===== TRENDING & POPULAR TECHNOLOGIES =====
 
     @Cacheable(value = "trendingTechnologies")
@@ -130,84 +92,8 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return result;
     }
 
-    @Cacheable(value = "trendingTechnologiesByCategory", key = "#categoryId")
-    public List<TechnologyDto> findTrendingByCategory(@Valid @NotNull @Positive Long categoryId) {
-        ServiceUtils.logMethodEntry("findTrendingByCategory", categoryId);
-        ServiceUtils.validateEntityId(categoryId);
-
-        List<Technology> technologies = repository.findTrendingByCategoryId(categoryId);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findTrendingByCategory", result.size());
-        return result;
-    }
-
-    @Cacheable(value = "popularTechnologies", key = "#minScore")
-    public List<TechnologyDto> findPopularTechnologies(@Valid @NotNull Integer minScore) {
-        ServiceUtils.logMethodEntry("findPopularTechnologies", minScore);
-
-        if (minScore < 0 || minScore > 100) {
-            throw new IllegalArgumentException("Popularity score must be between 0 and 100");
-        }
-
-        List<Technology> technologies = repository.findPopularTechnologies(minScore);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findPopularTechnologies", result.size());
-        return result;
-    }
-
-    // ===== SEARCH & FILTERING =====
-
-    public List<TechnologyDto> searchTechnologies(@Valid @NotNull String searchTerm) {
-        ServiceUtils.logMethodEntry("searchTechnologies", searchTerm);
-        ServiceUtils.validateSearchTerm(searchTerm);
-
-        List<Technology> technologies = repository.findByNameOrDescriptionContaining(searchTerm);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("searchTechnologies", result.size());
-        return result;
-    }
-
-    public List<TechnologyDto> searchInCategory(@Valid @NotNull @Positive Long categoryId,
-                                                @Valid @NotNull String searchTerm) {
-        ServiceUtils.logMethodEntry("searchInCategory", categoryId, searchTerm);
-        ServiceUtils.validateEntityId(categoryId);
-        ServiceUtils.validateSearchTerm(searchTerm);
-
-        List<Technology> technologies = repository.findByCategoryIdAndSearchTerm(categoryId, searchTerm);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("searchInCategory", result.size());
-        return result;
-    }
 
     // ===== VERSION MANAGEMENT =====
-
-    public List<TechnologyDto> findVersionsByName(@Valid @NotNull String technologyName) {
-        ServiceUtils.logMethodEntry("findVersionsByName", technologyName);
-
-        if (technologyName == null || technologyName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Technology name cannot be empty");
-        }
-
-        List<Technology> technologies = repository.findVersionsByName(technologyName);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findVersionsByName", result.size());
-        return result;
-    }
 
     public List<TechnologyDto> findRecentlyReleased(@Valid @NotNull Integer days) {
         ServiceUtils.logMethodEntry("findRecentlyReleased", days);
@@ -226,23 +112,6 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return result;
     }
 
-    // ===== FEATURES =====
-
-    public List<TechnologyDto> findByFeature(@Valid @NotNull String feature) {
-        ServiceUtils.logMethodEntry("findByFeature", feature);
-
-        if (feature == null || feature.trim().isEmpty()) {
-            throw new IllegalArgumentException("Feature cannot be empty");
-        }
-
-        List<Technology> technologies = repository.findByFeatureContaining(feature);
-        List<TechnologyDto> result = technologies.stream()
-                .map(this::toTechnologyDto)
-                .toList();
-
-        ServiceUtils.logMethodExit("findByFeature", result.size());
-        return result;
-    }
 
     // ===== STATISTICS =====
 
@@ -281,39 +150,6 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return result;
     }
 
-    @Cacheable(value = "personalTechnologyStats", key = "#personalId")
-    public PersonalTechnologyStatsDto getPersonalTechnologyStats(@Valid @NotNull @Positive Long personalId) {
-        ServiceUtils.logMethodEntry("getPersonalTechnologyStats", personalId);
-        ServiceUtils.validatePersonalId(personalId);
-
-        List<Technology> usedTechnologies = repository.findUsedByPersonalId(personalId);
-
-        Map<String, Long> categoryUsage = usedTechnologies.stream()
-                .filter(tech -> tech.getCategory() != null)
-                .collect(Collectors.groupingBy(
-                        tech -> tech.getCategory().getName(),
-                        Collectors.counting()
-                ));
-
-        long trendingUsed = usedTechnologies.stream()
-                .mapToLong(tech -> tech.getTrending() ? 1 : 0)
-                .sum();
-
-        PersonalTechnologyStatsDto result = PersonalTechnologyStatsDto.builder()
-                .totalUsed((long) usedTechnologies.size())
-                .categoryUsage(categoryUsage)
-                .trendingUsed(trendingUsed)
-                .mostUsedCategory(ServiceUtils.findMostFrequent(
-                        categoryUsage.keySet().stream()
-                                .toList()
-                ).orElse("Unknown"))
-                .expertLevel(calculateExpertLevelCount(personalId))
-                .build();
-
-        ServiceUtils.logMethodExit("getPersonalTechnologyStats", result);
-        return result;
-    }
-
     // ===== CATEGORY MANAGEMENT =====
 
     @Cacheable(value = "technologyCategoriesWithCount")
@@ -324,7 +160,7 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         List<TechCategoryInfoDto> categories = results.stream()
                 .map(row -> {
                     TechnologyCategory category = (TechnologyCategory) row[0];
-                    Long count = ((Number) row[1]).longValue();
+
 
                     return TechCategoryInfoDto.builder()
                             .id(category.getId().toString())
@@ -341,53 +177,24 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return categories;
     }
 
-    // ===== PROJECT USAGE ANALYSIS =====
-
-    public List<TechnologyDto> findMostUsedTechnologies(@Valid @NotNull @Positive Long personalId,
-                                                        int limit) {
-        ServiceUtils.logMethodEntry("findMostUsedTechnologies", personalId, limit);
-        ServiceUtils.validatePersonalId(personalId);
-
-        if (limit <= 0 || limit > 50) {
-            throw new IllegalArgumentException("Limit must be between 1 and 50");
-        }
-
-        List<Technology> usedTechnologies = repository.findUsedByPersonalId(personalId);
-
-        // Sort by usage count (project count)
-        List<TechnologyDto> result = usedTechnologies.stream()
-                .map(tech -> toTechnologyDtoForPersonal(tech, personalId))
-                .sorted((a, b) -> b.getProjects().compareTo(a.getProjects()))
-                .limit(limit)
-                .toList();
-
-        ServiceUtils.logMethodExit("findMostUsedTechnologies", result.size());
-        return result;
-    }
 
     // ===== DTO CONVERSION =====
 
     private TechnologyDto toTechnologyDto(Technology technology) {
-        return toTechnologyDtoForPersonal(technology, null);
+        return toTechnologyDtoForPersonal(technology);
     }
 
-    private TechnologyDto toTechnologyDtoForPersonal(Technology technology, Long personalId) {
+    private TechnologyDto toTechnologyDtoForPersonal(Technology technology) {
         Optional<EntityMetadata> metadata = entityMetadataRepository
                 .findByEntityTypeAndEntityId(EntityType.TECHNOLOGY, technology.getId());
 
         // Get usage information
-        Integer projectCount = personalId != null ?
-                getProjectCountForPersonal(technology.getId(), personalId) :
-                entityTechnologyRepository.countByEntityTypeAndTechnologyId(EntityType.PROJECT, technology.getId());
+        Integer projectCount = getProjectCountForPersonal(technology.getId());
 
         // Get proficiency and experience for personal usage
-        String proficiency = personalId != null ?
-                calculateProficiencyForPersonal(technology.getId(), personalId) :
-                "beginner";
+        String proficiency = calculateProficiencyForPersonal(technology.getId());
 
-        Double yearsOfExperience = personalId != null ?
-                calculateExperienceForPersonal(technology.getId(), personalId) :
-                0.0;
+        Double yearsOfExperience = calculateExperienceForPersonal(technology.getId());
 
         // Get features
         List<String> features = getTechnologyFeatures(technology);
@@ -406,8 +213,8 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
                 .backgroundColor(ServiceUtils.getColorFromMetadata(metadata, getBgColorForTechnology(technology)))
                 .features(features)
                 .trending(technology.getTrending())
-                .certification(hasCertification(technology.getId(), personalId))
-                .learning(isCurrentlyLearning(technology.getId(), personalId))
+                .certification(hasCertification(technology.getId()))
+                .learning(isCurrentlyLearning(technology.getId()))
                 .build();
     }
 
@@ -424,8 +231,7 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
                 .toList();
     }
 
-    private Integer getProjectCountForPersonal(Long technologyId, Long personalId) {
-        if (personalId == null) return 0;
+    private Integer getProjectCountForPersonal(Long technologyId) {
 
         // Get all projects for personal that use this technology
         List<EntityTechnology> entityTechs = entityTechnologyRepository
@@ -435,15 +241,14 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
                 .filter(et -> {
                     // Check if the project belongs to the personal
                     Optional<Project> project = projectRepository.findById(et.getEntityId());
-                    return project.isPresent() && project.get().getPersonal().getId().equals(personalId);
+                    return project.isPresent() && project.get().getPersonal().getId().equals(1L);
                 })
                 .count();
     }
 
-    private String calculateProficiencyForPersonal(Long technologyId, Long personalId) {
-        if (personalId == null) return "beginner";
+    private String calculateProficiencyForPersonal(Long technologyId) {
 
-        Integer projectCount = getProjectCountForPersonal(technologyId, personalId);
+        Integer projectCount = getProjectCountForPersonal(technologyId);
 
         if (projectCount >= 5) return "expert";
         if (projectCount >= 3) return "advanced";
@@ -451,35 +256,186 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return "beginner";
     }
 
-    private Double calculateExperienceForPersonal(Long technologyId, Long personalId) {
-        if (personalId == null) return 0.0;
+    private Double calculateExperienceForPersonal(Long technologyId) {
 
         // Simplified calculation - could be enhanced with actual project dates
-        Integer projectCount = getProjectCountForPersonal(technologyId, personalId);
+        Integer projectCount = getProjectCountForPersonal(technologyId);
         return Math.min(projectCount * 0.5, 5.0); // Max 5 years experience
     }
 
 
-    private Boolean hasCertification(Long technologyId, Long personalId) {
-        // TODO: Implement certificate checking for technology
-        return false;
+    private Boolean hasCertification(Long technologyId) {
+        if (technologyId == null) {
+            return false;
+        }
+
+        try {
+            // Get the technology to check its name
+            Optional<Technology> technologyOpt = repository.findById(technologyId);
+            if (technologyOpt.isEmpty()) {
+                return false;
+            }
+
+            Technology technology = technologyOpt.get();
+            String techName = technology.getName().toLowerCase();
+
+            // Find certificates for this personal that might be related to the technology
+            List<Certificate> certificates = certificateRepository.findByPersonalIdAndVerifiedTrue(1L);
+
+            // Check if any certificate is related to this technology
+            return certificates.stream().anyMatch(cert -> {
+                String certName = cert.getName().toLowerCase();
+                String certDescription = cert.getDescription() != null ? cert.getDescription().toLowerCase() : "";
+                String provider = cert.getProvider().toLowerCase();
+
+                // Direct name match
+                if (certName.contains(techName)) {
+                    return true;
+                }
+
+                // Description contains technology name
+                if (certDescription.contains(techName)) {
+                    return true;
+                }
+
+                // Check for common technology-provider combinations
+                return isProviderKnownForTechnology(provider, techName);
+            });
+
+        } catch (Exception e) {
+            log.error("Error checking certification for technology {} and personal {}: {}",
+                    technologyId, 1L, e.getMessage());
+            return false;
+        }
     }
 
-    private Boolean isCurrentlyLearning(Long technologyId, Long personalId) {
-        // TODO: Implement learning progress checking
-        return false;
+    private Boolean isCurrentlyLearning(Long technologyId) {
+        if (technologyId == null) {
+            return false;
+        }
+
+        try {
+            // Get the technology to check its name
+            Optional<Technology> technologyOpt = repository.findById(technologyId);
+            if (technologyOpt.isEmpty()) {
+                return false;
+            }
+
+            Technology technology = technologyOpt.get();
+            String techName = technology.getName().toLowerCase();
+
+            // Find skills related to this technology for the personal
+            List<Skill> relatedSkills = skillRepository.findByPersonalId(1L).stream()
+                    .filter(skill -> {
+                        String skillName = skill.getName().toLowerCase();
+                        return skillName.contains(techName) ||
+                                (skill.getDescription() != null &&
+                                        skill.getDescription().toLowerCase().contains(techName));
+                    })
+                    .toList();
+
+            if (relatedSkills.isEmpty()) {
+                return false;
+            }
+
+            // Check if any of these skills have active learning progress
+            return relatedSkills.stream().anyMatch(skill -> {
+                List<LearningProgress> activeProgress = learningProgressRepository
+                        .findBySkillIdAndStatus(skill.getId(), LearningStatus.IN_PROGRESS);
+
+                return !activeProgress.isEmpty() &&
+                        activeProgress.stream().anyMatch(progress ->
+                                progress.getProgressPercentage() < 100 &&
+                                        progress.getCompletionDate() == null);
+            });
+
+        } catch (Exception e) {
+            log.error("Error checking learning status for technology {} and personal {}: {}",
+                    technologyId, 1L, e.getMessage());
+            return false;
+        }
     }
 
-    private Long calculateExpertLevelCount(Long personalId) {
-        List<Technology> usedTechnologies = repository.findUsedByPersonalId(personalId);
-        return usedTechnologies.stream()
-                .mapToLong(tech -> {
-                    String proficiency = calculateProficiencyForPersonal(tech.getId(), personalId);
-                    return "expert".equals(proficiency) || "advanced".equals(proficiency) ? 1 : 0;
-                })
-                .sum();
-    }
+    private boolean isProviderKnownForTechnology(String provider, String techName) {
+        if (provider == null || techName == null) {
+            return false;
+        }
 
+        // Create a map of known technology-provider relationships
+        // Using Map.of() has a limit of 10 entries, so we'll use a builder pattern
+        Map<String, List<String>> techProviders = new HashMap<>();
+
+        // Programming Languages & Frameworks
+        techProviders.put("java", List.of("oracle", "sun", "redhat", "ibm"));
+        techProviders.put("python", List.of("python", "psf", "jetbrains"));
+        techProviders.put("javascript", List.of("mozilla", "ecma"));
+        techProviders.put("typescript", List.of("microsoft"));
+        techProviders.put("node", List.of("nodejs", "node"));
+        techProviders.put("react", List.of("meta", "facebook"));
+        techProviders.put("angular", List.of("google"));
+        techProviders.put("vue", List.of("vue"));
+        techProviders.put("spring", List.of("pivotal", "vmware", "spring"));
+
+        // Cloud & Infrastructure
+        techProviders.put("aws", List.of("amazon", "aws"));
+        techProviders.put("microsoft", List.of("microsoft", "azure", "office"));
+        techProviders.put("google", List.of("google", "gcp"));
+        techProviders.put("docker", List.of("docker", "mirantis"));
+        techProviders.put("kubernetes", List.of("cncf", "kubernetes", "redhat"));
+        techProviders.put("terraform", List.of("hashicorp"));
+        techProviders.put("ansible", List.of("redhat"));
+        techProviders.put("puppet", List.of("puppet"));
+        techProviders.put("chef", List.of("chef"));
+
+        // Databases
+        techProviders.put("mongodb", List.of("mongodb", "mongo"));
+        techProviders.put("postgresql", List.of("postgresql", "postgres"));
+        techProviders.put("mysql", List.of("mysql", "oracle"));
+        techProviders.put("redis", List.of("redis", "redislabs"));
+        techProviders.put("elasticsearch", List.of("elastic"));
+
+        // DevOps & Tools
+        techProviders.put("jenkins", List.of("cloudbees", "jenkins"));
+        techProviders.put("git", List.of("git", "github", "gitlab", "atlassian"));
+        techProviders.put("jira", List.of("atlassian"));
+        techProviders.put("confluence", List.of("atlassian"));
+
+        // Business Applications
+        techProviders.put("salesforce", List.of("salesforce"));
+        techProviders.put("tableau", List.of("tableau"));
+        techProviders.put("powerbi", List.of("microsoft"));
+
+        // Methodologies & Certifications
+        techProviders.put("scrum", List.of("scrum", "scrumalliance", "scrum.org"));
+        techProviders.put("agile", List.of("scaled", "safe", "agile"));
+        techProviders.put("pmp", List.of("pmi", "project management institute"));
+        techProviders.put("itil", List.of("axelos", "itil"));
+
+        // Hardware & Networking
+        techProviders.put("cisco", List.of("cisco"));
+        techProviders.put("comptia", List.of("comptia"));
+
+        // Operating Systems
+        techProviders.put("linux", List.of("redhat", "suse", "canonical", "lpi"));
+        techProviders.put("ubuntu", List.of("canonical"));
+        techProviders.put("centos", List.of("redhat"));
+
+        // Check if the provider is known for this technology
+        return techProviders.entrySet().stream()
+                .anyMatch(entry -> {
+                    String techKey = entry.getKey();
+                    List<String> providers = entry.getValue();
+
+                    // Check if technology name contains the key (case-insensitive)
+                    boolean techMatches = techName.toLowerCase().contains(techKey);
+
+                    // Check if any provider matches (case-insensitive)
+                    boolean providerMatches = providers.stream()
+                            .anyMatch(knownProvider -> provider.toLowerCase().contains(knownProvider.toLowerCase()));
+
+                    return techMatches && providerMatches;
+                });
+    }
     // ===== COLOR & ICON HELPERS =====
 
     private String getColorForTechnology(Technology technology) {
@@ -560,12 +516,6 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
         return repository.findTrendingTechnologies(); // Use trending as featured
     }
 
-    @Override
-    public boolean hasMetadata(Long id) {
-        return entityMetadataRepository
-                .findByEntityTypeAndEntityId(EntityType.TECHNOLOGY, id)
-                .isPresent();
-    }
 }
 
 

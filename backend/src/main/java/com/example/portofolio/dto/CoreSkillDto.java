@@ -16,12 +16,12 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CoreSkillDto {
 
-    private String id;              // Skill.id.toString()
-    private String name;            // Skill.name
-    private Integer level;          // Skill.level
-    private String proficiency;     // Skill.proficiency.toString().toLowerCase()
-    private String experience;      // Skill.yearsOfExperience formatted ("2.5 years")
-    private String color;           // EntityMetadata.primaryColor
-    private List<String> tags;      // SkillTag.tagName list
-    private Integer projects;       // Count din EntitySkill unde entityType = PROJECT
+    private String id;
+    private String name;            
+    private Integer level;
+    private String proficiency;
+    private String experience;
+    private String color;
+    private List<String> tags;
+    private Integer projects;
 }

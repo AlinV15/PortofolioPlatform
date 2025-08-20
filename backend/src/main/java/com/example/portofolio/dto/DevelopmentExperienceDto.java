@@ -16,26 +16,17 @@ import java.math.RoundingMode;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DevelopmentExperienceDto {
 
-    // Years Active - bazat pe primul și ultimul proiect
     private Integer yearsActive;
     private Integer firstProjectYear;
     private Integer latestProjectYear;
-
-    // Average Complexity - cea mai frecventă complexitate
-    private String avgComplexity;  // "Beginner", "Intermediate", "Advanced", "Expert"
-    private String avgComplexityLabel; // Pentru display mai frumos
-
-    // Success Rate - rata de deploy/finalizare
+    private String avgComplexity;
+    private String avgComplexityLabel;
     private Double successRate;
-    private String formattedSuccessRate; // "85%"
+    private String formattedSuccessRate;
     private Long deployedProjects;
     private Long totalProjects;
-
-    // Additional insights
-    private Long liveProjects; // proiecte cu demoUrl
-    private String experienceLevel; // "Junior", "Mid", "Senior"
-
-    // Helper methods
+    private Long liveProjects;
+    private String experienceLevel;
     public String getFormattedSuccessRate() {
         if (successRate == null) return "0%";
 
@@ -65,8 +56,7 @@ public class DevelopmentExperienceDto {
         this.avgComplexity = avgComplexity;
         this.avgComplexityLabel = getAvgComplexityLabel();
     }
-
-    // Calculează nivelul de experiență bazat pe ani și complexitate
+    
     public String getExperienceLevel() {
         if (yearsActive == null) return "Unknown";
 

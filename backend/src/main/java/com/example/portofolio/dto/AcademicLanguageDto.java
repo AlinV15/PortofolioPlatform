@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AcademicLanguageDto {
-    private String name;                    // Skill.name
-    private String level;                   // Din Skill.description sau Skill.proficiency
-    private String icon;                    // Emoji sau icon name
-    private String iconType;                // "emoji" sau "icon"
+    private String name;
+    private String level;
+    private String icon;
+    private String iconType;              
 }

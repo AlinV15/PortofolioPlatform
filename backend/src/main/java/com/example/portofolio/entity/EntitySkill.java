@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 /**
- * Relația universală între entități și skill-uri
+ * Universal relation between skills and entities
  */
 @Entity
 @Table(name = "entity_skill",

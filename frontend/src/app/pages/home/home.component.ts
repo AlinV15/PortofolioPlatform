@@ -9,7 +9,6 @@ import { SkillsComponent } from '../../components/skills/skills.component';
 import { AboutComponent } from '../../components/about/about.component';
 import { CallToActionComponent } from '../../components/call-to-action/call-to-action.component';
 
-// Import the new DataService and interfaces
 import {
   DataService,
   AllPortfolioData,
@@ -17,7 +16,7 @@ import {
   ErrorStates
 } from '../../services/data.service';
 
-// Keep existing interfaces for backward compatibility
+
 import {
   Achievement,
   Highlight,
@@ -59,7 +58,6 @@ import { ContactInfo, ContactLocation } from '../../shared/models/contact.interf
 import { Certificate, CertificateCategory, CertificateStats } from '../../shared/models/certificate.interface';
 import { NavigationEnd, Router } from '@angular/router';
 
-// Keep the existing HomePageData interface for compatibility
 export interface HomePageData {
   // Personal data
   highlights: Highlight[];
@@ -186,7 +184,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      console.log('🔄 Route changed - reloading data');
+
       this.loadAllHomeData();
     });
   }
@@ -270,7 +268,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap(data => {
-          console.log('✅ All home data loaded successfully via DataService');
           this.updateSEOWithData(data);
         }),
         catchError(error => {
@@ -489,7 +486,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   // ========================
 
   /**
-   * Update SEO with data - enhanced version
+   * Update SEO with data
    */
   private updateSEOWithData(data: AllPortfolioData): void {
     if (!data.projects.projects.length) return;

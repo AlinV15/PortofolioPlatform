@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Tag-uri pentru skill-uri
+ * Skill tags
  */
 @Entity
 @Table(name = "skill_tag", indexes = {

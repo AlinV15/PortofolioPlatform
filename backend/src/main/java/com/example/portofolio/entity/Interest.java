@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Interesele unei persoane
+ * The interests of a person
  */
 @Entity
 @Table(name = "interest", indexes = {
@@ -47,7 +47,7 @@ public class Interest extends BaseEntity {
     @Builder.Default
     private Set<RecentDiscovery> recentDiscoveries = new HashSet<>();
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "interest";
     }

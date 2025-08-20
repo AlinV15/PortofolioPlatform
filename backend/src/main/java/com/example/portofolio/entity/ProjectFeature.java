@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Features ale unui proiect
+ * Project features
  */
 @Entity
 @Table(name = "project_feature", indexes = {

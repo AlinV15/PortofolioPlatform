@@ -15,13 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VolunteerSkillDto {
-    private String name;                    // Skill.name
-    private String category;               // 'leadership', 'technical', 'communication', 'project-management'
-    private Integer level;                 // Skill.level sau calculat din volunteer experience
-
-    // Optional fields pentru context
-    private String description;            // Skill.description
-    private List<String> organizations;   // Organizațiile unde a fost folosit skill-ul
-    private Integer yearsOfExperience;     // Calculat din volunteer experiences
-    private Boolean isActive;             // Dacă este folosit în volunteer-ing activ
+    private String name;
+    private String category;
+    private Integer level;
+    private String description;
+    private List<String> organizations;
+    private Integer yearsOfExperience;
+    private Boolean isActive;
 }

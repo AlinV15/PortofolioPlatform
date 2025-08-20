@@ -9,7 +9,6 @@ import {
   Grid, List
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 // Components and Services
 import { HireMeComponent } from '../hire-me/hire-me.component';
@@ -205,7 +204,7 @@ export class TechnicalStackComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // Data filtering and sorting - FIXED
+  // Data filtering and sorting
   get filteredTechnologies(): Technology[] {
     let filtered = [...this.technologies];
 
@@ -336,7 +335,7 @@ export class TechnicalStackComponent implements OnInit, OnDestroy {
     return this.layersIcon;
   }
 
-  // Statistics and analysis methods - FIXED
+  // Statistics and analysis methods
   getAdvancedOrExpertCount(): number {
     return this.technologies.filter(t =>
       t.proficiency === 'advanced' || t.proficiency === 'expert'
@@ -379,7 +378,7 @@ export class TechnicalStackComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get category statistics - FIXED
+   * Get category statistics
    */
   getCategoryStats(categoryId: string): {
     total: number;
@@ -449,7 +448,7 @@ export class TechnicalStackComponent implements OnInit, OnDestroy {
     return `${years} years`;
   }
 
-  // Additional methods from original component...
+  // Additional methods from original component
   getCardSize(tech: Technology): string {
     if (this.gridLayout === 'uniform') return 'col-span-1 row-span-1';
 

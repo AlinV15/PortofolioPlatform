@@ -13,16 +13,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AcademicProjectDto {  // Renamed
-    private String id;              // Long → String
+public class AcademicProjectDto {
+    private String id;
     private String title;
-    private String courseName;      // Course course → String courseName
+    private String courseName;
     private String description;
-    private List<String> technologies;  // List<Technology> → List<String>
+    private List<String> technologies;
     private Double duration;
     private String type;
-    private String githubLink;      // github_link → githubLink (camelCase)
-    private String icon;            // Icon icon → String icon
+    private String githubLink;
+    private String icon;           
     private String primaryColor;
     private String secondaryColor;
 }

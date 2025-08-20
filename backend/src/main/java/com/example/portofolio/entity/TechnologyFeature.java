@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Features ale tehnologiilor
+ * Tech features
  */
 @Entity
 @Table(name = "technology_feature", indexes = {

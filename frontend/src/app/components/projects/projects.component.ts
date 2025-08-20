@@ -309,23 +309,13 @@ export class ProjectsComponent implements OnInit, OnChanges {
     return tech;
   }
 
-  /**
-   * Handle project click for analytics/navigation
-   */
-  onProjectClick(project: FeaturedProject): void {
-    // Analytics tracking could go here
-    console.log(`Featured project clicked: ${project.title}`);
-    // Example: this.analytics.track('featured_project_clicked', { project_id: project.id, project_title: project.title });
-  }
 
   /**
    * Handle demo link click
    */
   onDemoClick(project: FeaturedProject, event: Event): void {
     event.stopPropagation(); // Prevent project click
-    console.log(`Demo clicked for project: ${project.title}`);
-    // Analytics tracking for demo clicks
-    // Example: this.analytics.track('project_demo_clicked', { project_id: project.id, demo_url: project.liveUrl });
+
   }
 
   /**
@@ -333,9 +323,6 @@ export class ProjectsComponent implements OnInit, OnChanges {
    */
   onGitHubClick(project: FeaturedProject, event: Event): void {
     event.stopPropagation(); // Prevent project click
-    console.log(`GitHub clicked for project: ${project.title}`);
-    // Analytics tracking for GitHub clicks
-    // Example: this.analytics.track('project_github_clicked', { project_id: project.id, github_url: project.githubUrl });
   }
 
   /**

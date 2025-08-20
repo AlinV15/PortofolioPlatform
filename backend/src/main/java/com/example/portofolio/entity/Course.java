@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Cursuri din cadrul educației
+ * Courses from an education level
  */
 @Entity
 @Table(name = "course", indexes = {

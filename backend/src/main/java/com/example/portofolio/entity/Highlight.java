@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Punctele de evidențiere ale profilului
+ * Highlights
  */
 @Entity
 @Table(name = "highlight", indexes = {

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 /**
- * Legătura între cursuri și proiecte
+ * Link between a course and a project
  */
 @Entity
 @Table(name = "course_project", indexes = {

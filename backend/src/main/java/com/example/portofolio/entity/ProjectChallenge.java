@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Provocările întâmpinate în proiecte
+ * Project challenges
  */
 @Entity
 @Table(name = "project_challenge", indexes = {

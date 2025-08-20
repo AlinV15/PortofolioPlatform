@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContactSectionDto {
 
-    private String id;                          // Section identifier (hardcoded sau din config)
-    private String title;                       // Section title (ex: "Get In Touch")
-    private String description;                 // Section description
-    private String icon;                        // Icon.name (LucideIcon name)
-    private Boolean active;                     // Section active state
+    private String id;
+    private String title;                       
+    private String description;
+    private String icon;
+    private Boolean active;
 }

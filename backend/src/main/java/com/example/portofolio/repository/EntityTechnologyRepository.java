@@ -14,32 +14,12 @@ public interface EntityTechnologyRepository extends JpaRepository<EntityTechnolo
 
     List<EntityTechnology> findByEntityTypeAndEntityId(EntityType entityType, Long entityId);
 
-    List<EntityTechnology> findByTechnologyId(Long technologyId);
-
     @Query("SELECT et FROM EntityTechnology et " +
             "LEFT JOIN FETCH et.technology t " +
             "LEFT JOIN FETCH t.category " +
             "WHERE et.entityType = :entityType AND et.entityId = :entityId")
     List<EntityTechnology> findByEntityTypeAndEntityIdWithTechnology(@Param("entityType") EntityType entityType,
                                                                      @Param("entityId") Long entityId);
-
-    Integer countByEntityTypeAndTechnologyId(EntityType entityType, Long technologyId);
-
-    boolean existsByEntityTypeAndTechnologyId(EntityType entityType, Long technologyId);
-
-    // Pentru personal queries
-    @Query("SELECT et FROM EntityTechnology et " +
-            "JOIN Project p ON et.entityType = 'PROJECT' AND et.entityId = p.id " +
-            "WHERE p.personal.id = :personalId AND et.technology.category.id = :categoryId")
-    List<EntityTechnology> findByPersonalIdAndTechnologyCategoryId(@Param("personalId") Long personalId,
-                                                                   @Param("categoryId") Long categoryId);
-
-    @Query("SELECT et FROM EntityTechnology et " +
-            "JOIN Project p ON et.entityType = 'PROJECT' AND et.entityId = p.id " +
-            "LEFT JOIN FETCH et.technology t " +
-            "LEFT JOIN FETCH t.category " +
-            "WHERE p.personal.id = :personalId")
-    List<EntityTechnology> findByPersonalIdWithTechnologyAndCategory(@Param("personalId") Long personalId);
 
     @Query("SELECT COUNT(DISTINCT et.technology.id) FROM EntityTechnology et " +
             "WHERE et.entityType = 'PROJECT' AND et.entityId IN " +

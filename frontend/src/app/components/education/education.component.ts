@@ -1,12 +1,9 @@
-// education.component.ts
-
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, GraduationCap, School, Trophy, Award, Users, User, Calendar, MapPin, ExternalLink, Github, Lightbulb, Check, LucideIconData, RefreshCcw, X } from 'lucide-angular';
 import { AcademicProject, Education, EducationStats, RelevantCourse } from '../../shared/models/education.interface';
 import { Certificate } from '../../shared/models/certificate.interface';
-import { EducationStatus } from '../../shared/enums/EducationStatus';
 import { IconHelperService } from '../../services/icon-helper.service';
 
 

@@ -19,15 +19,14 @@
     <!-- Technical Stack Section -->
     <section id="technical-stack" class="scroll-mt-20">
         <app-technical-stack [technologies]="technologies" [techCategories]="techCategories" [techStats]="techStats"
-            [showCategoryFilter]="true" [showSearch]="true" [animateOnScroll]="true" [gridLayout]="'dense'"
-            (technologySelected)="onTechClick($event)">
+            [showCategoryFilter]="true" [showSearch]="true" [animateOnScroll]="true" [gridLayout]="'dense'">
         </app-technical-stack>
     </section>
 
     <!-- Certifications Grid Section -->
     <section id="certifications" class="scroll-mt-20">
         <app-certifications-grid [certificates]="certificates" [certificateCategories]="certificateCategories"
-            [certificateStats]="certificateStats" (viewAllCertifications)="onViewAllCertifications()">
+            [certificateStats]="certificateStats">
         </app-certifications-grid>
     </section>
 
@@ -36,8 +35,7 @@
         <app-skills-timeline [futureGoal]="futureGoal" [skillsStats]="skillsStats"
             [timelineMilestones]="timelineMilestones" [timelineStats]="timelineStats"
             [currentLearning]="currentLearningHero" [learningProgress]="learningProgress"
-            [recentAchievements]="recentAchievements" (milestoneSelected)="onMilestoneSelected($event)"
-            (viewFullJourney)="onViewFullJourney()">
+            [recentAchievements]="recentAchievements">
         </app-skills-timeline>
     </section>
 
@@ -52,11 +50,6 @@
             </p>
 
             <div class="flex flex-wrap justify-center gap-4">
-                <button (click)="onViewProjects()"
-                    class="inline-flex items-center px-8 py-4 bg-white text-gray-900 rounded-2xl font-semibold hover:bg-gray-100 transition-colors duration-200 transform hover:scale-105 cursor-pointer">
-                    <lucide-icon [img]="folderIcon" class="w-5 h-5 mr-3"></lucide-icon>
-                    View My Projects
-                </button>
 
                 <button (click)="onContactMe()"
                     class="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-2xl font-semibold hover:bg-white hover:text-gray-900 transition-all duration-200 transform hover:scale-105">

@@ -14,8 +14,6 @@ public interface EntitySkillRepository extends JpaRepository<EntitySkill, Long> 
 
     List<EntitySkill> findByEntityTypeAndEntityId(EntityType entityType, Long entityId);
 
-    List<EntitySkill> findBySkillId(Long skillId);
-
     @Query("SELECT es FROM EntitySkill es " +
             "LEFT JOIN FETCH es.skill " +
             "WHERE es.entityType = :entityType AND es.entityId = :entityId")
@@ -23,13 +21,6 @@ public interface EntitySkillRepository extends JpaRepository<EntitySkill, Long> 
                                                            @Param("entityId") Long entityId);
 
     Integer countByEntityTypeAndSkillId(EntityType entityType, Long skillId);
-
-    boolean existsByEntityTypeAndEntityId(EntityType entityType, Long entityId);
-
-    @Query("SELECT COUNT(es) FROM EntitySkill es " +
-            "WHERE es.entityType = :entityType AND es.skill.personal.id = :personalId")
-    Long countByEntityTypeAndPersonalId(@Param("entityType") EntityType entityType,
-                                        @Param("personalId") Long personalId);
 
     @Query(value = "SELECT p.title FROM entity_skill es " +
             "JOIN project p ON p.id = es.entity_id " +

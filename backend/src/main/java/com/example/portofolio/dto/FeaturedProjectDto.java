@@ -12,16 +12,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FeaturedProjectDto {               // Renamed
-  private String id;                          // Long → String
+public class FeaturedProjectDto {
+  private String id;
   private String title;
   private String description;
   private String shortDescription;
-  private List<String> technologies;          // List<Technology> → List<String>
+  private List<String> technologies;
   private String image;
-  private String githubUrl;                   // Add missing githubUrl
+  private String githubUrl;
   private String liveUrl;
-  private Boolean featured;                   // boolean → Boolean
+  private Boolean featured;                   
   private String category;
   private String primaryColor;
   private String secondaryColor;

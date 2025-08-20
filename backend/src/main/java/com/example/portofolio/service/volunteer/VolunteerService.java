@@ -3,11 +3,8 @@ package com.example.portofolio.service.volunteer;
 import com.example.portofolio.dto.*;
 import com.example.portofolio.entity.*;
 import com.example.portofolio.entity.enums.EntityType;
-import com.example.portofolio.entity.enums.VolunteerStatus;
-import com.example.portofolio.entity.enums.VolunteerType;
 import com.example.portofolio.repository.*;
 import com.example.portofolio.service.base.ServiceUtils;
-import jakarta.persistence.Cacheable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,12 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -33,7 +29,6 @@ public class VolunteerService {
 
     private final VolunteerExperienceRepository volunteerRepository;
     private final AchievementRepository achievementRepository;
-    private final ProjectRepository projectRepository;
     private final SkillRepository skillRepository;
     private final EntityMetadataRepository entityMetadataRepository;
     private final EntitySkillRepository entitySkillRepository;
@@ -49,26 +44,6 @@ public class VolunteerService {
                 .stream()
                 .map(this::mapToVolunteerExperienceDto)
                 .sorted((a, b) -> extractYear(b.getPeriod()).compareTo(extractYear(a.getPeriod())))
-                .collect(Collectors.toList());
-    }
-
-    public List<VolunteerExperienceDto> getActiveVolunteerExperiences(Long personalId) {
-        log.debug("Getting active volunteer experiences for personal: {}", personalId);
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .filter(volunteer -> volunteer.getStatus() == VolunteerStatus.ONGOIG)
-                .map(this::mapToVolunteerExperienceDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<VolunteerExperienceDto> getVolunteerExperiencesByType(Long personalId, VolunteerType type) {
-        log.debug("Getting volunteer experiences by type {} for personal: {}", type, personalId);
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .filter(volunteer -> volunteer.getType() == type)
-                .map(this::mapToVolunteerExperienceDto)
                 .collect(Collectors.toList());
     }
 
@@ -100,52 +75,6 @@ public class VolunteerService {
                 .projectsCoordinated(projectsCoordinated)
                 .eventsOrganized(eventsOrganized)
                 .build();
-    }
-
-    public Map<String, Long> getVolunteerTypeDistribution(Long personalId) {
-        log.debug("Getting volunteer type distribution for personal: {}", personalId);
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        volunteer -> volunteer.getType().toString(),
-                        Collectors.counting()
-                ));
-    }
-
-    public Map<String, Long> getVolunteerStatusDistribution(Long personalId) {
-        log.debug("Getting volunteer status distribution for personal: {}", personalId);
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        volunteer -> volunteer.getStatus().toString(),
-                        Collectors.counting()
-                ));
-    }
-
-    // ===== VOLUNTEER ACHIEVEMENTS =====
-
-    public List<AchievementDto> getVolunteerAchievements(Long personalId) {
-        log.debug("Getting volunteer achievements for personal: {}", personalId);
-
-        return achievementRepository.findByPersonalId(personalId)
-                .stream()
-                .filter(achievement -> achievement.getEntityType() == EntityType.VOLUNTEER)
-                .map(this::mapToAchievementDto)
-                .collect(Collectors.toList());
-    }
-
-    // ===== VOLUNTEER TIMELINE =====
-
-    public List<TimelineItemDto> getVolunteerTimeline(Long personalId) {
-        log.debug("Getting volunteer timeline for personal: {}", personalId);
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .map(this::mapToTimelineItem)
-                .sorted((a, b) -> b.getYear().compareTo(a.getYear()))
-                .collect(Collectors.toList());
     }
 
 
@@ -184,7 +113,7 @@ public class VolunteerService {
                         .impactLevel(resp.getImpactLevel().toString())
                         .sortOrder(resp.getSortOrder())
                         .build())
-                .sorted((a, b) -> a.getSortOrder().compareTo(b.getSortOrder()))
+                .sorted(Comparator.comparing(ResponsibilityDto::getSortOrder))
                 .collect(Collectors.toList());
     }
 
@@ -209,26 +138,6 @@ public class VolunteerService {
                 .recognitionLevel(achievement.getRecognitionLevel().toString())
                 .icon(metadata != null && metadata.getIcon() != null ?
                         metadata.getIcon().getName() : "Award")
-                .primaryColor(metadata != null ? metadata.getPrimaryColor() : "#3B82F6")
-                .secondaryColor(metadata != null ? metadata.getSecondaryColor() : "#1E40AF")
-                .build();
-    }
-
-    private TimelineItemDto mapToTimelineItem(VolunteerExperience volunteer) {
-        EntityMetadata metadata = getEntityMetadata(volunteer.getId());
-
-        return TimelineItemDto.builder()
-                .id(volunteer.getId().toString())
-                .year(String.valueOf(volunteer.getStartDate().getYear()))
-                .title(volunteer.getRole())
-                .subtitle(volunteer.getOrganization())
-                .description(volunteer.getDescription())
-                .type("volunteer")
-                .current(volunteer.getStatus() == VolunteerStatus.ONGOIG)
-                .achievements(getVolunteerAchievements(volunteer))
-                .link(volunteer.getWebsite())
-                .icon(metadata != null && metadata.getIcon() != null ?
-                        metadata.getIcon().getName() : "Heart")
                 .primaryColor(metadata != null ? metadata.getPrimaryColor() : "#3B82F6")
                 .secondaryColor(metadata != null ? metadata.getSecondaryColor() : "#1E40AF")
                 .build();
@@ -288,21 +197,6 @@ public class VolunteerService {
     }
 
 
-    private FeaturedProjectDto mapToFeaturedProjectDto(Project project) {
-        EntityMetadata metadata = getEntityMetadata(project.getId());
-
-        return FeaturedProjectDto.builder()
-                .id(project.getId().toString())
-                .title(project.getTitle())
-                .description(project.getDescription())
-                .category(project.getCategory())
-                .githubUrl(project.getGithubUrl())
-                .liveUrl(project.getDemoUrl())
-                .primaryColor(metadata != null ? metadata.getPrimaryColor() : "#3B82F6")
-                .secondaryColor(metadata != null ? metadata.getSecondaryColor() : "#1E40AF")
-                .build();
-    }
-
     private Integer extractYear(String period) {
         // Extract year from period string (format: "MMM yyyy - MMM yyyy" or "MMM yyyy - Present")
         if (period == null || period.isEmpty()) {
@@ -323,54 +217,19 @@ public class VolunteerService {
 
     // ===== SEARCH AND FILTERING =====
 
-    public List<VolunteerExperienceDto> searchVolunteerExperiences(Long personalId, String searchTerm) {
-        log.debug("Searching volunteer experiences for '{}' and personal: {}", searchTerm, personalId);
-
-        String lowerSearchTerm = searchTerm.toLowerCase();
-
-        return volunteerRepository.findByPersonalId(personalId)
-                .stream()
-                .filter(volunteer ->
-                        volunteer.getOrganization().toLowerCase().contains(lowerSearchTerm) ||
-                                volunteer.getRole().toLowerCase().contains(lowerSearchTerm) ||
-                                volunteer.getDescription().toLowerCase().contains(lowerSearchTerm)
-                )
-                .map(this::mapToVolunteerExperienceDto)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public VolunteerExperienceDto saveVolunteerExperience(VolunteerExperience volunteerExperience) {
-        log.info("Saving volunteer experience: {}", volunteerExperience.getOrganization());
-        VolunteerExperience saved = volunteerRepository.save(volunteerExperience);
-        return mapToVolunteerExperienceDto(saved);
-    }
-
-    @Transactional
-    public void deleteVolunteerExperience(Long id) {
-        log.info("Deleting volunteer experience with id: {}", id);
-        volunteerRepository.deleteById(id);
-    }
-
     /**
-     * Returnează skill-urile dezvoltate prin voluntariat conform interfaței
+     * Returns the skills developed by volunteering according to the interface
      * { name: string; category: 'leadership' | 'technical' | 'communication' | 'project-management'; level: number; }
      */
     public List<VolunteerSkillDto> getVolunteerSkills(@Valid @NotNull @Positive Long personalId) {
         ServiceUtils.logMethodEntry("getVolunteerSkills", personalId);
         ServiceUtils.validatePersonalId(personalId);
-
-        // 1. Obține toate skill-urile persoanei
         List<Skill> allSkills = skillRepository.findByPersonalId(personalId);
-
-        // 2. Obține experiențele de voluntariat
         List<VolunteerExperience> volunteerExperiences = volunteerRepository.findByPersonalIdWithResponsibilities(personalId);
-
-        // 3. Filtrează și mapează skill-urile relevante pentru voluntariat
         List<VolunteerSkillDto> volunteerSkills = allSkills.stream()
                 .filter(this::isVolunteerRelevantSkill)
                 .map(skill -> mapToVolunteerSkillDto(skill, volunteerExperiences))
-                .filter(Objects::nonNull) // Elimină skill-urile care nu pot fi mapate
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         log.debug("Found {} volunteer-relevant skills for personalId: {}", volunteerSkills.size(), personalId);
@@ -379,7 +238,7 @@ public class VolunteerService {
     }
 
     /**
-     * Verifică dacă un skill este relevant pentru voluntariat
+     * Check if a skill is relevant to volunteering
      */
     private boolean isVolunteerRelevantSkill(Skill skill) {
         if (skill.getCategory() == null && skill.getName() == null) {
@@ -389,7 +248,6 @@ public class VolunteerService {
         String skillName = skill.getName().toLowerCase();
         String categoryName = skill.getCategory() != null ? skill.getCategory().getName().toLowerCase() : "";
 
-        // Skills care sunt în mod natural relevante pentru voluntariat
         return isLeadershipSkill(skillName, categoryName) ||
                 isTechnicalSkill(skillName, categoryName) ||
                 isCommunicationSkill(skillName, categoryName) ||
@@ -397,21 +255,18 @@ public class VolunteerService {
     }
 
     /**
-     * Mapează un skill la VolunteerSkillDto
+     * Map a skill at VolunteerSkillDto
      */
     private VolunteerSkillDto mapToVolunteerSkillDto(Skill skill, List<VolunteerExperience> volunteerExperiences) {
         String category = determineVolunteerCategory(skill);
         if (category == null) {
-            return null; // Skill-ul nu se potrivește cu categoriile volunteer
+            return null;
         }
 
-        // Calculează experiența în voluntariat pentru acest skill
-        int yearsOfExperience = calculateVolunteerExperienceYears(skill, volunteerExperiences);
+        int yearsOfExperience = calculateVolunteerExperienceYears( volunteerExperiences);
 
-        // Organizațiile unde a fost folosit (estimare bazată pe tipul de volunteer și skill)
-        List<String> organizations = getRelevantOrganizations(skill, volunteerExperiences);
+        List<String> organizations = getRelevantOrganizations( volunteerExperiences);
 
-        // Verifică dacă este activ în voluntariat
         boolean isActive = hasActiveVolunteerWork(volunteerExperiences);
 
         return VolunteerSkillDto.builder()
@@ -426,7 +281,7 @@ public class VolunteerService {
     }
 
     /**
-     * Determină categoria de volunteer pentru un skill
+     * Determine the volunteer category for a skill
      */
     private String determineVolunteerCategory(Skill skill) {
         String skillName = skill.getName().toLowerCase();
@@ -445,10 +300,10 @@ public class VolunteerService {
             return "project-management";
         }
 
-        return null; // Nu se potrivește cu niciuna dintre categorii
+        return null;
     }
 
-    // ===== HELPER METHODS PENTRU CATEGORII =====
+    // ===== HELPER METHODS FOR CATEGORIES =====
 
     private boolean isLeadershipSkill(String skillName, String categoryName) {
         return skillName.contains("leadership") || skillName.contains("mentoring") || skillName.contains("coaching") ||
@@ -475,30 +330,30 @@ public class VolunteerService {
                 categoryName.contains("project") || categoryName.contains("management");
     }
 
-    // ===== HELPER METHODS PENTRU CALCULE =====
+    // ===== HELPER METHODS =====
 
-    private int calculateVolunteerExperienceYears(Skill skill, List<VolunteerExperience> experiences) {
-        // Calculează anii de experiență în voluntariat (simplificat)
+    private int calculateVolunteerExperienceYears( List<VolunteerExperience> experiences) {
+
         if (experiences.isEmpty()) {
             return 0;
         }
 
         LocalDate earliestStart = experiences.stream()
                 .map(VolunteerExperience::getStartDate)
-                .filter(date -> date != null)
+                .filter(Objects::nonNull)
                 .min(LocalDate::compareTo)
                 .orElse(LocalDate.now());
 
         return (int) ChronoUnit.YEARS.between(earliestStart, LocalDate.now());
     }
 
-    private List<String> getRelevantOrganizations(Skill skill, List<VolunteerExperience> experiences) {
+    private List<String> getRelevantOrganizations( List<VolunteerExperience> experiences) {
         // Returnează organizațiile (simplificat - toate organizațiile)
         return experiences.stream()
                 .map(VolunteerExperience::getOrganization)
                 .filter(org -> org != null && !org.trim().isEmpty())
                 .distinct()
-                .limit(3) // Limitează la primele 3 organizații
+                .limit(3)
                 .collect(Collectors.toList());
     }
 
@@ -508,12 +363,12 @@ public class VolunteerService {
     }
 
     private Integer estimateLevel(Skill skill, int yearsOfExperience) {
-        // Estimează nivel-ul bazat pe anii de experiență
+
         if (skill.getLevel() != null) {
             return skill.getLevel();
         }
 
-        // Estimare simplă
+
         if (yearsOfExperience >= 5) return 90;
         if (yearsOfExperience >= 3) return 75;
         if (yearsOfExperience >= 1) return 60;

@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Educația unei persoane
+ * Education level for a person
  */
 @Entity
 @Table(name = "education", indexes = {
@@ -71,7 +71,7 @@ public class Education extends BaseEntity {
     @Builder.Default
     private Set<Achievement> achievements = new HashSet<>();
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "education";
     }

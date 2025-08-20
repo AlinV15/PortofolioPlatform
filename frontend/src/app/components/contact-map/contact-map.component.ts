@@ -3,8 +3,9 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule, MapPin, Navigation, Clock, Globe, ExternalLink, Copy, Loader2, MapPinOff, RefreshCw, Focus, Info } from 'lucide-angular';
 import { environment } from '../../../../environments/environment';
 import { ContactLocation } from '../../shared/models/contact.interface';
+import { MaterialToastService } from '../../services/toast.service';
 
-// Tipuri locale simple pentru a evita erorile TypeScript
+// Simple local types to avoid TypeScript errors
 interface SimpleMap {
   setCenter(latLng: any): void;
   setZoom(zoom: number): void;
@@ -37,7 +38,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
-  // Icon variables pentru template
+  // Icon variables for template
   readonly mapPinIcon = MapPin;
   readonly navigationIcon = Navigation;
   readonly clockIcon = Clock;
@@ -54,19 +55,19 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   readonly location = input.required<ContactLocation>();
   readonly error = input<string | null>(null);
 
-  // Angular Signals pentru state management
+  // Angular Signals for state management
   private readonly isMapLoaded = signal(false);
   private readonly isMapError = signal(false);
   private readonly mapInstance = signal<SimpleMap | null>(null);
   private readonly marker = signal<SimpleMarker | null>(null);
   private readonly infoWindow = signal<SimpleInfoWindow | null>(null);
 
-  // Computed signals pentru UI state
+  // Computed signals for UI state
   readonly showMap = computed(() => this.isMapLoaded() && !this.isMapError() && this.hasValidCoordinates());
   readonly showError = computed(() => this.isMapError() || this.error() !== null || !this.hasValidCoordinates());
   readonly showLoader = computed(() => !this.isMapLoaded() && !this.isMapError() && this.hasValidCoordinates());
 
-  // Computed pentru validarea coordonatelor
+  // Computed for coordonate validation
   readonly hasValidCoordinates = computed(() => {
     const loc = this.location();
     return loc &&
@@ -79,7 +80,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
       loc.coordinates.lng >= -180 && loc.coordinates.lng <= 180;
   });
 
-  // Computed pentru informații location formatate
+  // Computed for formatted location data
   readonly formattedLocation = computed(() => {
     const loc = this.location();
     return {
@@ -90,11 +91,13 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     };
   });
 
-  // Google Maps configuration din environment
+  // Google Maps configuration from environment
   private readonly googleMapsConfig = environment.googleMaps;
 
-  constructor() {
-    // Effect pentru reinițializarea hărții când se schimbă location
+  constructor(
+    private toatsService: MaterialToastService
+  ) {
+
     effect(() => {
       const loc = this.location();
       if (this.isMapLoaded() && this.hasValidCoordinates()) {
@@ -108,7 +111,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Validare API key la inițializare
+    // Validation for Google Maps API key
     if (!this.googleMapsConfig?.apiKey && this.isBrowser) {
       console.error('Google Maps API key is not configured. Please check your environment settings.');
       this.isMapError.set(true);
@@ -133,7 +136,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     if (!this.isBrowser) return;
 
     try {
-      // Verifică dacă Google Maps este deja încărcat
+
       if ((window as any).google && (window as any).google.maps) {
         this.initializeMap();
         return;
@@ -148,19 +151,16 @@ export class ContactMapComponent implements OnInit, OnDestroy {
 
   private async loadWithDynamicScript(): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Validare API key înainte de încărcare
       if (!this.googleMapsConfig.apiKey) {
         reject(new Error('Google Maps API key is not configured'));
         return;
       }
 
-      // Șterge script-ul existent pentru a evita conflictele
       const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
       if (existingScript) {
         existingScript.remove();
       }
 
-      // Construiește parametrii URL din environment
       const params = new URLSearchParams({
         key: this.googleMapsConfig.apiKey,
         libraries: [...this.googleMapsConfig.libraries, 'marker'].join(','),
@@ -168,26 +168,22 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         callback: 'initGoogleMapsCallback'
       });
 
-      // Creează element script nou
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
       script.async = true;
       script.defer = true;
 
-      // Configurează callback global
       (window as any).initGoogleMapsCallback = () => {
         delete (window as any).initGoogleMapsCallback;
         resolve();
         this.initializeMap();
       };
 
-      // Gestionează erorile de încărcare script
       script.onerror = () => {
         delete (window as any).initGoogleMapsCallback;
         reject(new Error('Failed to load Google Maps script - check your API key and network connection'));
       };
 
-      // Adaugă script la document
       document.head.appendChild(script);
     });
   }
@@ -207,18 +203,14 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     }
 
     try {
-      // Curăță orice conținut existent
       mapElement.innerHTML = '';
 
       const googleMaps = (window as any).google.maps;
       const coordinates = this.location().coordinates;
-
-      // Creează instanța hărții cu Map ID pentru funcționalități avansate
       const map = new googleMaps.Map(mapElement, {
         center: coordinates,
         zoom: 13,
         mapTypeId: 'roadmap',
-        // Opțiuni moderne pentru hartă
         disableDefaultUI: false,
         zoomControl: true,
         mapTypeControl: false,
@@ -228,15 +220,12 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         fullscreenControl: true,
         gestureHandling: 'cooperative',
         clickableIcons: false,
-        // Map ID pentru AdvancedMarkerElement (opțional dar recomandat)
         mapId: this.googleMapsConfig.mapId || 'DEMO_MAP_ID'
       });
 
-      // Creează marker folosind AdvancedMarkerElement dacă este disponibil
       let marker: any;
 
       if (googleMaps.marker && googleMaps.marker.AdvancedMarkerElement) {
-        // Folosește noua API AdvancedMarkerElement
         const pin = new googleMaps.marker.PinElement({
           background: '#3B82F6',
           borderColor: '#1E40AF',
@@ -253,11 +242,8 @@ export class ContactMapComponent implements OnInit, OnDestroy {
           gmpDraggable: false
         });
 
-        if (environment.debug) {
-          console.log('✅ Using AdvancedMarkerElement (recommended)');
-        }
+
       } else {
-        // Fallback la Marker clasic (deprecated dar încă funcțional)
         marker = new googleMaps.Marker({
           position: coordinates,
           map: map,
@@ -271,12 +257,9 @@ export class ContactMapComponent implements OnInit, OnDestroy {
           }
         });
 
-        if (environment.debug) {
-          console.warn('⚠️ Using legacy Marker (deprecated) - consider updating libraries');
-        }
       }
 
-      // Creează info window
+      // Create info window
       const infoWindow = new googleMaps.InfoWindow({
         content: this.createInfoWindowContent(),
         maxWidth: 300,
@@ -284,26 +267,26 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         pixelOffset: new googleMaps.Size(0, -10)
       });
 
-      // Adaugă listener pentru click pe marker
+      // Add listener for clicking on marker
       marker.addListener('click', () => {
         if (googleMaps.marker && googleMaps.marker.AdvancedMarkerElement) {
-          // Pentru AdvancedMarkerElement
+
           infoWindow.open({
             anchor: marker,
             map: map
           });
         } else {
-          // Pentru Marker clasic
+
           infoWindow.open(map, marker);
         }
       });
 
-      // Adaugă listener pentru click pe hartă (închide info window)
+      // Add listener for clicking on hartă (close info window)
       map.addListener('click', () => {
         infoWindow.close();
       });
 
-      // Opțional: Deschide info window automat după o întârziere
+      // Opțional: Automate Open info window after a delay
       setTimeout(() => {
         if (googleMaps.marker && googleMaps.marker.AdvancedMarkerElement) {
           infoWindow.open({
@@ -315,21 +298,12 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         }
       }, 1500);
 
-      // Actualizează signals
+      // Update signals
       this.mapInstance.set(map);
       this.marker.set(marker);
       this.infoWindow.set(infoWindow);
       this.isMapLoaded.set(true);
       this.isMapError.set(false);
-
-      // Log success cu informații despre marker
-      if (environment.debug) {
-        console.log('✅ Google Maps loaded successfully');
-        console.log('Map instance:', map);
-        console.log('Marker instance:', marker);
-        console.log('Location:', this.location());
-        console.log('Supports AdvancedMarkerElement:', !!(googleMaps.marker && googleMaps.marker.AdvancedMarkerElement));
-      }
 
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -365,7 +339,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
   }
 
   private createCustomMarkerIcon(): string {
-    // Creează un marker SVG personalizat pentru fallback-ul legacy
+
     const svg = `
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 0C12.268 0 6 6.268 6 14c0 10.5 14 26 14 26s14-15.5 14-26c0-7.732-6.268-14-14-14z" fill="#3B82F6"/>
@@ -415,7 +389,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     `;
   }
 
-  // Utility methods pentru formatarea datelor
+  // Utility methods for data formatting
   private formatFullAddress(location: ContactLocation): string {
     if (!location) return '';
 
@@ -440,7 +414,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     return `https://www.google.com/maps?q=${lat},${lng}`;
   }
 
-  // Public methods pentru interacțiunea cu harta și UI helpers
+  // Public methods for interactions with map and UI helpers
   centerMap(): void {
     const map = this.mapInstance();
     if (map && this.hasValidCoordinates()) {
@@ -472,10 +446,9 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     const locationText = this.formattedLocation().fullAddress;
     if (locationText) {
       navigator.clipboard.writeText(locationText).then(() => {
-        console.log('Location copied to clipboard');
-        // Aici poți adăuga o notificare toast
+        this.toatsService.info('Location copied to clipboard!');
       }).catch(err => {
-        console.error('Failed to copy location:', err);
+        this.toatsService.error('Failed to copy location: ' + err.message);
       });
     }
   }
@@ -488,7 +461,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     }
   }
 
-  // UI Helper methods pentru template
+  // UI Helper methods for template
   getCurrentTime(): string {
     if (!this.isBrowser) return '';
 
@@ -545,7 +518,7 @@ export class ContactMapComponent implements OnInit, OnDestroy {
     return 'Not loaded';
   }
 
-  // Method pentru verificarea suportului AdvancedMarkerElement
+  // Method for support verification of AdvancedMarkerElement
   isAdvancedMarkerSupported(): boolean {
     return !!(typeof window !== 'undefined' &&
       (window as any).google &&
@@ -554,10 +527,9 @@ export class ContactMapComponent implements OnInit, OnDestroy {
       (window as any).google.maps.marker.AdvancedMarkerElement);
   }
 
-  // Enhanced cleanup pentru AdvancedMarkerElement
+  // Enhanced cleanup for AdvancedMarkerElement
   private cleanup(): void {
     try {
-      // Curăță marker
       const marker = this.marker();
       if (marker && (window as any).google) {
         (window as any).google.maps.event.clearInstanceListeners(marker);
@@ -566,13 +538,10 @@ export class ContactMapComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Curăță instanța hărții
       const map = this.mapInstance();
       if (map && (window as any).google) {
         (window as any).google.maps.event.clearInstanceListeners(map);
       }
-
-      // Curăță info window
       const infoWindow = this.infoWindow();
       if (infoWindow) {
         infoWindow.close();

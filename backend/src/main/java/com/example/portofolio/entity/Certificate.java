@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 /**
- * Certificările unei persoane
+ * Certifications of a person
  */
 @Entity
 @Table(name = "certificate", indexes = {

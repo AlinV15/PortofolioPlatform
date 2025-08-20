@@ -16,10 +16,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     // Basic queries
     List<Certificate> findByPersonalId(Long personalId);
 
-    List<Certificate> findByPersonalIdAndCategoryId(Long personalId, Long categoryId);
-
-    List<Certificate> findByPersonalIdOrderByIssueDateDesc(Long personalId);
-
     // Optimized queries
     @Query("SELECT c FROM Certificate c " +
             "LEFT JOIN FETCH c.category " +
@@ -29,21 +25,12 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     // Verification status
     List<Certificate> findByPersonalIdAndVerifiedTrue(Long personalId);
 
-    List<Certificate> findByPersonalIdAndVerifiedFalse(Long personalId);
-
     // Featured certificates
     @Query("SELECT c FROM Certificate c " +
             "JOIN EntityMetadata em ON em.entityType = 'CERTIFICATE' AND em.entityId = c.id " +
             "WHERE c.personal.id = :personalId AND em.featured = true " +
             "ORDER BY c.issueDate DESC")
     List<Certificate> findFeaturedByPersonalId(@Param("personalId") Long personalId);
-
-    // Recent certificates
-    @Query("SELECT c FROM Certificate c " +
-            "WHERE c.personal.id = :personalId " +
-            "ORDER BY c.issueDate DESC")
-    List<Certificate> findRecentByPersonalId(@Param("personalId") Long personalId,
-                                             org.springframework.data.domain.Pageable pageable);
 
     // Expiry management
     @Query("SELECT c FROM Certificate c " +
@@ -53,17 +40,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
             "ORDER BY c.expiryDate ASC")
     List<Certificate> findExpiringByPersonalId(@Param("personalId") Long personalId,
                                                @Param("date") LocalDate date);
-
-    @Query("SELECT c FROM Certificate c " +
-            "WHERE c.personal.id = :personalId " +
-            "AND c.hasExpiry = true " +
-            "AND c.expiryDate > :currentDate " +
-            "ORDER BY c.expiryDate ASC")
-    List<Certificate> findValidByPersonalId(@Param("personalId") Long personalId,
-                                            @Param("currentDate") LocalDate currentDate);
-
-    // Provider queries
-    List<Certificate> findByPersonalIdAndProvider(Long personalId, String provider);
 
     @Query("SELECT c.provider, COUNT(c) FROM Certificate c " +
             "WHERE c.personal.id = :personalId " +
@@ -100,20 +76,12 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     List<Certificate> findByPersonalIdAndSearchTerm(@Param("personalId") Long personalId,
                                                     @Param("search") String search);
 
-    // Unique constraint checks
-    boolean existsByPersonalIdAndCredentialId(Long personalId, String credentialId);
-
     /**
-     * Obține toate categoriile cu iconurile lor
+     * Get all categories with their icons
      */
     @Query("SELECT cc FROM CertificationCategory cc " +
             "LEFT JOIN FETCH cc.icon " +
             "ORDER BY cc.name ASC")
     List<CertificationCategory> findAllWithIcon();
-
-    /**
-     * Versiune simplă fără JOIN dacă nu ai relație cu Icon
-     */
-    List<CertificationCategory> findAllByOrderByNameAsc();
 
 }

@@ -1,5 +1,3 @@
-// personal-story.component.ts
-
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -47,7 +45,7 @@ export class PersonalStoryComponent {
 
   // Main story sections
   personalStory = {
-    intro: "I'm an Economic Informatics student with a focus on full-stack web development, passionate about modern technologies and seeking growth opportunities in the tech industry. I have hands-on experience in JavaScript, React, Next.js, and TypeScript through 7+ personal projects, some of which are deployed in production.",
+    intro: "I'm a Software Development and Business Information Systems student with a focus on full-stack web development, passionate about modern technologies and seeking growth opportunities in the tech industry. I have hands-on experience in JavaScript, React, Next.js, and TypeScript through 7+ personal projects, some of which are deployed in production.",
 
     journey: "My journey in technology started with curiosity about how digital systems work and has evolved into a deep commitment to creating meaningful solutions that bridge the gap between business needs and technical innovation. I've developed enterprise system skills through university programming clubs and am certified in LEADERS leadership.",
 
@@ -83,7 +81,6 @@ export class PersonalStoryComponent {
 
     window.open(contacts[type], type === 'email' || type === 'phone' ? '_self' : '_blank');
   }
-  // Handle contact actions
 
   // Handle CTA actions
   onViewProjectsClick(): void {

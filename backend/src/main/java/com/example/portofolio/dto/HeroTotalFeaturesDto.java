@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HeroTotalFeaturesDto {
     private Integer nrOfProjects;
-    private Integer nrOfTechologies;
+    private Integer nrOfTechnologies;
     private Integer nrAcademicYears;
     private Integer nrOfCertifications;
 }

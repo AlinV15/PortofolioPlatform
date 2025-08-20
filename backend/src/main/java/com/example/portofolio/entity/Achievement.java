@@ -10,7 +10,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 /**
- * Realizările unei persoane
+ * Achievements class
  */
 @Entity
 @Table(name = "achievement", indexes = {

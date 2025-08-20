@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Categorii de certificări
+ * Certification categories
  */
 @Entity
 @Table(name = "certification_category", indexes = {

@@ -1,24 +1,23 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling, withRouterConfig } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // 🔥 CRITICAL FIX: Disable change detection coalescing for SSR
+    // Disable change detection coalescing for SSR
     provideZoneChangeDetection({
-      eventCoalescing: false,    // ⚠️ Changed from true to false
-      runCoalescing: false       // ⚠️ Changed from true to false
+      eventCoalescing: false,
+      runCoalescing: false
     }),
 
-    // 🔥 CRITICAL FIX: Router configuration for fresh data
+    // Router configuration for fresh data
     provideRouter(
       routes,
-      // ⚠️ DISABLE blocking navigation to allow fresh data loading
-      // withEnabledBlockingInitialNavigation(), // COMMENTED OUT
+
 
       // Scroll management
       withInMemoryScrolling({
@@ -26,23 +25,23 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'
       }),
 
-      // 🔥 CRITICAL FIX: Force reload on same URL navigation
+      // Force reload on same URL navigation
       withRouterConfig({
-        onSameUrlNavigation: 'reload',     // ⚠️ FORCE RELOAD
+        onSameUrlNavigation: 'reload',
         canceledNavigationResolution: 'replace',
-        urlUpdateStrategy: 'eager'         // ⚠️ Update URL immediately
+        urlUpdateStrategy: 'eager'
       })
     ),
 
-    // 🔥 CRITICAL FIX: Client hydration WITHOUT event replay for fresh data
+    // Client hydration WITHOUT event replay for fresh data
     provideClientHydration(
-      // withEventReplay() // ⚠️ COMMENTED OUT - prevents fresh data loading
+      // withEventReplay() 
     ),
 
     // Animations
     provideAnimations(),
 
-    // 🔥 CRITICAL FIX: HTTP Client with fresh data configuration
+    // HTTP Client with fresh data configuration
     provideHttpClient(
       withFetch(),
       withInterceptorsFromDi()

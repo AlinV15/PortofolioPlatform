@@ -19,15 +19,15 @@ export class ContactService extends GlobalService {
     protected readonly serviceName = 'ContactService';
     protected readonly serviceApiUrl = `${this.apiUrl}/contact`;
 
-    // Configurări cache specifice pentru Contact
+    // Specific cache settings for Contact
     protected readonly cacheConfig: CacheConfig = {
-        defaultTTL: 3600000, // 1 oră pentru contact (date foarte stabile)
+        defaultTTL: 3600000,
         maxCacheSize: 5,
         enablePrefetch: true,
-        cleanupInterval: 300000, // 5 minute (mai rar - date stabile)
-        prefetchDelay: 1000, // 1 secundă - delay minimal (critice pentru SSR)
-        avgEntrySize: 512, // 512B per entry (date mici)
-        expectedHitRate: 0.95 // 95% hit rate (date foarte stabile)
+        cleanupInterval: 300000,
+        prefetchDelay: 1000,
+        avgEntrySize: 512,
+        expectedHitRate: 0.95
     };
 
     constructor(
@@ -82,7 +82,7 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Refreshează toate datele de contact
+     * Refresh all contact data
      */
     refreshAllContactData(): Observable<{
         info: ContactInfo;
@@ -136,7 +136,7 @@ export class ContactService extends GlobalService {
     // ========================
 
     /**
-     * Verifică dacă informațiile de contact sunt complete
+     * Verify if contact information is complete
      */
     isContactInfoComplete(): Observable<boolean> {
         return this.getContactInfo().pipe(
@@ -147,7 +147,7 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Verifică dacă locația are coordonate valide
+     * Verify if contact location has valid coordinates
      */
     hasValidCoordinates(): Observable<boolean> {
         return this.getContactLocation().pipe(
@@ -165,7 +165,7 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Obține toate link-urile sociale dintr-o dată
+     * Get social media links
      */
     getSocialLinks(): Observable<{ github: string; linkedin: string }> {
         return this.getContactInfo().pipe(
@@ -177,7 +177,7 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Formatează informațiile de contact pentru afișare
+     * Format contact information for display
      */
     getFormattedContactInfo(): Observable<{
         email: { value: string; href: string; valid: boolean };
@@ -210,7 +210,7 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Obține informații complete de contact cu locația
+     * Get complete contact data including formatted address and map URL
      */
     getCompleteContactData(): Observable<{
         info: ContactInfo;
@@ -242,7 +242,7 @@ export class ContactService extends GlobalService {
     // ========================
 
     /**
-     * Warmup cache cu date esențiale (optimizat pentru SSR)
+     * Warmup cache with essential data 
      */
     warmupCache(): void {
         if (!this.isBrowser) {
@@ -251,12 +251,11 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Prefetch pentru datele esențiale de contact
+     * Prefetch for essential contact data
      */
     protected prefetchEssentialData(): void {
         if (!this.cacheConfig.enablePrefetch) return;
 
-        // Ambele endpoint-uri sunt esențiale pentru contact
         this.getContactInfo().subscribe();
         this.getContactLocation().subscribe();
 
@@ -264,14 +263,13 @@ export class ContactService extends GlobalService {
     }
 
     /**
-     * Validare și transformare specifică pentru datele de contact
+     * Validate and transform data based on endpoint type
      */
     protected validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {
             throw new Error(`No data received for ${endpoint}`);
         }
 
-        // Validări specifice per endpoint
         switch (endpoint) {
             case EndpointType.CONTACT_INFO:
                 return this.validateContactInfo(data) as T;
@@ -334,7 +332,6 @@ export class ContactService extends GlobalService {
         const lat = Number(coords.lat);
         const lng = Number(coords.lng);
 
-        // Verifică dacă coordonatele sunt în range-ul valid
         if (isNaN(lat) || isNaN(lng) ||
             lat < -90 || lat > 90 ||
             lng < -180 || lng > 180) {
@@ -358,7 +355,6 @@ export class ContactService extends GlobalService {
     private sanitizePhone(phone: any): string {
         if (!phone || typeof phone !== 'string') return '';
 
-        // Păstrează doar numere, spații, +, -, (, )
         return phone.replace(/[^0-9\s\+\-\(\)]/g, '').trim();
     }
 
@@ -368,7 +364,6 @@ export class ContactService extends GlobalService {
     }
 
     private isValidPhone(phone: string): boolean {
-        // Pattern simplu pentru telefon (minim 7 cifre)
         const phoneRegex = /[\d\s\+\-\(\)]{7,}/;
         return phoneRegex.test(phone);
     }

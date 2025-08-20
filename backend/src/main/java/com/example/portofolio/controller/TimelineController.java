@@ -1,5 +1,4 @@
 package com.example.portofolio.controller;
-import com.example.portofolio.dto.HobbyDto;
 import com.example.portofolio.dto.TimelineItemDto;
 
 import com.example.portofolio.service.portofolio.TimelineService;

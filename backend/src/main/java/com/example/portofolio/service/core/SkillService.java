@@ -1,6 +1,5 @@
 package com.example.portofolio.service.core;
 
-// ✅ CORECT pentru Spring Boot 3.x:
 import com.example.portofolio.entity.Education;
 import com.example.portofolio.entity.SkillCategory;
 import com.example.portofolio.entity.enums.EducationStatus;
@@ -10,14 +9,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-// Exemplu de utilizare corectă în SkillService:
-
 
 import com.example.portofolio.dto.*;
 import com.example.portofolio.entity.EntityMetadata;
 import com.example.portofolio.entity.Skill;
 import com.example.portofolio.entity.enums.EntityType;
-import com.example.portofolio.entity.enums.ProficiencyLevel;
 import com.example.portofolio.service.base.BaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -41,19 +36,19 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     private final EntitySkillRepository entitySkillRepository;
     private final SkillCategoryRepository skillCategoryRepository;
     private final ProjectRepository projectRepository;
-    private final CertificateRepository certificateRepository;   // 🆕 ADĂUGAT
-    private final EntityTechnologyRepository entityTechnologyRepository; // 🆕 ADĂUGAT
-    private final EducationRepository educationRepository;       // 🆕 ADĂUGAT
+    private final CertificateRepository certificateRepository;
+    private final EntityTechnologyRepository entityTechnologyRepository;
+    private final EducationRepository educationRepository;
 
     @Autowired
     public SkillService(SkillRepository skillRepository,
                         EntityMetadataRepository entityMetadataRepository,
                         EntitySkillRepository entitySkillRepository,
                         SkillCategoryRepository skillCategoryRepository,
-                        ProjectRepository projectRepository,           // 🆕 ADĂUGAT
-                        CertificateRepository certificateRepository,   // 🆕 ADĂUGAT
-                        EntityTechnologyRepository entityTechnologyRepository, // 🆕 ADĂUGAT
-                        EducationRepository educationRepository) {     // 🆕 ADĂUGAT
+                        ProjectRepository projectRepository,
+                        CertificateRepository certificateRepository,
+                        EntityTechnologyRepository entityTechnologyRepository,
+                        EducationRepository educationRepository) {
         super(skillRepository);
         this.entityMetadataRepository = entityMetadataRepository;
         this.entitySkillRepository = entitySkillRepository;
@@ -68,34 +63,16 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
         return EntityType.SKILL.name();
     }
 
-    // ✅ ACUM FUNCȚIONEAZĂ CU JAKARTA:
     @Cacheable(value = "skills", key = "#personalId")
     public List<SkillDto> findByPersonalId(@Valid @NotNull @Positive Long personalId) {
         log.debug("Finding skills for personal ID: {}", personalId);
 
-        // Validare simplă
+
         if (personalId == null || personalId <= 0) {
             throw new IllegalArgumentException("Personal ID must be positive");
         }
 
         List<Skill> skills = repository.findByPersonalIdWithCategoryAndTags(personalId);
-        return skills.stream().map(this::toSkillDto).toList();
-    }
-
-    @Cacheable(value = "skillsByCategory", key = "#personalId + '_' + #categoryId")
-    public List<SkillDto> findByPersonalIdAndCategory(@Valid @NotNull @Positive Long personalId,
-                                                      @Valid @NotNull @Positive Long categoryId) {
-        log.debug("Finding skills for personal ID: {} and category: {}", personalId, categoryId);
-
-        // Validări simple
-        if (personalId == null || personalId <= 0) {
-            throw new IllegalArgumentException("Personal ID must be positive");
-        }
-        if (categoryId == null || categoryId <= 0) {
-            throw new IllegalArgumentException("Category ID must be positive");
-        }
-
-        List<Skill> skills = repository.findByPersonalIdAndCategoryIdWithCategory(personalId, categoryId);
         return skills.stream().map(this::toSkillDto).toList();
     }
 
@@ -107,16 +84,16 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 
     /**
-     * Preluarea tuturor categoriilor de skill-uri (fără skill-uri)
+     * Taking over all categories of skills (without skills)
      */
     @Cacheable(value = "allSkillCategories")
     public List<FeaturedSkillCategoryDto> getAllSkillCategories() {
         log.debug("Getting all skill categories");
 
-        // Folosește metoda optimizată din repository
+
         List<SkillCategory> allCategories = skillCategoryRepository.findAllWithParentAndIcon();
 
-        // Transformă în DTO fără skill-uri
+
         return allCategories.stream()
                 .map(category -> FeaturedSkillCategoryDto.builder()
                         .name(category.getName())
@@ -124,7 +101,7 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
                         .icon(category.getIcon() != null ?
                                 category.getIcon().getName() :
                                 getDefaultCategoryIcon(category.getName()))
-                        .skills(null) // Fără skill-uri, le modelezi pe frontend
+                        .skills(null)
                         .build())
                 .toList();
     }
@@ -205,26 +182,11 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
                 .build();
     }
 
-    // ===== SEARCH =====
 
-    public List<SkillDto> searchSkills(@Valid @NotNull @Positive Long personalId,
-                                       @Valid @NotNull String searchTerm) {
-        log.debug("Searching skills for personal ID: {} with term: {}", personalId, searchTerm);
-
-        if (personalId == null || personalId <= 0) {
-            throw new IllegalArgumentException("Personal ID must be positive");
-        }
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            throw new IllegalArgumentException("Search term cannot be empty");
-        }
-
-        List<Skill> skills = repository.findByPersonalIdAndNameOrDescriptionContaining(personalId, searchTerm);
-        return skills.stream().map(this::toSkillDto).toList();
-    }
 
     // ===== STATISTICS =====
 
-    // Înlocuiește metoda getSkillStatistics din SkillService cu aceasta:
+    // Replace the getSkillStatistics method in SkillService with this:
 
     @Cacheable(value = "heroStats", key = "#personalId")
     public SkillsHeroStatsDto getHeroStats(@Valid @NotNull @Positive Long personalId) {
@@ -234,29 +196,28 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
             throw new IllegalArgumentException("Personal ID must be positive");
         }
 
-        // 1. ===== CALCULEAZĂ ANII DE PROGRAMARE =====
+
         Integer yearsCoding = calculateYearsCoding(personalId);
 
-        // 2. ===== NUMĂRUL DE PROIECTE =====
+
         Long totalProjects = projectRepository.countByPersonalId(personalId);
 
-        // 3. ===== NUMĂRUL DE CERTIFICATE =====
+
         Long totalCertifications = certificateRepository.countByPersonalId(personalId);
 
-        // 4. ===== PROFICIENȚA MEDIE =====
-        Double avgLevel = repository.findAverageSkillLevelByPersonalId(personalId);
-        Double avgProficiencyPercent = avgLevel != null ? avgLevel : 0.0;
 
-        // 5. ===== NUMĂRUL DE TEHNOLOGII =====
+        Double avgLevel = repository.findAverageSkillLevelByPersonalId(personalId);
+        double avgProficiencyPercent = avgLevel != null ? avgLevel : 0.0;
+
+
         Integer totalTechnologies = entityTechnologyRepository.countDistinctTechnologiesByPersonalId(personalId);
 
-        // 6. ===== CONSTRUIEȘTE TEXTELE =====
+
         String yearsCodingText = yearsCoding + "+";
-        String projectsText = totalProjects + "+";
         String certificationsText = totalCertifications.toString();
         String avgProficiencyText = Math.round(avgProficiencyPercent) + "%";
 
-        // Text principal
+
         String description = buildHeroDescription(personalId);
         String projectsBuiltText = totalProjects + "+ projects built";
         String technologiesMasteredText = totalTechnologies + " technologies mastered";
@@ -277,32 +238,32 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 
     /**
-     * Calculează anii de programare bazat pe primul proiect sau skill
+     * Calculate your programming years based on your first project or skill
      */
     private Integer calculateYearsCoding(Long personalId) {
-        // 1. Încearcă din primul proiect
+
         Integer oldestProjectYear = projectRepository.findOldestProjectYear(personalId);
 
-        // 2. Încearcă din primul skill (dacă ai createdAt în skills)
+
         LocalDate oldestSkillDate = repository.findOldestSkillDate(personalId);
 
-        // 3. Calculează anii
+
         int currentYear = LocalDate.now().getYear();
-        Integer yearsFromProjects = oldestProjectYear != null ? currentYear - oldestProjectYear : 0;
-        Integer yearsFromSkills = oldestSkillDate != null ? currentYear - oldestSkillDate.getYear() : 0;
+        int yearsFromProjects = oldestProjectYear != null ? currentYear - oldestProjectYear : 0;
+        int yearsFromSkills = oldestSkillDate != null ? currentYear - oldestSkillDate.getYear() : 0;
 
-        // Ia maximul dintre cele două
-        Integer yearsCoding = Math.max(yearsFromProjects, yearsFromSkills);
 
-        // Minim 1 an dacă are skill-uri sau proiecte
+        int yearsCoding = Math.max(yearsFromProjects, yearsFromSkills);
+
+
         return Math.max(yearsCoding, 1);
     }
 
     /**
-     * Construiește descrierea principală pentru hero section
+     * Build the main description for the hero section
      */
     private String buildHeroDescription(Long personalId) {
-        // Încearcă să obții specialization din educația curentă
+
         List<Education> ongoingEducations = educationRepository.findByPersonalIdAndStatus(personalId, EducationStatus.ONGOING);
         Optional<Education> currentEducation = ongoingEducations.stream().findFirst();
 
@@ -314,39 +275,11 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
         return specialization + " student with expertise in modern web technologies";
     }
 
-// ===== PĂSTREAZĂ ȘI METODA ORIGINALĂ PENTRU COMPATIBILITATE =====
-
-    @Cacheable(value = "skillStats", key = "#personalId")
-    public SkillStatisticsDto getSkillStatistics(@Valid @NotNull @Positive Long personalId) {
-        log.debug("Getting skill statistics for personal ID: {}", personalId);
-
-        if (personalId == null || personalId <= 0) {
-            throw new IllegalArgumentException("Personal ID must be positive");
-        }
-
-        Long totalSkills = repository.countByPersonalId(personalId);
-        Double avgLevel = repository.findAverageSkillLevelByPersonalId(personalId);
-
-        Map<String, Long> proficiencyDistribution = Map.of(
-                "beginner", repository.countByPersonalIdAndProficiency(personalId, ProficiencyLevel.BEGINNER),
-                "intermediate", repository.countByPersonalIdAndProficiency(personalId, ProficiencyLevel.INTERMEDIATE),
-                "advanced", repository.countByPersonalIdAndProficiency(personalId, ProficiencyLevel.ADVANCED),
-                "expert", repository.countByPersonalIdAndProficiency(personalId, ProficiencyLevel.EXPERT)
-        );
-
-        return SkillStatisticsDto.builder()
-                .totalSkills(totalSkills)
-                .averageLevel(avgLevel != null ? avgLevel : 0.0)
-                .proficiencyDistribution(proficiencyDistribution)
-                .featuredCount((long) findFeaturedSkills(personalId).size())
-                .trendingCount(repository.countByPersonalIdAndTrending(personalId, true))
-                .learningCount(repository.countByPersonalIdAndLearning(personalId, true))
-                .build();
-    }
+// ===== KEEP THE ORIGINAL METHOD FOR COMPATIBILITY =====
 
     /**
-     * Returnează top 5 skills bazate pe level
-     * Respectă interfața TopSkill: {name, level, color}
+     * Returns top 5 level-based skills
+     * Respect TopSkill interface: {name, level, color}
      */
     @Cacheable(value = "topSkills", key = "#personalId + '_' + #limit")
     public List<TopSkillDto> getTopSkills(@Valid @NotNull @Positive Long personalId,
@@ -354,23 +287,23 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
         ServiceUtils.logMethodEntry("getTopSkills", personalId, limit);
         ServiceUtils.validatePersonalId(personalId);
 
-        // Default la 5 dacă nu se specifică limit
+
         int skillLimit = limit != null ? limit : 5;
         Pageable pageable = PageRequest.of(0, skillLimit);
 
-        // Obține skill-urile cu metadata
+
         List<Object[]> results = repository.findTopSkillsByLevel(personalId, pageable);
 
         List<TopSkillDto> topSkills = results.stream()
                 .map(row -> {
                     Skill skill = (Skill) row[0];
-                    EntityMetadata metadata = (EntityMetadata) row[1]; // poate fi null
+                    EntityMetadata metadata = (EntityMetadata) row[1];
 
-                    // Calculează numărul de proiecte pentru acest skill
+
                     Integer projectCount = entitySkillRepository
                             .countByEntityTypeAndSkillId(EntityType.PROJECT, skill.getId());
 
-                    // Determină culoarea
+
                     String color = getSkillColor(skill, metadata);
 
                     return TopSkillDto.builder()
@@ -392,20 +325,20 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 
     /**
-     * Helper method pentru determinarea culorii skill-ului
+     * Helper method to determine the color of the skill
      */
     private String getSkillColor(Skill skill, EntityMetadata metadata) {
-        // 1. Încearcă din metadata
+
         if (metadata != null && metadata.getPrimaryColor() != null) {
             return metadata.getPrimaryColor();
         }
 
-        // 2. Culoare bazată pe nivel
+
         if (skill.getLevel() != null) {
             return getColorByLevel(skill.getLevel());
         }
 
-        // 3. Culoare bazată pe categorie
+
         if (skill.getCategory() != null) {
             return getColorByCategory(skill.getCategory().getName());
         }
@@ -415,7 +348,7 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 
     /**
-     * Helper method pentru culori bazate pe nivel
+     * Helper method for level based colors
      */
     private String getColorByLevel(Integer level) {
         if (level >= 90) return "#10B981"; // Green - Expert
@@ -425,7 +358,7 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 
     /**
-     * Helper method pentru culori bazate pe categorie
+     * Helper method for category-based colors
      */
     private String getColorByCategory(String categoryName) {
         if (categoryName == null) return "#3B82F6";
@@ -441,15 +374,4 @@ public class SkillService extends BaseService<Skill, Long, SkillRepository> {
     }
 }
 
-// ===== SUPPORTING CLASSES =====
 
-@lombok.Data
-@lombok.Builder
-class SkillStatistics {
-    private Long totalSkills;
-    private Double averageLevel;
-    private Map<String, Long> proficiencyDistribution;
-    private Long featuredCount;
-    private Long trendingCount;
-    private Long learningCount;
-}

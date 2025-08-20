@@ -18,9 +18,8 @@ public class ProjectCategoryDistributionDto {
     private String category;
     private Long projectCount;
     private Double percentage;
-    private String formattedPercentage; // Ex: "14%"
+    private String formattedPercentage;
 
-    // Helper method pentru formatarea procentajului
     public String getFormattedPercentage() {
         if (percentage == null) return "0%";
 
@@ -29,7 +28,6 @@ public class ProjectCategoryDistributionDto {
         return rounded.intValue() + "%";
     }
 
-    // Setter care calculează automat formattedPercentage
     public void setPercentage(Double percentage) {
         this.percentage = percentage;
         this.formattedPercentage = getFormattedPercentage();

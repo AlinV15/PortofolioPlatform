@@ -133,9 +133,6 @@ export class SkillsComponent implements OnInit, OnChanges {
 
     this.processCategories();
   }
-
-
-
   /**
    * Process categories with associated skills
    */

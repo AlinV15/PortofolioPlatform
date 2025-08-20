@@ -1,7 +1,5 @@
 package com.example.portofolio.controller;
 import com.example.portofolio.dto.SkillDto;
-
-import com.example.portofolio.dto.SkillStatisticsDto;
 import com.example.portofolio.dto.SkillsHeroStatsDto;
 import com.example.portofolio.service.core.SkillService;
 import org.springframework.beans.factory.annotation.Autowired;

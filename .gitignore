@@ -53,6 +53,7 @@ Thumbs.db
 
 # Environment variables
 frontend/environments
+backend/.env
 
 
 # Backend (Spring Boot)
@@ -63,3 +64,4 @@ backend/mvnw.cmd
 backend/logs/
 backend/application-local.properties
 backend/application-prod.yml
+node_modules

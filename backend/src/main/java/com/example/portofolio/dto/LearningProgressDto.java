@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LearningProgressDto {
 
-    private String id;              // LearningProgress.id.toString()
-    private String name;            // LearningProgress.name
-    private Integer progress;       // LearningProgress.progressPercentage
-    private String color;           // EntityMetadata.primaryColor pentru skill
-    private Integer timeSpent;      // LearningProgress.timeSpentHours.intValue()
-    private String eta;             // LearningProgress.estimatedCompletion
-    private String description;     // LearningProgress.description
+    private String id;
+    private String name;
+    private Integer progress;
+    private String color;
+    private Integer timeSpent;
+    private String eta;
+    private String description;
 }

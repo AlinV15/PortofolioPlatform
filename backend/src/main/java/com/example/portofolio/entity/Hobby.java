@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Hobby-urile unei persoane
+ * Hobbies of a person
  */
 @Entity
 @Table(name = "hobby", indexes = {
@@ -40,7 +40,7 @@ public class Hobby extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    // Folosește:
+    // Use:
     @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private HobbyCategory category;
@@ -68,7 +68,7 @@ public class Hobby extends BaseEntity {
     private Set<RecentDiscovery> recentDiscoveries;
 
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "interest";
     }

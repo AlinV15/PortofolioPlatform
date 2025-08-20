@@ -13,14 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InterestDto {                      // Renamed
-    private String id;                          // Long → String
+public class InterestDto {
+    private String id;
     private String name;
     private String description;
-    private String icon;                        // Icon → String
-    private String category;                    // InterestCategory → String
-    private String whyInterested;               // why_interested → whyInterested
-    private List<RecentDiscoveryDto> recentDiscoveries; // List<RecentDiscovery> → DTO
+    private String icon;
+    private String category;
+    private String whyInterested;
+    private List<RecentDiscoveryDto> recentDiscoveries;
     private String primaryColor;
     private String secondaryColor;
 }

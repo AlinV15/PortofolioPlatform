@@ -1,15 +1,13 @@
 import { Component, HostListener, OnDestroy, OnInit, } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 interface ContactInfo {
-  text?: string; // Optional text for the contact info section
-  iconPath: string; // Path to the SVG icon
-  iconPath2?: string; // Optional second path for SVG icon
-  fillRule?: string; // Optional fill rule for SVG
-  clipRule?: string; // Optional clip rule for SVG
-  // Additional properties can be added as needed
+  text?: string;
+  iconPath: string;
+  iconPath2?: string;
+  fillRule?: string;
+  clipRule?: string;
 }
 
 type ContentSection = any
@@ -163,10 +161,10 @@ export class TermsComponent implements OnInit, OnDestroy {
     'Iași, Romania'
   ];
 
-  constructor(private router: Router) { }
+  constructor() { }
 
   ngOnInit(): void {
-    this.setupScrollListener();
+
     this.setupIntersectionObserver();
   }
 
@@ -201,9 +199,6 @@ export class TermsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private setupScrollListener(): void {
-    // Additional scroll setup if needed
-  }
 
   private setupIntersectionObserver(): void {
     const options = {

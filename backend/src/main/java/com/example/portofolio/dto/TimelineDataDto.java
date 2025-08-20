@@ -1,8 +1,5 @@
 package com.example.portofolio.dto;
 
-/**
- * Timeline data DTO for education
- */
 @lombok.Data
 @lombok.Builder
 public class TimelineDataDto {

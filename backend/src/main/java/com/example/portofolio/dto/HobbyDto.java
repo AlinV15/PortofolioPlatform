@@ -13,18 +13,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HobbyDto {                     // Renamed
-    private String id;                      // Long → String
+public class HobbyDto {
+    private String id;
     private String name;
     private String description;
-    private String icon;                    // Icon → String
-    private String category;                // HobbyCategory → String
-    private Double yearsActive;             // years_active → yearsActive
-    private String complexityLevel;         // ComplexityLevel → String
-    private List<String> relatedSkills;     // List<Skill> → List<String>
-    private String impactOnWork;            // ImpactLevel → String
-    private String favoriteAspect;          // favorite_aspect → favoriteAspect
-    private List<AchievementDto> achievements; // List<Achievement> → List<AchievementDto>
+    private String icon;
+    private String category;
+    private Double yearsActive;
+    private String complexityLevel;
+    private List<String> relatedSkills;
+    private String impactOnWork;
+    private String favoriteAspect;
+    private List<AchievementDto> achievements;
     private String primaryColor;
     private String secondaryColor;
 }

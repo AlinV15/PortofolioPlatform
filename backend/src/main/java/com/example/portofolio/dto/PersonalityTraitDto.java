@@ -18,5 +18,5 @@ public class PersonalityTraitDto {
     private String trait;
     private String description;
     private String icon;
-    private List<String> examples;    // String[] → List<String>
+    private List<String> examples;
 }

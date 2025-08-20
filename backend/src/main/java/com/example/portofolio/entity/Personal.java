@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entitatea principală - reprezentă persoana
+ * The main entity - the person
  */
 @Entity
 @Table(name = "personal", indexes = {

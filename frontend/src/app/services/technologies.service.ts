@@ -174,11 +174,6 @@ export class TechnologiesService extends GlobalService {
         );
     }
 
-    // ========================
-    // UTILITY METHODS SPECIFICE EDUCATION
-    // ========================
-
-
 
     // ========================
     // ABSTRACT METHODS IMPLEMENTATION

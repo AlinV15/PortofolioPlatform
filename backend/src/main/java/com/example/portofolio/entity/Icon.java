@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Sistem centralizat pentru iconuri
+ * Centralized system of icons
  */
 @Entity
 @Table(name = "icon", indexes = {

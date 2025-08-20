@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Progresul în învățare pentru skill-uri
+ * Learning progress for skills
  */
 @Entity
 @Table(name = "learning_progress", indexes = {

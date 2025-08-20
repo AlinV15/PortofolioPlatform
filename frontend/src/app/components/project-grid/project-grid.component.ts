@@ -90,10 +90,7 @@ export class ProjectGridComponent implements OnChanges, AfterViewInit, OnDestroy
     this.filteredProjects = [...this.allProjects];
     this.filterProjects();
 
-    // Debug info
-    if (this.isBrowser && this.allProjects.length > 0) {
-      console.log('Available categories:', [...new Set(this.allProjects.map(p => p.category))]);
-    }
+
   }
 
   private filterProjects(): void {
@@ -133,16 +130,7 @@ export class ProjectGridComponent implements OnChanges, AfterViewInit, OnDestroy
     this.currentPage = 1;
     this.updatePagination();
 
-    // Debug logging
-    if (this.isBrowser) {
-      console.log(`Filtering: "${this.activeFilter}" + search: "${this.searchTerm}"`);
-      console.log(`Result: ${filtered.length} out of ${this.allProjects.length} projects`);
 
-      if (filtered.length === 0 && this.activeFilter !== 'all') {
-        console.warn('No projects match current filter. Available categories:',
-          [...new Set(this.allProjects.map(p => p.category))]);
-      }
-    }
   }
 
   private matchesCategory(projectCategory: string, filterCategory: string): boolean {
@@ -201,9 +189,6 @@ export class ProjectGridComponent implements OnChanges, AfterViewInit, OnDestroy
     // Emit project selection to parent
     this.projectSelect.emit(project);
 
-    if (this.isBrowser) {
-      console.log('Project selected:', project.title);
-    }
   }
 
   onDemoClick(event: Event, project: Project): void {

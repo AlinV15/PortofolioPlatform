@@ -103,7 +103,6 @@ export class ProjectStatsComponent implements OnChanges {
   }
 
   get projectCategoriesDistribution() {
-    console.log("Este ceva" + this.categoryDistribution[0].category);
     return this.categoryDistribution;
 
   }
@@ -404,13 +403,4 @@ export class ProjectStatsComponent implements OnChanges {
     return year.year;
   }
 
-  // ========================
-  // CACHE INVALIDATION
-  // ========================
-
-  private invalidateCache(): void {
-    this._cachedAverageComplexity = null;
-    this._cachedMostUsedTechnology = null;
-    this._cachedProjectsPerYear = null;
-  }
 }

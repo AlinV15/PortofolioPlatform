@@ -47,14 +47,14 @@ export class ContactFormComponent implements OnInit {
   readonly xCircleIcon = XCircle;
   readonly phoneIcon = Phone;
 
-  // EmailJS Configuration - folosește același template ca Quick Message
+  // EmailJS Configuration 
   private readonly emailjsConfig = {
     serviceId: environment.emailJs.serviceId,
     templateId: environment.emailJs.templateId2,
     publicKey: environment.emailJs.publicKey
   };
 
-  // Message templates pentru contact form
+  // Message templates for contact form
   messageTemplates = [
     {
       label: 'General Inquiry',
@@ -78,7 +78,7 @@ export class ContactFormComponent implements OnInit {
     },
     {
       label: 'Custom Message',
-      message: '' // Permite utilizatorului să scrie propriul mesaj
+      message: ''
     }
   ];
 
@@ -126,12 +126,12 @@ export class ContactFormComponent implements OnInit {
     });
   }
 
-  // Getters pentru accesarea controalelor în template
+  // Getters for form controls
   get name() { return this.contactForm.get('name'); }
   get email() { return this.contactForm.get('email'); }
   get message() { return this.contactForm.get('message'); }
 
-  // Verifică dacă un câmp are eroare și a fost atins
+  // Check if a field has an error and has been touched
   hasError(fieldName: string): boolean {
     const field = this.contactForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
@@ -169,7 +169,7 @@ export class ContactFormComponent implements OnInit {
     });
   }
 
-  // Determină tipul de mesaj bazat pe conținut
+  // Determine the content-based message type
   private determineMessageType(message: string): string {
     const lowerMessage = message.toLowerCase();
 
@@ -186,7 +186,7 @@ export class ContactFormComponent implements OnInit {
     }
   }
 
-  // Funcție pentru trimiterea formularului cu EmailJS (același template ca Quick Message)
+  // Function for sending the form with EmailJS (same templates as Quick Message)
   async onSubmit(): Promise<void> {
     if (this.contactForm.invalid) {
       this.markAllFieldsAsTouched();
@@ -200,13 +200,13 @@ export class ContactFormComponent implements OnInit {
     try {
       const formData: ContactFormData = this.contactForm.value;
 
-      // Pregătește datele pentru Quick Message template (același ca CTA)
+      // Prepare data for Quick Message template (same as CTA)
       const templateParams = {
         from_name: formData.name,
         from_email: formData.email,
         message: formData.message,
         reply_to: formData.email,
-        message_type: this.determineMessageType(formData.message), // Determinat automat
+        message_type: this.determineMessageType(formData.message),
         submission_date: new Date().toLocaleString('en-US', {
           timeZone: 'Europe/Bucharest',
           year: 'numeric',
@@ -215,11 +215,9 @@ export class ContactFormComponent implements OnInit {
           hour: '2-digit',
           minute: '2-digit'
         }),
-        // Context pentru a diferenția de CTA
         source: 'Contact Page Form'
       };
 
-      // Trimite email prin EmailJS folosind Quick Message template
       const response = await emailjs.send(
         this.emailjsConfig.serviceId,
         this.emailjsConfig.templateId,
@@ -282,7 +280,7 @@ export class ContactFormComponent implements OnInit {
     this.successMessage = '';
   }
 
-  // Funcție pentru validarea în timp real
+  // Function for real-time validation
   onFieldBlur(fieldName: string): void {
     const field = this.contactForm.get(fieldName);
     if (field) {
@@ -290,18 +288,18 @@ export class ContactFormComponent implements OnInit {
     }
   }
 
-  // Funcție pentru numărarea caracterelor
+  // Function for counting characters
   getCharacterCount(fieldName: string): number {
     const field = this.contactForm.get(fieldName);
     return field?.value?.length || 0;
   }
 
-  // Funcție pentru verificarea limitei de caractere
+  // Feature to check character limit
   isCharacterLimitExceeded(fieldName: string, limit: number): boolean {
     return this.getCharacterCount(fieldName) > limit;
   }
 
-  // Funcție pentru a obține progresul de completare a formularului
+  // Function to get the progress of completing the form
   getFormCompletionPercentage(): number {
     const fields = ['name', 'email', 'message'];
     const completedFields = fields.filter(field => {
@@ -311,12 +309,12 @@ export class ContactFormComponent implements OnInit {
     return Math.round((completedFields.length / fields.length) * 100);
   }
 
-  // Funcție pentru a verifica dacă formularul este complet
+  // Function to check if the form is complete
   isFormComplete(): boolean {
     return this.contactForm.valid && this.getFormCompletionPercentage() === 100;
   }
 
-  // Funcție pentru preview mesaj înainte de trimitere
+  // Function for preview message before sending
   getMessagePreview(): string {
     const message = this.contactForm.get('message')?.value || '';
     const words = message.trim().split(/\s+/);
@@ -324,7 +322,7 @@ export class ContactFormComponent implements OnInit {
     return words.slice(0, 20).join(' ') + '...';
   }
 
-  // Funcție pentru estimarea timpului de citire a mesajului
+  // Function for estimating the read time of the message
   getEstimatedReadTime(): number {
     const message = this.contactForm.get('message')?.value || '';
     const wordsPerMinute = 200; // Viteza medie de citire

@@ -1,11 +1,9 @@
 package com.example.portofolio.dto;
-// ===== SUPPORTING CLASSES =====
+
 
 import java.util.Map;
 
-/**
- * Project statistics DTO
- */
+
 @lombok.Data
 @lombok.Builder
 

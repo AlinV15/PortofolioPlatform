@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/")
-public class CeritificateController {
+public class CertificateController {
     @Autowired
     private CertificateService certificateService;
 

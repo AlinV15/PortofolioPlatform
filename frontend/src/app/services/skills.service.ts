@@ -196,12 +196,6 @@ export class SkillsService extends GlobalService {
     }
 
     // ========================
-    // UTILITY METHODS SPECIFICE EDUCATION
-    // ========================
-
-
-
-    // ========================
     // ABSTRACT METHODS IMPLEMENTATION
     // ========================
 

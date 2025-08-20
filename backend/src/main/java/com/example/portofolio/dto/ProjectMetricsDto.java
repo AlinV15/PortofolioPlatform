@@ -13,11 +13,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProjectMetricsDto {                // Add Dto suffix
-    private Long users;                         // Integer → Long
+public class ProjectMetricsDto {
+    private Long users;
     private String performance;
     private String codeQuality;
-    private Long lines;                         // Integer → Long
+    private Long lines;
     private Integer commits;
     private BigDecimal testCoverage;
     private String lastUpdated;

@@ -2,6 +2,7 @@ import { Component, input, computed, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule, Mail, Phone, PhoneCall, MapPin, Github, Linkedin, Send, Copy, ExternalLink } from 'lucide-angular';
 import { ContactInfo } from '../../shared/models/contact.interface';
+import { MaterialToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-contact-info',
@@ -14,6 +15,10 @@ import { ContactInfo } from '../../shared/models/contact.interface';
   styleUrls: ['./contact-info.component.css']
 })
 export class ContactInfoComponent {
+
+  constructor(private toastService: MaterialToastService) {
+
+  }
   // Icon variables for template
   readonly mailIcon = Mail;
   readonly phoneIcon = Phone;
@@ -225,9 +230,7 @@ export class ContactInfoComponent {
   }
 
   private showCopyFeedback(type: string): void {
-    // You can implement a toast notification here
-    // For now, just log to console
-    console.log(`✅ ${type} copied successfully!`);
+    this.toastService.success(`${type} copied to clipboard!`, 'Close', 2000);
   }
 
   private fallbackCopyToClipboard(text: string, type: string): void {
@@ -246,13 +249,13 @@ export class ContactInfoComponent {
       document.body.removeChild(textArea);
 
       if (successful) {
-        console.log(`${type} copied using fallback method`);
+        this.toastService.success(`${type} copied to clipboard!`, 'Close', 2000);
         this.showCopyFeedback(type);
       } else {
-        console.error(`Failed to copy ${type} using fallback method`);
+        this.toastService.error(`Failed to copy ${type}. Please try again.`, 'Close', 3000);
       }
     } catch (err) {
-      console.error(`Fallback copy failed for ${type}:`, err);
+      this.toastService.error(`Error copying ${type}: ${err}`, 'Close', 3000);
     }
   }
 

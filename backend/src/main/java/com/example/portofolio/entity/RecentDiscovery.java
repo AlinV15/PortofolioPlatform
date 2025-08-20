@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 /**
- * Descoperiri recente legate de interese
+ * Recent discoveries
  */
 @Entity
 @Table(name = "recent_discovery", indexes = {

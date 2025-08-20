@@ -3,7 +3,7 @@ import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { filter, map, distinctUntilChanged } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
 export interface RouteData {
     title?: string;
@@ -211,7 +211,7 @@ export class RoutingService {
     /**
      * Navigate with SEO-friendly parameters
      */
-    navigateWithSEO(commands: any[], extras?: {
+    async navigateWithSEO(commands: any[], extras?: {
         queryParams?: any;
         fragment?: string;
         preserveFragment?: boolean;
@@ -294,7 +294,7 @@ export class RoutingService {
     /**
      * Update query parameters without navigation
      */
-    updateQueryParams(params: any, options?: {
+    async updateQueryParams(params: any, options?: {
         merge?: boolean;
         replaceUrl?: boolean;
         preserveScroll?: boolean;

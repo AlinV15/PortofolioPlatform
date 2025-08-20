@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Exemple pentru trăsăturile de personalitate
+ * Personality examples
  */
 @Entity
 @Table(name = "personality_example", indexes = {

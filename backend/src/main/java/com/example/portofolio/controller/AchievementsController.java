@@ -1,8 +1,6 @@
 package com.example.portofolio.controller;
 import com.example.portofolio.dto.AchievementDto;
-import com.example.portofolio.dto.LearningProgressDto;
 import com.example.portofolio.service.core.AchievementService;
-import com.example.portofolio.service.personal.PersonalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

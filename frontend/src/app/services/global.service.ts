@@ -32,13 +32,11 @@ export abstract class GlobalService implements OnDestroy {
 
     // Loading states pentru fiecare endpoint
     protected readonly loadingStates = new Map<string, BehaviorSubject<boolean>>();
-
-    // Configurări - vor fi suprascrise în serviciile concrete
     protected abstract readonly cacheConfig: CacheConfig;
     protected abstract readonly serviceApiUrl: string;
     protected abstract readonly serviceName: string;
 
-    // 🔧 UPDATED: Shorter cache times to prevent stale data
+    //  Shorter cache times to prevent stale data
     protected readonly requestConfigs: Record<EndpointType, RequestConfig> = {
         [EndpointType.HIGHLIGHTS]: {
             timeout: 8000,
@@ -262,7 +260,7 @@ export abstract class GlobalService implements OnDestroy {
     }
 
     // ========================
-    // 🔥 NEW: ROUTE AWARENESS SETUP
+    // 🔥 ROUTE AWARENESS SETUP
     // ========================
 
     private setupRouteAwareness(): void {
@@ -357,7 +355,7 @@ export abstract class GlobalService implements OnDestroy {
     }
 
     /**
-     * Invalidează cache-ul pentru un endpoint specific sau pentru toate
+     * Invalidate cache for specific endpoint or all cache
      */
     invalidateCache(endpoint?: EndpointType): void {
         if (endpoint) {
@@ -405,11 +403,11 @@ export abstract class GlobalService implements OnDestroy {
     }
 
     // ========================
-    // 🔥 UPDATED: ROUTE-AWARE REQUEST METHOD
+    // 🔥ROUTE-AWARE REQUEST METHOD
     // ========================
 
     /**
-     * Metodă centralizată pentru request-uri cu cache inteligent și route-aware
+     * Centralized request method with route-aware caching
      */
     protected makeRequest<T>(
         endpoint: EndpointType,
@@ -425,7 +423,7 @@ export abstract class GlobalService implements OnDestroy {
         // 🔥 Use route-aware cache key
         const cacheKey = this.getRouteAwareCacheKey(endpoint);
 
-        // Setează loading state
+
         this.setLoadingState(endpoint, true);
 
         // 🔥 Check cache (with route awareness)
@@ -448,7 +446,7 @@ export abstract class GlobalService implements OnDestroy {
         // 🔥 Add route context to headers
         const headers = this.getOptimizedHeaders().set('X-Route-Context', this.routeContext);
 
-        // Creează request
+
         const request$ = this.http.get<T>(url, { headers }).pipe(
             timeout(config.timeout),
             retry({
@@ -485,7 +483,7 @@ export abstract class GlobalService implements OnDestroy {
     }
 
     /**
-     * 🔥 NEW: Method for forcing fresh data
+     * 🔥 Method for forcing fresh data
      */
     protected makeRequestFresh<T>(
         endpoint: EndpointType,
@@ -500,7 +498,7 @@ export abstract class GlobalService implements OnDestroy {
     // ========================
 
     /**
-     * Statistici detaliate despre cache (with route context)
+     * Stats for the cache
      */
     getCacheStats(): {
         size: number;
@@ -597,22 +595,13 @@ export abstract class GlobalService implements OnDestroy {
     // ========================
 
     private initializeService(): void {
-        // Cleanup cache periodic
+        // Periodical cleanup cache
         if (this.isBrowser) {
             const cleanupInterval = this.cacheConfig?.cleanupInterval || 180000;
             timer(0, cleanupInterval)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe(() => this.cleanupExpiredCache());
         }
-
-        // 🔥 DISABLED: Prefetch to prevent data contamination
-        // The aggressive prefetching was causing the cross-route data issue
-        // if (this.isBrowser && this.cacheConfig?.enablePrefetch) {
-        //     const prefetchDelay = this.cacheConfig?.prefetchDelay || 2000;
-        //     timer(prefetchDelay)
-        //         .pipe(takeUntil(this.destroy$))
-        //         .subscribe(() => this.prefetchEssentialData());
-        // }
     }
 
     private cleanupExpiredCache(): void {
@@ -708,15 +697,11 @@ export abstract class GlobalService implements OnDestroy {
                 console.error(`[SSR] ${this.serviceName} Error:`, JSON.stringify(logData));
             }
 
-            this.sendErrorToLoggingService(logData);
 
             return of(result as T);
         };
     }
 
-    private sendErrorToLoggingService(errorData: any): void {
-        // Placeholder pentru integrare cu logging service (Sentry, LogRocket, etc.)
-    }
 
     protected log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
         const prefix = this.isBrowser ? this.serviceName : `${this.serviceName}[SSR]`;

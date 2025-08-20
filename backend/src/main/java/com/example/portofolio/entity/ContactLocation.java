@@ -7,7 +7,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 /**
- * Locația de contact
+ * Contact location details
  */
 @Entity
 @Table(name = "contact_location")

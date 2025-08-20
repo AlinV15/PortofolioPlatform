@@ -15,21 +15,21 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TimelineMilestoneDto {
 
-    private String id;                          // Achievement.id sau Project.id sau Education.id
-    private String year;                        // Anul din achievementDate/completionDate/startDate
-    private String title;                       // Achievement.title sau Project.title sau Education.degree
-    private String category;                    // Mapped din entityType la enum
-    private String description;                 // Achievement.description sau Project.description
-    private List<String> technologies;          // Din EntityTechnology pentru entitatea respectivă
-    private List<String> achievements;          // Sub-achievements sau features pentru proiecte
-    private String icon;                        // Icon.name din EntityMetadata
-    private Boolean isActive;                   // Pentru milestones curente (ex: ongoing education)
-    private Integer projectsCount;              // Numărul de proiecte din acea perioadă
-    private Integer skillsLearned;              // Numărul de skills învățate în perioada respectivă
-    private String duration;                    // Durata calculată (ex: "6 months", "2 years")
-    private String primaryColor;                // EntityMetadata.primaryColor
-    private String secondaryColor;              // EntityMetadata.secondaryColor
-    private String importance;                  // EntityMetadata.importance.toLowerCase()
-    private String gradient;                    // EntityMetadata.gradient
-    private String glowColor;                   // EntityMetadata.glowColor
+    private String id;
+    private String year;
+    private String title;
+    private String category;
+    private String description;
+    private List<String> technologies;
+    private List<String> achievements;
+    private String icon;
+    private Boolean isActive;
+    private Integer projectsCount;
+    private Integer skillsLearned;
+    private String duration;
+    private String primaryColor;
+    private String secondaryColor;
+    private String importance;
+    private String gradient;
+    private String glowColor;
 }

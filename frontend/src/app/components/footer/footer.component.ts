@@ -45,20 +45,8 @@ export class FooterComponent {
       ]
     },
     {
-      title: 'Projects',
-      links: [
-        { label: 'E-Commerce Platform', href: '/projects/ecommerce' },
-        { label: 'Task Manager App', href: '/projects/task-manager' },
-        { label: 'CRM System', href: '/projects/crm' },
-        { label: 'Portfolio Website', href: '/projects/portfolio' }
-      ]
-    },
-    {
       title: 'Resources',
       links: [
-        { label: 'Blog', href: '/blog' },
-        { label: 'Resume/CV', href: '/resume', external: true },
-        { label: 'Certificates', href: '/certificates' },
         { label: 'Privacy Policy', href: '/privacy' }
       ]
     }
@@ -68,25 +56,19 @@ export class FooterComponent {
   socialLinks: SocialLink[] = [
     {
       name: 'GitHub',
-      href: 'https://github.com/alin-viorel',
+      href: 'https://github.com/AlinV15',
       icon: 'github',
       ariaLabel: 'Follow me on GitHub'
     },
     {
       name: 'LinkedIn',
-      href: 'https://linkedin.com/in/alin-viorel',
+      href: 'https://www.linkedin.com/in/alin-viorel-ciobanu-84b06b269/',
       icon: 'linkedin',
       ariaLabel: 'Connect with me on LinkedIn'
     },
     {
-      name: 'Twitter',
-      href: 'https://twitter.com/alin_viorel',
-      icon: 'twitter',
-      ariaLabel: 'Follow me on Twitter'
-    },
-    {
       name: 'Email',
-      href: 'mailto:alin.viorel@example.com',
+      href: 'mailto:alinviorelciobanu@gmail.com',
       icon: 'email',
       ariaLabel: 'Send me an email'
     }
@@ -95,16 +77,15 @@ export class FooterComponent {
   // Professional info
   professionalInfo = {
     name: 'Alin-Viorel',
-    title: 'Full-Stack Developer',
+    title: 'Full-Stack Developer & student',
     location: 'Iași, Romania',
-    email: 'alin.viorel@example.com',
+    email: 'alinviorelciobanu@gmail.com',
     tagline: 'Building the future, one line of code at a time.'
   };
 
   // Quick contact info
   quickContact = {
-    email: 'alin.viorel@example.com',
-    phone: '+40 123 456 789',
+    email: 'alinviorelciobanu@gmail.com',
     availability: 'Available for freelance projects'
   };
 
@@ -122,24 +103,6 @@ export class FooterComponent {
 
   trackBySocial(index: number, social: SocialLink): string {
     return social.name;
-  }
-
-  // Handle social link clicks for analytics
-  onSocialClick(social: SocialLink): void {
-    console.log(`Social link clicked: ${social.name}`);
-    // Add analytics tracking here
-  }
-
-  // Handle footer link clicks
-  onFooterLinkClick(link: FooterLink): void {
-    console.log(`Footer link clicked: ${link.label}`);
-    // Add analytics tracking here
-  }
-
-  // Handle newsletter subscription (if implemented)
-  onNewsletterSubscribe(email: string): void {
-    console.log(`Newsletter subscription: ${email}`);
-    // Add newsletter signup logic here
   }
 
   // Scroll to top functionality

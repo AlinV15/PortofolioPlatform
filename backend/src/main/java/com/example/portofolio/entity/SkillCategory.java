@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Categorii de skill-uri cu suport pentru ierarhie
+ * Skill categories
  */
 @Entity
 @Table(name = "skill_category", indexes = {

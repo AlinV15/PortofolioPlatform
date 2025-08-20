@@ -11,7 +11,6 @@ import {
   Users, Briefcase, BookOpen, Settings, CheckCircle, Calendar
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 // Services
 import { IconHelperService } from '../../services/icon-helper.service';
@@ -105,14 +104,6 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
       this.categoryIdToNameMap.set(category.id, category.name);
       this.categoryNameToIdMap.set(category.name, category.id);
     });
-
-    // Debug logging
-    console.log('=== CERTIFICATE CATEGORY MAPPINGS ===');
-    console.log('Categories:', this.certificateCategories.map(c => ({ id: c.id, name: c.name })));
-    console.log('Sample certificates:', this.certificates.slice(0, 3).map(c => ({ name: c.name, categoryName: c.categoryName })));
-    console.log('ID to Name map:', Array.from(this.categoryIdToNameMap.entries()));
-    console.log('Name to ID map:', Array.from(this.categoryNameToIdMap.entries()));
-    console.log('=======================================');
   }
 
   /**
@@ -157,25 +148,21 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // FIXED: Handle category matching properly
+  //Handle category matching properly
   get filteredCertificates(): Certificate[] {
     let filtered = [...this.certificates];
 
-    // Filter by category - Handle both ID and name matching
     if (this.activeFilter !== 'all') {
       filtered = filtered.filter(cert => {
-        // Try matching by categoryName directly
         if (cert.categoryName === this.activeFilter) {
           return true;
         }
 
-        // Try matching by converting category name to ID
         const categoryId = this.getCategoryIdFromName(cert.categoryName);
         if (categoryId === this.activeFilter) {
           return true;
         }
 
-        // Try matching by converting active filter to name
         const categoryName = this.getCategoryNameFromId(this.activeFilter);
         if (cert.categoryName === categoryName) {
           return true;
@@ -185,7 +172,6 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Filter by search term
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(cert =>
@@ -210,7 +196,6 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
         case 'provider':
           return a.issuer.localeCompare(b.issuer);
         case 'relevance':
-          // Assuming higher relevance score is better
           return (b as any).relevanceScore - (a as any).relevanceScore || 0;
         default:
           return 0;
@@ -268,7 +253,7 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Certificate analysis methods - FIXED
+  // Certificate analysis methods
   getCertificationsByCategory(category: string): Certificate[] {
     const categoryName = this.getCategoryNameFromId(category);
     return this.certificates.filter(cert =>
@@ -294,7 +279,7 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
   // Skills aggregation methods
   getAllSkillsFromCertifications(): string[] {
     const allSkills = this.certificates.flatMap(cert => cert.skillsGained);
-    return [...new Set(allSkills)]; // Remove duplicates
+    return [...new Set(allSkills)];
   }
 
   getTopSkills(limit: number = 10): string[] {
@@ -509,7 +494,7 @@ export class CertificationsGridComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if category is active - FIXED
+   * Check if category is active
    */
   isCategoryActive(categoryId: string): boolean {
     return this.activeFilter === categoryId ||

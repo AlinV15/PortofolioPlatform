@@ -15,10 +15,10 @@ public class AchievementDto {
     private String id;
     private String title;
     private String description;
-    private String date;               // formatted
-    private String type;               // enum → string
+    private String date;
+    private String type;
     private String icon;
     private String primaryColor;
     private String secondaryColor;
-    private String recognitionLevel;   // local, national, etc.
+    private String recognitionLevel;   
 }

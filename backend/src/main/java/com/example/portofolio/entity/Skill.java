@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Skill-urile unei persoane
+ * Skills
  */
 @Entity
 @Table(name = "skill", indexes = {
@@ -82,7 +82,7 @@ public class Skill extends BaseEntity {
     @Builder.Default
     private Set<EntitySkill> entitySkills = new HashSet<>();
 
-    // Helper method pentru metadata
+    // Helper method for metadata
     public String getEntityType() {
         return "skill";
     }

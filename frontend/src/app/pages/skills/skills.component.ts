@@ -18,7 +18,6 @@ import { SkillsTimelineComponent } from '../../components/skills-timeline/skills
 import { HireMeComponent } from '../../components/hire-me/hire-me.component';
 import { RouterModule } from '@angular/router';
 
-// UPDATED: Replace individual services with DataService
 import { DataService } from '../../services/data.service';
 import { PdfDownloadService } from '../../services/pdf-download.service';
 
@@ -59,7 +58,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  // Lucide Icons - keep existing
+  // Lucide Icons 
   readonly codeIcon = Code;
   readonly clockIcon = Clock;
   readonly folderIcon = Folder;
@@ -75,13 +74,13 @@ export class SkillsComponent implements OnInit, OnDestroy {
   readonly downloadIcon = Download;
   readonly arrowUpIcon = ArrowUp;
 
-  // Page state - keep existing
+  // Page state 
   showBackToTop = false;
   activeSection = 'skills-hero';
   private isBrowser: boolean;
   private scrollTimeout?: number;
 
-  // Page sections - keep existing
+  // Page sections 
   sections: PageSection[] = [
     { id: 'skills-hero', name: 'Overview' },
     { id: 'skills-categories', name: 'Categories' },
@@ -90,7 +89,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     { id: 'skills-timeline', name: 'Timeline' }
   ];
 
-  // Skills Data - keep existing properties with same defaults
+  // Skills Data 
   allSkills: Skill[] = [];
   topSkills: TopSkill[] = [];
   featuredSkills: FeaturedSkill[] = [];
@@ -109,7 +108,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     avgProficiencyLabel: ""
   };
 
-  // Technologies Data - keep existing
+  // Technologies Data
   technologies: Technology[] = [];
   techCategories: TechCategory[] = [];
   techStats: TechStats = {
@@ -124,7 +123,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     trendingPercentage: 0
   };
 
-  // Certificates Data - keep existing
+  // Certificates Data
   certificates: Certificate[] = [];
   certificateCategories: CertificateCategory[] = [];
   certificateStats: CertificateStats = {
@@ -140,16 +139,16 @@ export class SkillsComponent implements OnInit, OnDestroy {
     topProvider: ""
   };
 
-  // Education Data - keep existing
+  // Education Data
   currentLearningHero: CurrentLearning[] = [];
   learningProgress: LearningProgress[] = [];
   academicProjects: AcademicProject[] = [];
 
-  // Personal Data - keep existing
+  // Personal Data
   recentAchievements: Achievement[] = [];
   futureGoal: FutureGoal[] = [];
 
-  // Timeline Data - keep existing
+  // Timeline Data
   timelineMilestones: TimelineMilestone[] = [];
   timelineStats: TimelineStats = {
     "Major Milestones": "0",
@@ -160,14 +159,12 @@ export class SkillsComponent implements OnInit, OnDestroy {
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     private pdfService: PdfDownloadService,
-    // UPDATED: Replace all individual services with DataService
     private dataService: DataService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
-    // UPDATED: Replace loadAllData with DataService
     this.loadAllDataFromDataService();
 
     this.router.events.pipe(
@@ -189,7 +186,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * UPDATED: Load all required data from DataService instead of individual services
+   *  Load all required data from DataService instead of individual services
    */
   private loadAllDataFromDataService(): void {
     // Load all data from DataService
@@ -227,7 +224,6 @@ export class SkillsComponent implements OnInit, OnDestroy {
           this.timelineMilestones = allData.timeline.timelineMilestones;
           this.timelineStats = allData.timeline.timelineStats;
 
-          console.log('✅ All skills page data loaded from DataService');
         },
         error: (error) => {
           console.error('❌ Error loading skills data from DataService:', error);
@@ -235,9 +231,8 @@ export class SkillsComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Keep all existing methods unchanged - just the data loading strategy changed above
 
-  // Scroll event listener - UNCHANGED
+  // Scroll event listener
   @HostListener('window:scroll', ['$event'])
   onWindowScroll(): void {
     if (!this.isBrowser) return;
@@ -255,15 +250,6 @@ export class SkillsComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  // Section management - UNCHANGED
-  private initializePageSections(): void {
-    this.sections.forEach(section => {
-      const element = document.getElementById(section.id);
-      if (element) {
-        section.element = element;
-      }
-    });
-  }
 
   private updateActiveSection(): void {
     if (!this.isBrowser) return;
@@ -283,7 +269,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navigation methods - UNCHANGED
+  // Navigation methods
   scrollToSection(sectionId: string): void {
     if (!this.isBrowser) return;
 
@@ -309,35 +295,12 @@ export class SkillsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Event handlers from child components - UNCHANGED
+  // Event handlers from child components
   onExploreSkills(): void {
     this.scrollToSection('skills-categories');
   }
 
-  onTechClick(technology: Technology): void {
-    console.log('Technology clicked:', technology);
-    // Could show technology details or filter related content
-  }
 
-  onViewAllCertifications(): void {
-    console.log('View all certifications requested');
-    // Could navigate to dedicated certifications page
-  }
-
-  onMilestoneSelected(milestone: TimelineMilestone): void {
-    console.log('Milestone selected:', milestone);
-  }
-
-  onViewFullJourney(): void {
-    console.log('View full journey requested');
-    // Could navigate to detailed timeline page
-  }
-
-  // Call to action handlers - UNCHANGED
-  onViewProjects(): void {
-    console.log('View projects requested');
-    // Navigate to projects page when implemented
-  }
 
   onContactMe(): void {
     if (this.hireMeComponent) {
@@ -393,7 +356,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     return this.academicProjects.length;
   }
 
-  // Track by functions for ngFor optimization - UNCHANGED
+  // Track by functions for ngFor optimization
   trackBySkill(index: number, skill: TopSkill): string {
     return skill.name;
   }
@@ -418,7 +381,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     return milestone.id;
   }
 
-  // Utility methods - UNCHANGED
+  // Utility methods
   getProgressPercentage(current: number, total: number): number {
     return total > 0 ? Math.round((current / total) * 100) : 0;
   }
@@ -430,7 +393,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Responsive design helpers - UNCHANGED
+  // Responsive design helpers
   isMobile(): boolean {
     if (!this.isBrowser) return false;
     return window.innerWidth < 768;
@@ -446,12 +409,12 @@ export class SkillsComponent implements OnInit, OnDestroy {
     return window.innerWidth >= 1024;
   }
 
-  // Error handling - UNCHANGED
+  // Error handling
   handleError(error: any, context: string): void {
     console.error(`Error in ${context}:`, error);
   }
 
-  // Accessibility improvements - UNCHANGED
+  // Accessibility improvements
   announcePageChange(message: string): void {
     if (!this.isBrowser) return;
 
@@ -470,7 +433,7 @@ export class SkillsComponent implements OnInit, OnDestroy {
     announcer.textContent = message;
   }
 
-  // Export functionality - UNCHANGED
+  // Export functionality
   exportSkillsData(): void {
     const skillsData = {
       skills: this.allSkills,

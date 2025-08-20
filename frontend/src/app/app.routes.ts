@@ -10,9 +10,9 @@ export const routes: Routes = [
             description: 'Welcome to my portfolio - Web Developer & Software Engineer',
             keywords: 'portfolio, web developer, software engineer, home',
             preload: true,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'about',
@@ -23,9 +23,9 @@ export const routes: Routes = [
             description: 'Learn more about my background, experience and skills as a developer',
             keywords: 'about, experience, background, developer, skills',
             preload: true,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'projects',
@@ -36,9 +36,9 @@ export const routes: Routes = [
             description: 'Explore my portfolio of web development projects and applications',
             keywords: 'projects, portfolio, web development, applications, showcase',
             preload: true,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always',  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always',
     },
     {
         path: 'projects/:id',
@@ -49,9 +49,9 @@ export const routes: Routes = [
             description: 'View detailed information about this project',
             keywords: 'project details, case study, development process',
             preload: false,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'skills',
@@ -62,9 +62,9 @@ export const routes: Routes = [
             description: 'My technical skills, technologies I work with and expertise areas',
             keywords: 'skills, technologies, expertise, programming languages, frameworks',
             preload: true,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'contact',
@@ -75,9 +75,9 @@ export const routes: Routes = [
             description: 'Get in touch with me for projects, collaborations or opportunities',
             keywords: 'contact, hire, collaboration, projects, opportunities',
             preload: true,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'hire-me',
@@ -88,9 +88,9 @@ export const routes: Routes = [
             description: 'I am available for freelance projects and full-time opportunities',
             keywords: 'hire, freelance, full-time, available, projects, opportunities',
             preload: false,
-            refreshData: true  // ⚠️ Custom flag to force refresh
+            refreshData: true
         },
-        runGuardsAndResolvers: 'always'  // ⚠️ CRITICAL: Always run guards/resolvers
+        runGuardsAndResolvers: 'always'
     },
     {
         path: 'terms',
@@ -101,7 +101,7 @@ export const routes: Routes = [
             description: 'Terms of service and usage conditions for this website',
             keywords: 'terms, service, conditions, legal',
             preload: false,
-            refreshData: false  // ⚠️ Static content - no refresh needed
+            refreshData: false
         }
     },
     {
@@ -113,7 +113,7 @@ export const routes: Routes = [
             description: 'Privacy policy and data protection information',
             keywords: 'privacy, policy, data protection, GDPR',
             preload: false,
-            refreshData: false  // ⚠️ Static content - no refresh needed
+            refreshData: false
         }
     },
 

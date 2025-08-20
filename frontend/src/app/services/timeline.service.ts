@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { GlobalService } from './global.service';
 import { CacheConfig } from '../shared/models/request.interface';
@@ -12,8 +12,7 @@ import {
     TimelineStats,
     TimelineGroup,
     TimelineComponentStats,
-    IconInfo,
-    IconType
+    IconInfo
 } from '../shared/models/timeline.interface';
 import { EducationStatus } from '../shared/enums/EducationStatus';
 import { ImportanceLevel } from '../shared/enums/ImportanceLevel';
@@ -25,15 +24,15 @@ export class TimelineService extends GlobalService {
     protected readonly serviceName = 'TimelineService';
     protected readonly serviceApiUrl = `${this.apiUrl}`;
 
-    // Configurări cache specifice pentru Timeline
+    // Specific cache configuration for Timeline
     protected readonly cacheConfig: CacheConfig = {
-        defaultTTL: 900000, // 15 minute pentru timeline (date mai dinamice)
+        defaultTTL: 900000,
         maxCacheSize: 20,
         enablePrefetch: true,
-        cleanupInterval: 300000, // 5 minute
-        prefetchDelay: 2000, // 2 secunde
-        avgEntrySize: 2048, // 2KB per entry (date mai complexe)
-        expectedHitRate: 0.85 // 85% hit rate
+        cleanupInterval: 300000,
+        prefetchDelay: 2000,
+        avgEntrySize: 2048,
+        expectedHitRate: 0.85
     };
 
     constructor(
@@ -44,18 +43,17 @@ export class TimelineService extends GlobalService {
     }
 
     // ========================
-    // IMPLEMENTARE METODE ABSTRACTE
+    // IMPLEMENTATION OF ABSTRACT METHODS
     // ========================
 
     /**
-     * Implementează warmup cache pentru Timeline
+     * Implement cache warmup for Timeline data
      */
     override warmupCache(): void {
         if (!this.isBrowser) return;
 
         this.log('Starting Timeline cache warmup...');
 
-        // Încarcă datele esențiale în cache în ordine de prioritate
         forkJoin({
             stats: this.getTimelineStats(),
             items: this.getAllTimelineItems(),
@@ -73,14 +71,14 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Implementează prefetch pentru datele esențiale
+     * Implement prefetching of essential data
      */
     protected override prefetchEssentialData(): void {
         if (!this.isBrowser) return;
 
         this.log('Prefetching essential Timeline data...');
 
-        // Prefetch stats mai întâi (cele mai importante)
+
         this.getTimelineStats().pipe(
             catchError(error => {
                 this.log(`Timeline stats prefetch failed: ${error.message}`, 'warn');
@@ -90,7 +88,7 @@ export class TimelineService extends GlobalService {
             this.log(`Timeline stats prefetched: ${stats["Major Milestones"]} milestones, ${stats[" Achievements"]} achievements`);
         });
 
-        // Delay pentru items și milestones
+
         setTimeout(() => {
             this.getAllTimelineItems().pipe(
                 catchError(() => of([]))
@@ -109,7 +107,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Implementează validarea și transformarea datelor
+     * Implement data validation and transformation
      */
     protected override validateAndTransformData<T>(data: any, endpoint: EndpointType): T {
         if (!data) {
@@ -180,13 +178,13 @@ export class TimelineService extends GlobalService {
     // ========================
 
     /**
-     * Grupează timeline items pe ani
+     * Group timeline items by year
      */
     groupItemsByYear(items: TimelineItem[], sortOrder: 'asc' | 'desc' = 'desc'): TimelineGroup[] {
         const currentYear = new Date().getFullYear().toString();
         const groupedData = new Map<string, TimelineItem[]>();
 
-        // Grupează items pe ani
+
         items.forEach(item => {
             const year = item.year;
             if (!groupedData.has(year)) {
@@ -195,25 +193,25 @@ export class TimelineService extends GlobalService {
             groupedData.get(year)!.push(item);
         });
 
-        // Sortează items în fiecare grup
+
         groupedData.forEach(yearItems => {
             yearItems.sort((a, b) => {
-                // Prioritate pentru items cu priority
+
                 if (a.priority !== undefined && b.priority !== undefined) {
                     return b.priority - a.priority;
                 }
-                // Featured items first
+
                 if (a.featured && !b.featured) return -1;
                 if (!a.featured && b.featured) return 1;
-                // Current items first
+
                 if (a.current && !b.current) return -1;
                 if (!a.current && b.current) return 1;
-                // Altfel alfabetic
+
                 return a.title.localeCompare(b.title);
             });
         });
 
-        // Creează TimelineGroup objects
+
         const groups: TimelineGroup[] = Array.from(groupedData.entries()).map(([year, yearItems]) => ({
             year,
             items: yearItems,
@@ -221,7 +219,7 @@ export class TimelineService extends GlobalService {
             itemCount: yearItems.length
         }));
 
-        // Sortează grupurile pe ani
+
         groups.sort((a, b) => {
             const yearA = parseInt(a.year);
             const yearB = parseInt(b.year);
@@ -232,7 +230,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Calculează statistici pentru componenta timeline
+     * Calculetes statistics for a timeline component
      */
     calculateComponentStats(items: TimelineItem[]): TimelineComponentStats {
         const currentItems = items.filter(item => item.current).length;
@@ -242,13 +240,13 @@ export class TimelineService extends GlobalService {
         const yearCounts: Record<string, number> = {};
 
         items.forEach(item => {
-            // Count by type
+
             itemsByType[item.type] = (itemsByType[item.type] || 0) + 1;
-            // Count by year
+
             yearCounts[item.year] = (yearCounts[item.year] || 0) + 1;
         });
 
-        // Find most active year
+
         const mostActiveYear = Object.entries(yearCounts)
             .reduce((max, [year, count]) => count > max.count ? { year, count } : max, { year: '', count: 0 }).year;
 
@@ -265,7 +263,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Detectează tipul de icon și returnează informații despre el
+     * Detects the type of icon used in a timeline item
      */
     detectIconType(icon: string): IconInfo {
         if (!icon) {
@@ -303,7 +301,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Filtrează items pe baza tipului
+     * Filters timeline items by type
      */
     filterItemsByType(items: TimelineItem[], types: string[]): TimelineItem[] {
         if (!types || types.length === 0) return items;
@@ -311,7 +309,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Sortează items în cadrul aceluiași an
+     * Sorts timeline items based on various criteria
      */
     sortItems(items: TimelineItem[], showCurrentFirst: boolean = true): TimelineItem[] {
         return [...items].sort((a, b) => {
@@ -340,7 +338,7 @@ export class TimelineService extends GlobalService {
     // ========================
 
     /**
-     * Validează și transformă timeline items conform interfetei reale
+     * Validates and transforms timeline items according to the real interface
      */
     private validateTimelineItems(data: any[]): TimelineItem[] {
         if (!Array.isArray(data)) {
@@ -372,7 +370,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Validează și transformă timeline milestones conform interfetei reale
+     * Validates and transforms timeline milestones according to the real interface
      */
     private validateTimelineMilestones(data: any[]): TimelineMilestone[] {
         if (!Array.isArray(data)) {
@@ -397,7 +395,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Validează și transformă timeline stats conform interfetei reale
+     * Validates and transforms timeline statistics according to the real interface
      */
     private validateTimelineStats(data: any): TimelineStats {
         return {
@@ -407,7 +405,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Validează culoare hex
+     * Validates the hex color format
      */
     private validateHexColor(color: any, defaultColor: `#${string}`): `#${string}` {
         if (typeof color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(color)) {
@@ -417,7 +415,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Returnează date default pentru fiecare tip de endpoint
+     * Returns default data for a given endpoint type
      */
     private getDefaultData<T>(endpoint: EndpointType): T {
         switch (endpoint) {
@@ -436,7 +434,7 @@ export class TimelineService extends GlobalService {
     }
 
     /**
-     * Returnează statistici default pentru timeline
+     * Returns default timeline statistics
      */
     private getDefaultTimelineStats(): TimelineStats {
         return {
