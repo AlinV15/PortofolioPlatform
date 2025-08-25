@@ -360,6 +360,16 @@ export class SkillsTimelineComponent implements OnInit, OnDestroy {
     return '#6B7280';
   }
 
+  getStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'completed': 'Completed',
+      'in_progress': 'In Progress',
+      'not_started': 'Not Started',
+      'paused': 'Paused'
+    };
+    return statusMap[status.toLowerCase()] || 'Unknown';
+  }
+
   /**
    * Get learning status color
    */

@@ -43,12 +43,6 @@ export class FooterComponent {
         { label: 'Skills', href: '/skills' },
         { label: 'Contact', href: '/contact' }
       ]
-    },
-    {
-      title: 'Resources',
-      links: [
-        { label: 'Privacy Policy', href: '/privacy' }
-      ]
     }
   ];
 

@@ -1,5 +1,5 @@
 <!-- Project Details Modal -->
-<div *ngIf="project" class="project-details-modal fixed inset-0 z-50 overflow-y-auto" (click)="onBackdropClick($event)"
+<div *ngIf="project" class="project-details-modal fixed inset-0 z-40 overflow-y-auto" (click)="onBackdropClick($event)"
     [attr.aria-labelledby]="'project-title-' + project.id" role="dialog" aria-modal="true" tabindex="-1">
 
     <!-- Backdrop -->
@@ -262,7 +262,7 @@
                                 </h3>
                                 <div class="relative group cursor-pointer overflow-hidden rounded-lg"
                                     (click)="openImageGallery(0)">
-                                    <img [src]="project.images[0]" [alt]="project.title"
+                                    <img [src]="'/assets'+ project.images[0]" [alt]="project.title"
                                         class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                                         loading="lazy" (error)="onPreviewImageError($event)">
                                     <div
@@ -453,7 +453,7 @@
                             <div *ngFor="let image of project.images; let i = index; trackBy: trackByImage"
                                 class="relative group cursor-pointer overflow-hidden rounded-lg"
                                 (click)="openImageGallery(i)">
-                                <img [src]="image" [alt]="project.title + ' screenshot ' + (i + 1)"
+                                <img [src]="'/assets'+ image" [alt]="project.title + ' screenshot ' + (i + 1)"
                                     class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                                     loading="lazy" (error)="onImageError()">
                                 <div
@@ -549,7 +549,7 @@
 
 <!-- Image Gallery Modal -->
 <div *ngIf="showImageGallery && hasImages && isInBrowser"
-    class="fixed inset-0 z-60 bg-black bg-opacity-95 flex items-center justify-center" (click)="closeImageGallery()">
+    class="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center" (click)="closeImageGallery()">
 
     <div class="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center p-4"
         (click)="$event.stopPropagation()">
@@ -560,7 +560,7 @@
         </div>
 
         <!-- Main Image -->
-        <img [src]="currentImage" [alt]="project!.title + ' screenshot'"
+        <img [src]="'/assets'+ currentImage" [alt]="project!.title + ' screenshot'"
             class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-300"
             [class.opacity-0]="imageLoading" [class.opacity-100]="!imageLoading" (load)="onImageLoad()"
             (error)="onImageError()">

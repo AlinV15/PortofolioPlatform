@@ -36,7 +36,7 @@
                             class="relative w-full h-full group cursor-pointer"
                             (click)="onProjectClick(currentProject)">
 
-                            <img [src]="currentProject.images[0]" [alt]="currentProject.title"
+                            <img [src]="'/assets'+ currentProject.images[0]" [alt]="currentProject.title"
                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 loading="lazy">
 

@@ -295,7 +295,7 @@ export class AboutComponent implements OnInit, OnChanges {
   private calculateExperienceYears(): string {
     const startYear = 2022; // When started learning programming
     const currentYear = new Date().getFullYear();
-    const years = currentYear - startYear + 1;
+    const years = currentYear - startYear;
     return years.toString();
   }
 

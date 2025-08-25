@@ -78,7 +78,8 @@
                 <!-- Project Image -->
                 <div
                     class="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
-                    <img *ngIf="project.images && project.images[0]" [src]="project.images[0]" [alt]="project.title"
+                    <img *ngIf="project.images && project.images[0]" [src]="'/assets'+ project.images[0]"
+                        [alt]="project.title"
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">

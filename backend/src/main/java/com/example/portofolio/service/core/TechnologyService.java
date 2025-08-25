@@ -178,6 +178,8 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
     }
 
 
+
+
     // ===== DTO CONVERSION =====
 
     private TechnologyDto toTechnologyDto(Technology technology) {
@@ -232,14 +234,12 @@ public class TechnologyService extends BaseService<Technology, Long, TechnologyR
     }
 
     private Integer getProjectCountForPersonal(Long technologyId) {
-
-        // Get all projects for personal that use this technology
         List<EntityTechnology> entityTechs = entityTechnologyRepository
-                .findByEntityTypeAndEntityIdWithTechnology(EntityType.PROJECT, technologyId);
+                .findByEntityTypeAndTechnologyId(EntityType.PROJECT, technologyId);
 
         return (int) entityTechs.stream()
                 .filter(et -> {
-                    // Check if the project belongs to the personal
+                    // Verifică dacă proiectul aparține personal-ului cu ID 1
                     Optional<Project> project = projectRepository.findById(et.getEntityId());
                     return project.isPresent() && project.get().getPersonal().getId().equals(1L);
                 })

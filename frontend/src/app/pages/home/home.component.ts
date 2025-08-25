@@ -179,13 +179,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeDataSubscriptions();
+
+    // Încarcă datele doar o dată la inițializare
     this.loadAllHomeData();
+
+    // Pentru router, verifică dacă datele sunt deja încărcate
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe(() => {
-
-      this.loadAllHomeData();
+      // Doar dacă nu avem date sau sunt învechite
+      if (!this.allPortfolioData) {
+        this.loadAllHomeData();
+      }
     });
   }
 

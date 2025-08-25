@@ -189,7 +189,7 @@ export abstract class GlobalService implements OnDestroy {
             cacheTTL: 120000 // 2 minutes
         },
         [EndpointType.TECHNOLOGIES]: {
-            timeout: 10000,
+            timeout: 20000,
             retryCount: 2,
             cacheTTL: 120000 // 2 minutes
         },
@@ -224,7 +224,7 @@ export abstract class GlobalService implements OnDestroy {
             cacheTTL: 60000 // 1 minute
         },
         [EndpointType.TOP_TECHNOLOGIES]: {
-            timeout: 10000,
+            timeout: 20000,
             retryCount: 2,
             cacheTTL: 60000 // 1 minute
         },

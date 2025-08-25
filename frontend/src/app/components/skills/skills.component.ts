@@ -235,6 +235,14 @@ export class SkillsComponent implements OnInit, OnChanges {
   }
 
   /**
+     * Get filtered featured skills categories
+     */
+
+  getFilteredFeaturedSkillsCategories(): SkillCategory[] {
+    return this.skillsCategories.filter(category => this.getAllSkillOnCategory(category).length > 0);
+  }
+
+  /**
    * Get proficiency level text
    */
   getProficiencyText(proficiency: ProficiencyLevel | string): string {

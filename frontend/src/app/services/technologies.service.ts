@@ -24,7 +24,7 @@ export class TechnologiesService extends GlobalService {
         maxCacheSize: 15,
         enablePrefetch: true,
         cleanupInterval: 240000,
-        prefetchDelay: 3000,
+        prefetchDelay: 20000,
         avgEntrySize: 1536,
         expectedHitRate: 0.88
     };
@@ -57,7 +57,7 @@ export class TechnologiesService extends GlobalService {
      */
     getTechCategories(): Observable<TechCategory[]> {
         return this.makeRequest<TechCategory[]>(
-            EndpointType.TOP_SKILLS,
+            EndpointType.TECHNOLOGIES_CATEGORIES,
             `${this.apiUrl}/tech-categories`
         );
     }
@@ -202,13 +202,13 @@ export class TechnologiesService extends GlobalService {
 
         essentialEndpoints.forEach(endpoint => {
             switch (endpoint) {
-                case EndpointType.SKILLS:
+                case EndpointType.TECHNOLOGIES:
                     this.getAllTechnologies().subscribe();
                     break;
-                case EndpointType.SKILLS_STATS:
+                case EndpointType.TECHNOLOGIES_STATS:
                     this.getTechStats().subscribe();
                     break;
-                case EndpointType.SKILLS_CATEGORIES:
+                case EndpointType.TECHNOLOGIES_CATEGORIES:
                     this.getTechCategories().subscribe();
                     break;
             }

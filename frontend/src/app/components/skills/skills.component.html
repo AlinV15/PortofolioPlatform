@@ -55,7 +55,8 @@
             <!-- Skills Categories Section -->
             <div *ngIf="skillsCategories.length > 0" class="space-y-12">
 
-                <div *ngFor="let category of skillsCategories; trackBy: trackBySkillCategory" class="skill-category">
+                <div *ngFor="let category of getFilteredFeaturedSkillsCategories(); trackBy: trackBySkillCategory"
+                    class="skill-category">
                     <!-- Category Header -->
                     <div class="flex items-center mb-8">
                         <div
